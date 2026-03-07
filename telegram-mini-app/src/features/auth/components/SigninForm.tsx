@@ -2,6 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useState } from "react";
+import { BrandCard } from "@/components/brand/BrandCard";
 import {
   Field,
   FieldDescription,
@@ -131,11 +132,7 @@ export default function SigninForm() {
     <div className="min-h-screen bg-white px-4 py-6 flex flex-col">
       {/* Brand Header */}
       <div className="mb-8">
-        <h1 className="text-4xl font-bold">
-          <span className="text-black">ASTU</span>
-          <span style={{ color: "#F26A1C" }}>EATS</span>
-        </h1>
-        <p className="text-gray-600 mt-2 text-lg">Welcome back!</p>
+        <BrandCard />
       </div>
 
       {/* Signin Form */}
@@ -182,7 +179,7 @@ export default function SigninForm() {
                 <button
                   type="button"
                   onClick={togglePasswordVisibility}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                  className=" flex absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500  hover:text-gray-700 focus:outline-none"
                 >
                   {showPassword ? (
                     // Eye slash icon (password hidden)
@@ -261,7 +258,7 @@ export default function SigninForm() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full mt-6 py-3 px-4 rounded-lg text-white font-medium transition-all disabled:opacity-50 hover:opacity-90 active:scale-[0.98]"
+          className="rounded-full w-full mt-6 py-3 px-4 text-white font-medium transition-all disabled:opacity-50 hover:opacity-90 active:scale-[0.98]"
           style={{ backgroundColor: "#F26A1C" }}
         >
           {isSubmitting ? (
@@ -298,7 +295,7 @@ export default function SigninForm() {
           <button
             type="button"
             onClick={handleSignUpClick}
-            className="text-sm text-gray-600 hover:text-[#F26A1C] transition-colors bg-transparent border-none cursor-pointer"
+            className=" text-sm text-gray-600 hover:text-[#F26A1C] transition-colors bg-transparent border-none cursor-pointer"
           >
             Don't have an account?{" "}
             <span style={{ color: "#F26A1C" }} className="font-medium">

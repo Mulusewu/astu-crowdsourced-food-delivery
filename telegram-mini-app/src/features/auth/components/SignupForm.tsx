@@ -1,7 +1,10 @@
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useState } from "react";
+import { BrandCard } from "@/components/brand/BrandCard";
 import {
   Field,
   FieldDescription,
@@ -78,6 +81,7 @@ interface ApiResponse {
 }
 
 export default function SignupForm() {
+  const navigate = useNavigate();
   const [apiError, setApiError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -155,7 +159,7 @@ export default function SignupForm() {
   };
 
   const handleSignInClick = () => {
-    window.location.href = "/signin";
+    navigate("/signin");
   };
 
   // Password strength checker
@@ -195,10 +199,7 @@ export default function SignupForm() {
     <div className="min-h-screen bg-white px-4 py-6 flex flex-col">
       {/* Brand Header */}
       <div className="mb-8">
-        <h1 className="text-4xl font-bold">
-          <span className="text-black">ASTU</span>
-          <span style={{ color: "#F26A1C" }}>EATS</span>
-        </h1>
+        <BrandCard />
       </div>
 
       {/* Signup Form */}
@@ -384,7 +385,7 @@ export default function SignupForm() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full mt-6 py-3 px-4 rounded-lg text-white font-medium transition-opacity disabled:opacity-50"
+          className="rounded-full w-full mt-6 py-3 px-4 text-white font-medium transition-opacity disabled:opacity-50"
           style={{ backgroundColor: "#F26A1C" }}
         >
           {isSubmitting ? (
@@ -421,7 +422,7 @@ export default function SignupForm() {
           <button
             type="button"
             onClick={handleSignInClick}
-            className="text-sm text-gray-600 hover:text-gray-900 transition-colors bg-transparent border-none cursor-pointer"
+            className=" text-sm text-gray-600 hover:text-gray-900 transition-colors bg-transparent border-none cursor-pointer"
           >
             Already have an account? Sign in
           </button>
