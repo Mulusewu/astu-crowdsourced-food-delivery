@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { ROUTES } from "./routePaths";
 // import ProtectedRoute from "./ProtectedRoute";
 import { UserRole } from "../types/user.types";
+import OrderDetailsPage from "@/features/delivery/pages/OrderDetailsPage";
 
 // Lazy load pages for better performance
 const SigninPage = lazy(() => import("../features/auth/pages/SigninPage"));
@@ -12,7 +13,9 @@ const TestPage = lazy(() => import("@/../testTimeFolder/TestPage"));
 const ForgotPasswordPage = lazy(
   () => import("../features/auth/pages/ForgotPasswordPage"),
 );
-
+const AvailableOrdersPage = lazy(
+  () => import("../features/delivery/pages/AvailableOrdersPage"),
+);
 // Customer pages
 const CustomerHomePage = lazy(
   () => import("../features/customer/pages/HomePage"),
@@ -72,7 +75,6 @@ function AppRoutes() {
       <Route path={ROUTES.FORGOT_PASSWORD} element={<ForgotPasswordPage />} />
       <Route path={ROUTES.AUTH} element={<AuthPage />} />
       <Route path={ROUTES.TEST} element={<TestPage />} />
-
       {/* Customer Routes */}
       {/* <Route element={<ProtectedRoute allowedRoles={[UserRole.CUSTOMER]} />}> */}
       <Route path={ROUTES.CUSTOMER.HOME} element={<CustomerHomePage />} />
@@ -82,7 +84,6 @@ function AppRoutes() {
       <Route path={ROUTES.CUSTOMER.ORDERS} element={<OrderHistoryPage />} />
       <Route path={ROUTES.CUSTOMER.PROFILE} element={<CustomerProfilePage />} />
       {/* </Route> */}
-
       {/* Vendor Routes */}
       {/* <Route element={<ProtectedRoute allowedRoles={[UserRole.VENDOR]} />}> */}
       <Route path={ROUTES.VENDOR.DASHBOARD} element={<VendorDashboard />} />
@@ -91,21 +92,21 @@ function AppRoutes() {
       <Route path={ROUTES.VENDOR.EARNINGS} element={<VendorEarningsPage />} />
       <Route path={ROUTES.VENDOR.SETTINGS} element={<VendorSettingsPage />} />
       {/* </Route> */}
-
       {/* Delivery Routes */}
       {/* <Route element={<ProtectedRoute allowedRoles={[UserRole.DELIVERY]} />}> */}
       <Route path={ROUTES.DELIVERY.DASHBOARD} element={<DeliveryDashboard />} />
       <Route
         path={ROUTES.DELIVERY.AVAILABLE}
-        element={<AvailableDeliveriesPage />}
+        element={<AvailableOrdersPage />}
       />
       <Route path={ROUTES.DELIVERY.ACTIVE} element={<ActiveDeliveryPage />} />
       <Route
         path={ROUTES.DELIVERY.EARNINGS}
         element={<DeliveryEarningsPage />}
       />
+      {/* In your AppRoutes.tsx */}
+      <Route path="/order/:orderId" element={<OrderDetailsPage />} />
       {/* </Route> */}
-
       {/* Payment Route (accessible to multiple roles) */}
       {/* <Route
         element={
@@ -114,7 +115,6 @@ function AppRoutes() {
       > */}
       <Route path={ROUTES.PAYMENT} element={<PaymentPage />} />
       {/* </Route> */}
-
       {/* Default redirect */}
       <Route path="/" element={<Navigate to={ROUTES.SIGNIN} replace />} />
       <Route path="*" element={<Navigate to={ROUTES.SIGNIN} replace />} />
