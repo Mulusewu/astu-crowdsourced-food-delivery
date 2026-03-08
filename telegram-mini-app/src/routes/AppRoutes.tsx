@@ -8,6 +8,7 @@ import { UserRole } from "../types/user.types";
 const SigninPage = lazy(() => import("../features/auth/pages/SigninPage"));
 const SignupPage = lazy(() => import("../features/auth/pages/SignupPage"));
 const AuthPage = lazy(() => import("../features/auth/pages/authPage"));
+const TestPage = lazy(() => import("@/../testTimeFolder/TestPage"));
 const ForgotPasswordPage = lazy(
   () => import("../features/auth/pages/ForgotPasswordPage"),
 );
@@ -70,6 +71,7 @@ function AppRoutes() {
       <Route path={ROUTES.SIGNUP} element={<SignupPage />} />
       <Route path={ROUTES.FORGOT_PASSWORD} element={<ForgotPasswordPage />} />
       <Route path={ROUTES.AUTH} element={<AuthPage />} />
+      <Route path={ROUTES.TEST} element={<TestPage />} />
 
       {/* Customer Routes */}
       {/* <Route element={<ProtectedRoute allowedRoles={[UserRole.CUSTOMER]} />}> */}

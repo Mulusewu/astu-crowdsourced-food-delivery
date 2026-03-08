@@ -31,6 +31,7 @@ export const ROUTES = {
     ACTIVE: "/delivery/active",
     EARNINGS: "/delivery/earnings",
   },
+  TEST: "/test",
 
   // Payment
   PAYMENT: "/payment",
