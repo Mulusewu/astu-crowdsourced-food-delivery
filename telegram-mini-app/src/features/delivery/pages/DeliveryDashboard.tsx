@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   User,
   MapPin,
@@ -9,10 +10,11 @@ import {
   Settings,
   Star,
   Clock,
+  Package,
+  ListOrdered,
+  TrendingUp,
+  Home,
   Bike,
-  Coffee,
-  MoreVertical,
-  SwitchCamera,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -29,8 +31,8 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import BottomNav from "@/components/common/BottomNav1";
-import OrdersPage from "./Orders";
+import BottomNav from "@/components/common/BottomNav";
+// import AvailableDeliveriesPage from "./AvailableDeliveriesPage";
 
 // Types for the delivery person and cafes
 interface DeliveryPerson {
@@ -68,6 +70,7 @@ interface Cafe {
 }
 
 export default function DeliveryDashboard() {
+  const navigate = useNavigate();
   const [deliveryPerson, setDeliveryPerson] = useState<DeliveryPerson | null>(
     null,
   );
@@ -229,6 +232,23 @@ export default function DeliveryDashboard() {
       .slice(0, 2);
   };
 
+  // Navigation handlers
+  const goToAvailableOrders = () => {
+    navigate("/delivery/available");
+  };
+
+  const goToActiveDeliveries = () => {
+    navigate("/delivery/active");
+  };
+
+  const goToEarnings = () => {
+    navigate("/delivery/earnings");
+  };
+
+  const goToOrderDetails = (cafeId: string) => {
+    navigate(`/order/${cafeId}`);
+  };
+
   // Loading skeleton
   if (isLoading) {
     return (
@@ -298,13 +318,22 @@ export default function DeliveryDashboard() {
                     {deliveryPerson?.email}
                   </p>
                 </div>
-                <button className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2">
+                <button
+                  onClick={() => navigate("/delivery/profile")}
+                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+                >
                   <User size={16} /> View Profile
                 </button>
-                <button className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2">
+                <button
+                  onClick={() => navigate("/delivery/settings")}
+                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+                >
                   <Settings size={16} /> Settings
                 </button>
-                <button className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 text-red-600">
+                <button
+                  onClick={() => navigate("/signin")}
+                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 text-red-600"
+                >
                   <LogOut size={16} /> Sign Out
                 </button>
               </div>
@@ -312,15 +341,21 @@ export default function DeliveryDashboard() {
           </div>
         </div>
 
-        {/* Stats Row */}
+        {/* Stats Row - Clickable for navigation */}
         <div className="grid grid-cols-3 gap-2 mt-4">
-          <div className="bg-primary/5 rounded-lg p-2 text-center">
+          <div
+            onClick={goToActiveDeliveries}
+            className="bg-primary/5 rounded-lg p-2 text-center cursor-pointer hover:bg-primary/10 transition-colors"
+          >
             <p className="text-xs text-gray-600">Today</p>
             <p className="text-lg font-bold text-primary">
               {deliveryPerson?.stats.deliveriesToday}
             </p>
           </div>
-          <div className="bg-primary/5 rounded-lg p-2 text-center">
+          <div
+            onClick={goToEarnings}
+            className="bg-primary/5 rounded-lg p-2 text-center cursor-pointer hover:bg-primary/10 transition-colors"
+          >
             <p className="text-xs text-gray-600">Earnings</p>
             <p className="text-lg font-bold text-primary">
               ETB {deliveryPerson?.stats.earningsToday}
@@ -336,10 +371,45 @@ export default function DeliveryDashboard() {
             </div>
           </div>
         </div>
+
+        {/* Quick Navigation Cards */}
+        <div className="grid grid-cols-2 gap-2 mt-3">
+          <Button
+            variant="outline"
+            onClick={goToAvailableOrders}
+            className="h-14 border-gray-200 hover:border-primary hover:bg-primary/5 flex items-center justify-start gap-3 px-3"
+          >
+            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+              <Package size={16} className="text-primary" />
+            </div>
+            <div className="text-left">
+              <p className="text-xs text-gray-500">Available</p>
+              <p className="text-sm font-semibold text-gray-900">New Orders</p>
+            </div>
+            <Badge className="ml-auto bg-primary text-white">5</Badge>
+          </Button>
+
+          <Button
+            variant="outline"
+            onClick={goToActiveDeliveries}
+            className="h-14 border-gray-200 hover:border-primary hover:bg-primary/5 flex items-center justify-start gap-3 px-3"
+          >
+            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+              <Bike size={16} className="text-primary" />
+            </div>
+            <div className="text-left">
+              <p className="text-xs text-gray-500">Active</p>
+              <p className="text-sm font-semibold text-gray-900">In Progress</p>
+            </div>
+            <Badge className="ml-auto bg-green-500 text-white">
+              {deliveryPerson?.stats.deliveriesToday || 0}
+            </Badge>
+          </Button>
+        </div>
       </div>
 
       {/* Main Content */}
-      <ScrollArea className="h-[calc(100vh-220px)]">
+      <ScrollArea className="h-[calc(100vh-320px)]">
         <div className="px-4 py-4 space-y-4 pb-24">
           {/* Filter Section */}
           <div className="flex items-center gap-3">
@@ -359,9 +429,7 @@ export default function DeliveryDashboard() {
               variant="outline"
               size="icon"
               className="h-12 w-12 border-gray-200"
-              onClick={() => {
-                /* Handle notifications */
-              }}
+              onClick={() => navigate("/notifications")}
             >
               <Bell size={20} className="text-gray-600" />
             </Button>
@@ -388,9 +456,20 @@ export default function DeliveryDashboard() {
 
           {/* Cafes Grid */}
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-gray-900 px-1">
-              Nearby Restaurants
-            </h2>
+            <div className="flex items-center justify-between px-1">
+              <h2 className="text-lg font-semibold text-gray-900">
+                Nearby Restaurants
+              </h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/delivery/available")}
+                className="text-primary text-sm"
+              >
+                View All
+                <ChevronRight size={16} className="ml-1" />
+              </Button>
+            </div>
 
             {cafes.map((cafe) => (
               <Card
@@ -435,6 +514,7 @@ export default function DeliveryDashboard() {
                     </div>
                     <Button
                       size="sm"
+                      onClick={() => goToOrderDetails(cafe.id)}
                       className="bg-primary hover:bg-primary/90 text-white h-8 px-3"
                     >
                       View
@@ -514,7 +594,8 @@ export default function DeliveryDashboard() {
           </div>
         </div>
       </ScrollArea>
-      <OrdersPage />
+      {/* <AvailableDeliveriesPage /> */}
+
       <BottomNav />
     </div>
   );

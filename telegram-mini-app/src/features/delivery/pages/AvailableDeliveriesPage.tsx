@@ -7,6 +7,7 @@ import {
   DollarSign,
   User,
   ChevronRight,
+  ChevronLeft,
   Filter,
   X,
   Star,
@@ -87,7 +88,7 @@ type FilterType =
   | "cafe"
   | "priority";
 
-export default function OrdersPage() {
+export default function AvailableDeliveriesPage() {
   const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
@@ -270,8 +271,25 @@ export default function OrdersPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Sticky Header */}
+      {/* Sticky Header with Back Button */}
       <div className="sticky top-0 z-10 bg-white border-b border-gray-100 px-4 py-3">
+        {/* Back Button - Highly Visible */}
+        <div className="flex items-center justify-between mb-3">
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/delivery/dashboard")}
+            className="flex items-center gap-1 text-primary hover:text-primary/80 hover:bg-primary/5 -ml-2"
+          >
+            <ChevronLeft size={20} />
+            <span className="font-medium">Back to Dashboard</span>
+          </Button>
+
+          {/* Optional: Quick stats badge */}
+          <Badge className="bg-primary/10 text-primary border-0">
+            {filteredOrders.length} Available
+          </Badge>
+        </div>
+
         <h1 className="text-xl font-semibold text-gray-900 mb-3">Orders</h1>
 
         {/* Filter Row */}
@@ -355,7 +373,7 @@ export default function OrdersPage() {
       </div>
 
       {/* Orders List */}
-      <ScrollArea className="h-[calc(100vh-140px)]">
+      <ScrollArea className="h-[calc(100vh-180px)]">
         <div className="px-4 py-4 space-y-3 pb-24">
           {filteredOrders.length === 0 ? (
             <div className="text-center py-12">
@@ -366,6 +384,13 @@ export default function OrdersPage() {
               <p className="text-sm text-gray-400 mt-1">
                 Try changing your filters
               </p>
+              <Button
+                onClick={() => navigate("/delivery/dashboard")}
+                variant="outline"
+                className="mt-4 border-primary text-primary hover:bg-primary/5"
+              >
+                Return to Dashboard
+              </Button>
             </div>
           ) : (
             filteredOrders.map((order, index) => (
@@ -492,18 +517,23 @@ export default function OrdersPage() {
 
                     {/* Action Buttons */}
                     <div className="flex items-center gap-2">
-                      // In your Orders page, update the View Details button:
                       <Button
                         size="sm"
                         variant="outline"
                         className="flex-1 h-9 text-xs border-gray-200"
-                        onClick={() => navigate(`/order/${order.id}`)}
+                        onClick={() =>
+                          navigate(`/delivery/available/${order.id}`)
+                        }
                       >
                         View Details
                       </Button>
                       <Button
                         size="sm"
                         className="flex-1 h-9 text-xs bg-primary hover:bg-primary/90 text-white"
+                        onClick={() => {
+                          // Handle accept order
+                          console.log("Accept order:", order.id);
+                        }}
                       >
                         Accept Order
                         <ChevronRight size={14} className="ml-1" />
@@ -542,7 +572,7 @@ export default function OrdersPage() {
         </div>
       </ScrollArea>
 
-      {/* Floating Summary Stats (Optional Enhancement) */}
+      {/* Floating Summary Stats */}
       <div className="fixed bottom-20 left-4 right-4">
         <Card className="bg-white/80 backdrop-blur-sm border-primary/20 shadow-lg">
           <CardContent className="p-3">
@@ -556,22 +586,14 @@ export default function OrdersPage() {
                   {filteredOrders.length}
                 </span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="bg-primary/10 rounded-full p-1">
-                  <DollarSign size={14} className="text-primary" />
-                </div>
-                <span className="text-gray-600">Avg. value</span>
-                <span className="font-bold text-primary">
-                  {filteredOrders.length > 0
-                    ? formatCurrency(
-                        filteredOrders.reduce(
-                          (acc, o) => acc + o.totalAmount,
-                          0,
-                        ) / filteredOrders.length,
-                      )
-                    : formatCurrency(0)}
-                </span>
-              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/delivery/dashboard")}
+                className="text-primary hover:text-primary/80 hover:bg-primary/5 text-xs"
+              >
+                Dashboard
+              </Button>
             </div>
           </CardContent>
         </Card>

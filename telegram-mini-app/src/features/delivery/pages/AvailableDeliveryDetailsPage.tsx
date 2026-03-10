@@ -3,7 +3,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   MapPin,
   Clock,
-  User,
   Phone,
   Store,
   Bike,
@@ -75,7 +74,7 @@ interface OrderDetails {
   specialInstructions?: string;
 }
 
-export default function OrderDetailsPage() {
+export default function AvailableDeliveryDetailsPage() {
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
   const [order, setOrder] = useState<OrderDetails | null>(null);
@@ -145,15 +144,6 @@ export default function OrderDetailsPage() {
       hour: "2-digit",
       minute: "2-digit",
       hour12: true,
-    });
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
     });
   };
 
@@ -232,7 +222,7 @@ export default function OrderDetailsPage() {
             className="w-full h-full object-cover"
           />
           {/* Gradient Overlay for better text visibility */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent" />
 
           {/* Order Number Badge */}
           <div className="absolute top-4 right-4">
@@ -394,7 +384,7 @@ export default function OrderDetailsPage() {
 
             {/* Location */}
             <div className="flex items-start gap-2">
-              <MapPin size={16} className="text-primary flex-shrink-0 mt-0.5" />
+              <MapPin size={16} className="text-primary shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm text-gray-900">
                   {order.customer.address}
@@ -443,10 +433,10 @@ export default function OrderDetailsPage() {
               <h3 className="font-semibold text-gray-900">
                 Other items in order
               </h3>
-              {order.items.slice(1).map((item, index) => (
+              {order.items.slice(1).map((item) => (
                 <Card key={item.id} className="p-2 border-gray-100">
                   <div className="flex items-center gap-2">
-                    <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
+                    <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0">
                       <img
                         src={item.image}
                         alt={item.name}
