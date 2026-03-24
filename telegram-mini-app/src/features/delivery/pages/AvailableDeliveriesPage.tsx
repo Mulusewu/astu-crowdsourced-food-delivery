@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import {
   MapPin,
   Bookmark,
@@ -31,6 +32,9 @@ import BottomNav from "@/components/common/BottomNav1";
 
 export default function AvailableDeliveriesPage() {
   const navigate = useNavigate();
+
+  const [searchParams] = useSearchParams();
+  const cafeFromUrl = searchParams.get("cafe"); // e.g., "rest_001"
   const { ref, inView } = useInView({ threshold: 0.1, triggerOnce: false });
 
   // Zustand

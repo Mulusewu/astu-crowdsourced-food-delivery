@@ -1,11 +1,9 @@
-import { TabsLine } from "../components/auth-tabs";
-import BottomNav from "@/components/common/BottomNav1";
+import TabsLine from "../components/auth-tabs";
 
 function AuthPage() {
   return (
     <div>
       <TabsLine />
-      <BottomNav />
     </div>
   );
 }
