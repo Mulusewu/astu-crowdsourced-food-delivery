@@ -4,8 +4,8 @@ import { ROUTES } from "../routePaths";
 
 // Lazy load auth pages
 const AuthPage = lazy(() => import("@/features/auth/pages/authPage"));
-const SigninPage = lazy(() => import("@/features/auth/pages/SigninPage"));
-const SignupPage = lazy(() => import("@/features/auth/pages/SignupPage"));
+// const SigninPage = lazy(() => import("@/features/auth/pages/SigninPage"));
+// const SignupPage = lazy(() => import("@/features/auth/pages/SignupPage"));
 const ForgotPasswordPage = lazy(
   () => import("@/features/auth/pages/ForgotPasswordPage"),
 );
@@ -23,14 +23,14 @@ export const authRoutes: RouteGroup[] = [
     path: ROUTES.AUTH,
     element: <AuthPage />,
   },
-  {
-    path: ROUTES.SIGNIN,
-    element: <SigninPage />,
-  },
-  {
-    path: ROUTES.SIGNUP,
-    element: <SignupPage />,
-  },
+  // {
+  //   path: ROUTES.SIGNIN,
+  //   element: <SigninPage />,
+  // },
+  // {
+  //   path: ROUTES.SIGNUP,
+  //   element: <SignupPage />,
+  // },
   {
     path: ROUTES.FORGOT_PASSWORD,
     element: <ForgotPasswordPage />,

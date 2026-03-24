@@ -1,8 +1,8 @@
 export const ROUTES = {
   // ==================== PUBLIC ROUTES ====================
   AUTH: "/auth",
-  SIGNIN: "/signin",
-  SIGNUP: "/signup",
+  // SIGNIN: "/signin",
+  // SIGNUP: "/signup",
   FORGOT_PASSWORD: "/forgot-password",
   RESET_PASSWORD: "/reset-password/:token",
   VERIFY_EMAIL: "/verify-email/:token",

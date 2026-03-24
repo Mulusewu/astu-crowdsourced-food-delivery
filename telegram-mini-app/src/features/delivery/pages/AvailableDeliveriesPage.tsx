@@ -1,26 +1,16 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  Coffee,
   MapPin,
   Bookmark,
   Clock,
-  DollarSign,
-  User,
   ChevronRight,
   ChevronLeft,
-  Filter,
-  X,
-  Star,
-  Bike,
-  Home,
-  TrendingUp,
-  Calendar,
-  AlertCircle,
 } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -30,239 +20,88 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useInView } from "react-intersection-observer";
-import { useNavigate } from "react-router-dom";
 
-// Types for Order
-interface OrderItem {
-  id: string;
-  name: string;
-  quantity: number;
-  price: number;
-  image: string;
-}
-
-interface Customer {
-  id: string;
-  name: string;
-  avatar?: string;
-  phone?: string;
-  address: string;
-}
-
-interface Order {
-  id: string;
-  orderNumber: string;
-  cafeId: string;
-  cafeName: string;
-  cafeImage: string;
-  customer: Customer;
-  items: OrderItem[];
-  totalAmount: number;
-  status:
-    | "pending"
-    | "confirmed"
-    | "preparing"
-    | "ready"
-    | "picked_up"
-    | "delivered"
-    | "cancelled";
-  paymentMethod: "cash" | "card" | "telegram_stars";
-  paymentStatus: "pending" | "paid" | "failed";
-  createdAt: string;
-  estimatedDeliveryTime?: string;
-  distance: string;
-  isBookmarked: boolean;
-  priority: boolean;
-  specialInstructions?: string;
-}
-
-// Filter options type
-type FilterType =
-  | "all"
-  | "nearby"
-  | "price_asc"
-  | "price_desc"
-  | "cafe"
-  | "priority";
+// Zustand Stores
+import { useOrderStore } from "@/store/orders/orderStore";
+import { useCafeStore } from "@/store/cafeStore";
+import { useUIStore } from "@/store/uiStore";
+import BottomNav from "@/components/common/BottomNav1";
 
 export default function AvailableDeliveriesPage() {
   const navigate = useNavigate();
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [activeFilter, setActiveFilter] = useState<FilterType>("all");
-  const [selectedCafe, setSelectedCafe] = useState<string>("all");
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [totalCount, setTotalCount] = useState(0);
-  const [cafes, setCafes] = useState<{ id: string; name: string }[]>([]);
+  const { ref, inView } = useInView({ threshold: 0.1, triggerOnce: false });
 
-  const { ref, inView } = useInView({
-    threshold: 0.1,
-    triggerOnce: false,
-  });
+  // Zustand
+  const {
+    orders,
+    filteredOrders,
+    isLoading,
+    isLoadingMore,
+    hasMore,
+    selectedCafe,
+    secondaryFilter,
+    fetchAvailableOrders,
+    loadMoreOrders,
+    setSelectedCafe,
+    setSecondaryFilter,
+    toggleBookmark,
+    acceptOrder,
+  } = useOrderStore();
 
-  // Mock data fetch - initial load
+  const { cafes, fetchCafes } = useCafeStore();
+  const { showToast } = useUIStore();
+
+  // Initial data fetch
   useEffect(() => {
-    const fetchInitialData = async () => {
-      setIsLoading(true);
-      try {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1500));
+    fetchAvailableOrders();
+    fetchCafes();
+  }, [fetchAvailableOrders, fetchCafes]);
 
-        // Mock cafes for filter
-        setCafes([
-          { id: "1", name: "Kaldi's Coffee" },
-          { id: "2", name: "Yod Abyssinia" },
-          { id: "3", name: "Tomoca Coffee" },
-          { id: "4", name: "Mama's Kitchen" },
-          { id: "5", name: "The Lemon Tree" },
-        ]);
-
-        // Mock orders data
-        const mockOrders = generateMockOrders(1, 10);
-        setOrders(mockOrders);
-        setFilteredOrders(mockOrders);
-        setTotalCount(25); // Mock total count
-      } catch (error) {
-        console.error("Error fetching orders:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchInitialData();
-  }, []);
-
-  // Filter orders when filter changes
-  useEffect(() => {
-    if (orders.length === 0) return;
-
-    let filtered = [...orders];
-
-    switch (activeFilter) {
-      case "nearby":
-        filtered.sort(
-          (a, b) => parseFloat(a.distance) - parseFloat(b.distance),
-        );
-        break;
-      case "price_asc":
-        filtered.sort((a, b) => a.totalAmount - b.totalAmount);
-        break;
-      case "price_desc":
-        filtered.sort((a, b) => b.totalAmount - a.totalAmount);
-        break;
-      case "cafe":
-        if (selectedCafe !== "all") {
-          filtered = filtered.filter((order) => order.cafeId === selectedCafe);
-        }
-        break;
-      case "priority":
-        filtered = filtered.filter((order) => order.priority);
-        break;
-      default:
-        // 'all' - no filtering
-        break;
-    }
-
-    setFilteredOrders(filtered);
-  }, [activeFilter, selectedCafe, orders]);
-
-  // Load more orders when scrolling
-  const loadMoreOrders = useCallback(async () => {
-    if (!hasMore || isLoadingMore) return;
-
-    setIsLoadingMore(true);
-    try {
-      // Simulate API call for next page
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      const nextPage = page + 1;
-      const newOrders = generateMockOrders(nextPage, 5);
-
-      setOrders((prev) => [...prev, ...newOrders]);
-      setPage(nextPage);
-      setHasMore(nextPage < 5); // Assume 5 pages total
-    } catch (error) {
-      console.error("Error loading more orders:", error);
-    } finally {
-      setIsLoadingMore(false);
-    }
-  }, [page, hasMore, isLoadingMore]);
-
-  // Trigger load more when scroll target is in view
+  // Infinite scroll
   useEffect(() => {
     if (inView && hasMore && !isLoading && !isLoadingMore) {
       loadMoreOrders();
     }
   }, [inView, hasMore, isLoading, isLoadingMore, loadMoreOrders]);
 
-  const toggleBookmark = (orderId: string) => {
-    setOrders((prevOrders) =>
-      prevOrders.map((order) =>
-        order.id === orderId
-          ? { ...order, isBookmarked: !order.isBookmarked }
-          : order,
-      ),
-    );
-  };
-
-  const getStatusColor = (status: Order["status"]) => {
-    const colors = {
-      pending: "bg-yellow-100 text-yellow-800",
-      confirmed: "bg-blue-100 text-blue-800",
-      preparing: "bg-purple-100 text-purple-800",
-      ready: "bg-green-100 text-green-800",
-      picked_up: "bg-indigo-100 text-indigo-800",
-      delivered: "bg-gray-100 text-gray-800",
-      cancelled: "bg-red-100 text-red-800",
-    };
-    return colors[status] || "bg-gray-100 text-gray-800";
-  };
-
-  const getPaymentIcon = (method: Order["paymentMethod"]) => {
-    switch (method) {
-      case "cash":
-        return "💵";
-      case "card":
-        return "💳";
-      case "telegram_stars":
-        return "⭐";
-      default:
-        return "💰";
+  const handleAcceptOrder = async (orderId: string) => {
+    try {
+      await acceptOrder(orderId);
+      showToast({ type: "success", message: "Order accepted successfully!" });
+    } catch (error) {
+      showToast({ type: "error", message: "Failed to accept order" });
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return `ETB ${amount.toLocaleString()}`;
-  };
-
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString("en-US", {
+  const formatCurrency = (amount: number) => `ETB ${amount.toLocaleString()}`;
+  const formatTime = (dateString: string) =>
+    new Date(dateString).toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
     });
+
+  const getSelectedCafeName = () => {
+    if (selectedCafe === "all") return "All Cafes";
+    const cafe = cafes.find((c) => c.id === selectedCafe);
+    return cafe?.name || "All Cafes";
   };
 
-  // Loading skeleton
-  if (isLoading) {
+  // Loading Skeleton (now shows 2-column grid skeleton)
+  if (isLoading && !orders.length) {
     return (
       <div className="min-h-screen bg-white">
-        <div className="sticky top-0 z-10 bg-white border-b border-gray-100 px-4 py-4">
-          <Skeleton className="h-8 w-48 mb-4" />
-          <div className="flex gap-2">
-            <Skeleton className="h-10 flex-1" />
-            <Skeleton className="h-10 w-24" />
+        <div className="px-4 py-4">
+          <Skeleton className="h-9 w-40 mb-6" />
+          <div className="flex gap-3">
+            <Skeleton className="h-11 flex-1" />
+            <Skeleton className="h-11 w-28" />
           </div>
         </div>
-        <div className="px-4 py-4 space-y-3">
-          {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-40 w-full rounded-xl" />
+        <div className="px-4 grid grid-cols-2 gap-3">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <Skeleton key={i} className="h-80 w-full rounded-2xl" />
           ))}
         </div>
       </div>
@@ -270,478 +109,216 @@ export default function AvailableDeliveriesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Sticky Header with Back Button */}
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-100 px-4 py-3">
-        {/* Back Button - Highly Visible */}
-        <div className="flex items-center justify-between mb-3">
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/delivery/dashboard")}
-            className="flex items-center gap-1 text-primary hover:text-primary/80 hover:bg-primary/5 -ml-2"
-          >
-            <ChevronLeft size={20} />
-            <span className="font-medium">Back to Dashboard</span>
-          </Button>
+    <div className="min-h-screen bg-white pb-20">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100">
+        <Button
+          variant="ghost"
+          onClick={() => navigate("/delivery/dashboard")}
+          className="flex items-center gap-1.5 text-gray-700 hover:text-gray-900 -ml-2"
+        >
+          <ChevronLeft size={22} />
+          <span className="font-medium">Back</span>
+        </Button>
 
-          {/* Optional: Quick stats badge */}
-          <Badge className="bg-primary/10 text-primary border-0">
-            {filteredOrders.length} Available
-          </Badge>
+        <div className="font-semibold text-xl tracking-tight">
+          Available Orders
         </div>
 
-        <h1 className="text-xl font-semibold text-gray-900 mb-3">Orders</h1>
-
-        {/* Filter Row */}
-        <div className="flex items-center gap-2">
-          {/* All Orders Button */}
-          <Button
-            variant={activeFilter === "all" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setActiveFilter("all")}
-            className={`flex-1 h-10 ${
-              activeFilter === "all"
-                ? "bg-primary text-white"
-                : "bg-white text-gray-700 border-gray-200"
-            }`}
-          >
-            All Orders
-          </Button>
-
-          {/* Filter Select */}
-          <Select
-            value={activeFilter}
-            onValueChange={(value: FilterType) => setActiveFilter(value)}
-          >
-            <SelectTrigger className="w-[140px] h-10 border-gray-200">
-              <SelectValue placeholder="Filter by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="nearby">📍 Nearby first</SelectItem>
-              <SelectItem value="price_asc">💰 Price: Low to High</SelectItem>
-              <SelectItem value="price_desc">💰 Price: High to Low</SelectItem>
-              <SelectItem value="priority">⭐ Priority orders</SelectItem>
-              <SelectItem value="cafe">🏪 By cafe</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Cafe Filter (shown only when 'cafe' filter is selected) */}
-        {activeFilter === "cafe" && (
-          <div className="mt-3">
-            <Select value={selectedCafe} onValueChange={setSelectedCafe}>
-              <SelectTrigger className="w-full h-10 border-gray-200">
-                <SelectValue placeholder="Select cafe" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All cafes</SelectItem>
-                {cafes.map((cafe) => (
-                  <SelectItem key={cafe.id} value={cafe.id}>
-                    {cafe.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
-
-        {/* Active Filters Display */}
-        {activeFilter !== "all" && (
-          <div className="flex items-center gap-2 mt-3">
-            <Badge className="bg-primary/10 text-primary border-0 flex items-center gap-1 px-3 py-1">
-              {activeFilter === "nearby" && "📍 Nearest"}
-              {activeFilter === "price_asc" && "💰 Low to High"}
-              {activeFilter === "price_desc" && "💰 High to Low"}
-              {activeFilter === "priority" && "⭐ Priority"}
-              {activeFilter === "cafe" &&
-                selectedCafe !== "all" &&
-                "🏪 Specific cafe"}
-              {activeFilter === "cafe" &&
-                selectedCafe === "all" &&
-                "🏪 All cafes"}
-              <X
-                size={14}
-                className="ml-1 cursor-pointer"
-                onClick={() => setActiveFilter("all")}
-              />
-            </Badge>
-            <span className="text-xs text-gray-500">
-              {filteredOrders.length} orders
-            </span>
-          </div>
-        )}
+        <Badge
+          variant="secondary"
+          className="bg-orange-100 text-orange-700 border-0 font-medium"
+        >
+          {filteredOrders.length}
+        </Badge>
       </div>
 
-      {/* Orders List */}
-      <ScrollArea className="h-[calc(100vh-180px)]">
-        <div className="px-4 py-4 space-y-3 pb-24">
-          {filteredOrders.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="bg-gray-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
-                <AlertCircle size={24} className="text-gray-400" />
-              </div>
-              <p className="text-gray-600">No orders found</p>
-              <p className="text-sm text-gray-400 mt-1">
-                Try changing your filters
-              </p>
-              <Button
-                onClick={() => navigate("/delivery/dashboard")}
-                variant="outline"
-                className="mt-4 border-primary text-primary hover:bg-primary/5"
-              >
-                Return to Dashboard
-              </Button>
-            </div>
-          ) : (
-            filteredOrders.map((order, index) => (
+      {/* Sticky Filters */}
+      <div className="sticky top-0 z-10 bg-white border-b border-gray-100 px-4 py-4 space-y-3">
+        {/* Cafe Filter */}
+        <Select value={selectedCafe} onValueChange={setSelectedCafe}>
+          <SelectTrigger className="h-12 border-gray-200 bg-white text-base">
+            <SelectValue placeholder="All Cafes" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">🏪 All Cafes</SelectItem>
+            {cafes.map((cafe) => (
+              <SelectItem key={cafe.id} value={cafe.id}>
+                {cafe.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Secondary Filter */}
+        <div className="flex gap-2">
+          <Select value={secondaryFilter} onValueChange={setSecondaryFilter}>
+            <SelectTrigger className="h-11 flex-1 border-gray-200 bg-white">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="nearby">📍 Nearby</SelectItem>
+              <SelectItem value="price_asc">💰 Low to High</SelectItem>
+              <SelectItem value="price_desc">💰 High to Low</SelectItem>
+              <SelectItem value="priority">⭐ Priority Only</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-11 w-11 border-gray-200"
+          >
+            <Clock size={18} />
+          </Button>
+        </div>
+      </div>
+
+      {/* Orders Grid - 2 Columns */}
+      <ScrollArea className="h-[calc(100vh-195px)] px-4 py-4">
+        {filteredOrders.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="text-6xl mb-4 opacity-30">📦</div>
+            <p className="text-gray-500 font-medium">No orders available</p>
+            <p className="text-sm text-gray-400 mt-1">Try changing filters</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3 pb-8">
+            {filteredOrders.map((order) => (
               <Card
                 key={order.id}
-                className="overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
+                className="overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all rounded-2xl flex flex-col"
               >
-                <CardContent className="p-0">
+                <CardContent className="p-0 flex-1 flex flex-col">
                   {/* Cafe Header */}
-                  <div className="flex items-center justify-between p-3 bg-gray-50/50">
+                  <div className="flex items-center justify-between px-3 pt-3 pb-2">
                     <div className="flex items-center gap-2">
                       <Avatar className="h-8 w-8">
                         <AvatarImage src={order.cafeImage} />
-                        <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                          {order.cafeName.charAt(0)}
+                        <AvatarFallback className="bg-orange-100 text-orange-700 text-xs font-semibold">
+                          {order.cafeName?.slice(0, 1)}
                         </AvatarFallback>
                       </Avatar>
-                      <div>
-                        <h3 className="text-sm font-semibold text-gray-900">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-gray-900 truncate">
                           {order.cafeName}
-                        </h3>
+                        </p>
                         <p className="text-xs text-gray-500 flex items-center gap-1">
-                          <MapPin size={10} className="text-primary" />
+                          <MapPin size={12} className="text-orange-500" />
                           {order.distance}
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <Badge className={getStatusColor(order.status)}>
-                        {order.status}
-                      </Badge>
-                      <button
-                        onClick={() => toggleBookmark(order.id)}
-                        className="h-8 w-8 rounded-full hover:bg-gray-100 flex items-center justify-center"
-                      >
-                        <Bookmark
-                          size={16}
-                          className={
-                            order.isBookmarked
-                              ? "fill-primary text-primary"
-                              : "text-gray-400"
-                          }
-                        />
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => toggleBookmark(order.id)}
+                      className="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
+                    >
+                      <Bookmark
+                        size={18}
+                        className={
+                          order.isBookmarked
+                            ? "fill-orange-500 text-orange-500"
+                            : "text-gray-400"
+                        }
+                      />
+                    </button>
                   </div>
 
-                  {/* Order Items */}
-                  <div className="p-3">
-                    <div className="flex gap-3">
-                      {/* Food Image */}
-                      <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
-                        <img
-                          src={order.items[0]?.image}
-                          alt={order.items[0]?.name}
-                          className="w-full h-full object-cover"
-                        />
-                        {order.items.length > 1 && (
-                          <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center bg-primary text-white text-xs">
-                            +{order.items.length - 1}
+                  {/* Food Image + Info */}
+                  <div className="px-3 pb-3 flex-1">
+                    <div className="relative w-full aspect-square rounded-xl overflow-hidden border border-gray-100 mb-3">
+                      <img
+                        src={order.items[0]?.image}
+                        alt={order.items[0]?.name}
+                        className="w-full h-full object-cover"
+                      />
+                      {order.items.length > 1 && (
+                        <Badge className="absolute top-2 right-2 bg-orange-500 text-white text-xs px-1.5 py-0.5">
+                          +{order.items.length - 1}
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* Order Details */}
+                    <div>
+                      <div className="flex items-baseline justify-between">
+                        <p className="text-xs text-gray-500">
+                          Order #{order.id.slice(-4)}
+                        </p>
+                        <p className="font-bold text-orange-600 text-lg leading-none">
+                          {formatCurrency(order.totalAmount)}
+                        </p>
+                      </div>
+
+                      <h4 className="font-medium text-gray-900 text-sm mt-1 line-clamp-2 leading-tight">
+                        {order.items[0]?.name}
+                        {order.items.length > 1 &&
+                          ` + ${order.items.length - 1} more`}
+                      </h4>
+
+                      <p className="text-xs text-gray-600 mt-1">
+                        {order.customer?.name}
+                      </p>
+
+                      <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
+                        <div className="flex items-center gap-1">
+                          <Clock size={13} />
+                          {formatTime(order.createdAt)}
+                        </div>
+                        {order.priority && (
+                          <Badge className="bg-orange-100 text-orange-700 text-[10px] px-2">
+                            Priority
                           </Badge>
                         )}
                       </div>
-
-                      {/* Order Details */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h4 className="text-sm font-medium text-gray-900 line-clamp-1">
-                              {order.items[0]?.name}
-                              {order.items.length > 1 &&
-                                ` & ${order.items.length - 1} more`}
-                            </h4>
-                            <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
-                              <User size={10} className="text-primary" />
-                              {order.customer.name}
-                            </p>
-                          </div>
-                          <p className="text-sm font-bold text-primary">
-                            {formatCurrency(order.totalAmount)}
-                          </p>
-                        </div>
-
-                        {/* Order Meta Info */}
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-xs">
-                          <div className="flex items-center gap-1 text-gray-600">
-                            <Clock size={10} className="text-primary" />
-                            {formatTime(order.createdAt)}
-                          </div>
-                          <div className="flex items-center gap-1 text-gray-600">
-                            <span className="text-xs">
-                              {getPaymentIcon(order.paymentMethod)}
-                            </span>
-                            {order.paymentMethod}
-                          </div>
-                          {order.priority && (
-                            <Badge className="bg-orange-100 text-orange-700 border-0 text-[10px] h-5">
-                              ⭐ Priority
-                            </Badge>
-                          )}
-                        </div>
-
-                        {/* Delivery Location */}
-                        <p className="text-xs text-gray-500 mt-2 flex items-start gap-1 line-clamp-1">
-                          <MapPin
-                            size={10}
-                            className="text-primary flex-shrink-0 mt-0.5"
-                          />
-                          <span>{order.customer.address}</span>
-                        </p>
-
-                        {/* Special Instructions */}
-                        {order.specialInstructions && (
-                          <p className="text-xs text-gray-500 mt-1 italic line-clamp-1">
-                            📝 {order.specialInstructions}
-                          </p>
-                        )}
-                      </div>
                     </div>
+                  </div>
 
-                    {/* Separator */}
-                    <Separator className="my-3 bg-primary/10" />
-
-                    {/* Action Buttons */}
-                    <div className="flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="flex-1 h-9 text-xs border-gray-200"
-                        onClick={() =>
-                          navigate(`/delivery/available/${order.id}`)
-                        }
-                      >
-                        View Details
-                      </Button>
-                      <Button
-                        size="sm"
-                        className="flex-1 h-9 text-xs bg-primary hover:bg-primary/90 text-white"
-                        onClick={() => {
-                          // Handle accept order
-                          console.log("Accept order:", order.id);
-                        }}
-                      >
-                        Accept Order
-                        <ChevronRight size={14} className="ml-1" />
-                      </Button>
-                    </div>
+                  {/* Action Buttons */}
+                  <div className="mt-auto border-t border-gray-100 p-3 flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 h-9 text-xs border-gray-200"
+                      onClick={() =>
+                        navigate(`/delivery/available/${order.id}`)
+                      }
+                    >
+                      Details
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="flex-1 h-9 text-xs bg-[#F26A1C] hover:bg-[#F26A1C]/90 text-white"
+                      onClick={() => handleAcceptOrder(order.id)}
+                      disabled={order.status !== "pending"}
+                    >
+                      Accept
+                      <ChevronRight size={16} className="ml-1" />
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
-            ))
-          )}
+            ))}
+          </div>
+        )}
 
-          {/* Loading More Indicator */}
-          {hasMore && (
-            <div ref={ref} className="py-4">
-              {isLoadingMore ? (
-                <div className="space-y-3">
-                  <Skeleton className="h-32 w-full rounded-xl" />
-                  <Skeleton className="h-32 w-full rounded-xl" />
-                  <p className="text-center text-sm text-gray-400">
-                    Loading more orders...
-                  </p>
-                </div>
-              ) : (
-                <p className="text-center text-sm text-gray-400">
-                  Scroll for more
-                </p>
-              )}
-            </div>
-          )}
-
-          {!hasMore && filteredOrders.length > 0 && (
-            <p className="text-center text-sm text-gray-400 py-4">
-              No more orders to load
-            </p>
-          )}
-        </div>
-      </ScrollArea>
-
-      {/* Floating Summary Stats */}
-      <div className="fixed bottom-20 left-4 right-4">
-        <Card className="bg-white/80 backdrop-blur-sm border-primary/20 shadow-lg">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2">
-                <div className="bg-primary/10 rounded-full p-1">
-                  <TrendingUp size={14} className="text-primary" />
-                </div>
-                <span className="text-gray-600">Available orders</span>
-                <span className="font-bold text-primary">
-                  {filteredOrders.length}
-                </span>
+        {/* Infinite Scroll Loader */}
+        {hasMore && (
+          <div ref={ref} className="py-6 text-center">
+            {isLoadingMore ? (
+              <div className="grid grid-cols-2 gap-3">
+                {[1, 2].map((i) => (
+                  <Skeleton key={i} className="h-80 w-full rounded-2xl" />
+                ))}
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/delivery/dashboard")}
-                className="text-primary hover:text-primary/80 hover:bg-primary/5 text-xs"
-              >
-                Dashboard
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            ) : (
+              <p className="text-xs text-gray-400">Scroll for more orders...</p>
+            )}
+          </div>
+        )}
+      </ScrollArea>
+      <BottomNav />
     </div>
   );
-}
-
-// Helper function to generate mock orders
-function generateMockOrders(page: number, count: number): Order[] {
-  const cafes = [
-    {
-      id: "1",
-      name: "Kaldi's Coffee",
-      image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=100",
-    },
-    {
-      id: "2",
-      name: "Yod Abyssinia",
-      image:
-        "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=100",
-    },
-    {
-      id: "3",
-      name: "Tomoca Coffee",
-      image:
-        "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=100",
-    },
-    {
-      id: "4",
-      name: "Mama's Kitchen",
-      image: "https://images.unsplash.com/photo-1552566624-52f8b3b8b9b9?w=100",
-    },
-    {
-      id: "5",
-      name: "The Lemon Tree",
-      image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=100",
-    },
-  ];
-
-  const foodImages = [
-    "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=100",
-    "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100",
-    "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=100",
-    "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=100",
-    "https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=100",
-  ];
-
-  const customerNames = [
-    "Abebe Kebede",
-    "Sara Hailu",
-    "Meron Tadesse",
-    "Dawit Alemu",
-    "Betelhem Girma",
-    "Yonas Desta",
-    "Hanna Tekle",
-    "Biruk Wondimu",
-    "Mahlet Fikre",
-    "Henok Assefa",
-  ];
-
-  const addresses = [
-    "Bole Atlas, 4th floor",
-    "CMC Road, near Piassa",
-    "Ayat Heights, Building B",
-    "Kazanchis, around Friendship",
-    "Gerji, behind Sheger",
-    "Megenagna, near Bisrate Gabriel",
-    "Saris, around Central",
-    "Gotera, near the station",
-    "Jemo, 2000 villa",
-    "Lebu, near the mall",
-  ];
-
-  const statuses: Order["status"][] = [
-    "pending",
-    "confirmed",
-    "preparing",
-    "ready",
-    "picked_up",
-    "delivered",
-  ];
-  const paymentMethods: Order["paymentMethod"][] = [
-    "cash",
-    "card",
-    "telegram_stars",
-  ];
-
-  const orders: Order[] = [];
-
-  for (let i = 0; i < count; i++) {
-    const index = (page - 1) * count + i;
-    const cafe = cafes[index % cafes.length];
-    const status = statuses[Math.floor(Math.random() * statuses.length)];
-    const paymentMethod =
-      paymentMethods[Math.floor(Math.random() * paymentMethods.length)];
-    const itemCount = Math.floor(Math.random() * 3) + 1;
-
-    const items: OrderItem[] = [];
-    for (let j = 0; j < itemCount; j++) {
-      items.push({
-        id: `item-${index}-${j}`,
-        name: [
-          "Espresso",
-          "Cappuccino",
-          "Latte",
-          "Burger",
-          "Pizza",
-          "Pasta",
-          "Salad",
-        ][Math.floor(Math.random() * 7)],
-        quantity: Math.floor(Math.random() * 3) + 1,
-        price: Math.floor(Math.random() * 150) + 50,
-        image: foodImages[j % foodImages.length],
-      });
-    }
-
-    const totalAmount = items.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0,
-    );
-
-    orders.push({
-      id: `order-${index}`,
-      orderNumber: `ORD-${2024}${String(index).padStart(4, "0")}`,
-      cafeId: cafe.id,
-      cafeName: cafe.name,
-      cafeImage: cafe.image,
-      customer: {
-        id: `cust-${index}`,
-        name: customerNames[index % customerNames.length],
-        address: addresses[index % addresses.length],
-      },
-      items,
-      totalAmount,
-      status,
-      paymentMethod,
-      paymentStatus: paymentMethod === "cash" ? "pending" : "paid",
-      createdAt: new Date(
-        Date.now() - Math.floor(Math.random() * 24 * 60 * 60 * 1000),
-      ).toISOString(),
-      distance: `${(Math.random() * 3 + 0.5).toFixed(1)} km`,
-      isBookmarked: Math.random() > 0.7,
-      priority: Math.random() > 0.8,
-      specialInstructions:
-        Math.random() > 0.7 ? "No onions please, extra spicy" : undefined,
-    });
-  }
-
-  return orders;
 }
