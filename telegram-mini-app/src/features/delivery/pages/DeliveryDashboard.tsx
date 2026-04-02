@@ -1,3 +1,4 @@
+// src/features/delivery/pages/DeliveryDashboard.tsx
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MapPin, Bell, ChevronRight, Search } from "lucide-react";
@@ -12,13 +13,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 
 import { useDeliveryDashboardStore } from "@/store/deliveryDashboardStore";
-import BottomNav from "@/components/common/BottomNav1";
+import BottomNav from "@/components/common/BottomNav";
 
 export default function DeliveryDashboard() {
   const navigate = useNavigate();
 
   const {
     deliveryPerson,
+    pocketFriendlyOrders,
     restaurantsWithOrders,
     isLoading,
     isOnline,
@@ -30,11 +32,14 @@ export default function DeliveryDashboard() {
     fetchDashboardData();
   }, [fetchDashboardData]);
 
-  const handleViewOrders = (cafeId: string) => {
+  const handleViewOrderDetails = (orderId: string) => {
+    navigate(`/delivery/available/${orderId}`);
+  };
+
+  const handleViewRestaurantOrders = (cafeId: string) => {
     navigate(`/delivery/available?cafe=${cafeId}`);
   };
 
-  // Loading skeleton – matches design layout
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white">
@@ -45,13 +50,21 @@ export default function DeliveryDashboard() {
           </div>
           <Skeleton className="h-11 w-full rounded-2xl" />
         </div>
-        <div className="px-4 py-3">
-          <Skeleton className="h-9 w-40 mb-4" />
-          <div className="space-y-4">
-            {[1, 2].map((i) => (
-              <Skeleton key={i} className="h-64 w-full rounded-3xl" />
+        <div className="px-4 py-4">
+          <Skeleton className="h-6 w-52 mb-3" />
+          <div className="flex gap-3 overflow-x-auto pb-4">
+            {[1, 2, 3].map((i) => (
+              <Skeleton
+                key={i}
+                className="h-40 w-52 rounded-3xl flex-shrink-0"
+              />
             ))}
           </div>
+        </div>
+        <div className="px-4 space-y-4">
+          {[1, 2].map((i) => (
+            <Skeleton key={i} className="h-64 w-full rounded-3xl" />
+          ))}
         </div>
       </div>
     );
@@ -88,7 +101,7 @@ export default function DeliveryDashboard() {
           </div>
         </div>
 
-        {/* Search Bar – exact match */}
+        {/* Search Bar */}
         <div className="mt-4 relative">
           <Search
             className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
@@ -114,7 +127,6 @@ export default function DeliveryDashboard() {
           <ChevronRight size={16} className="rotate-90" />
         </Button>
 
-        {/* Online Toggle */}
         <div className="ml-auto flex items-center gap-3">
           <span className="text-sm font-medium text-gray-700">Online</span>
           <Switch
@@ -125,76 +137,104 @@ export default function DeliveryDashboard() {
         </div>
       </div>
 
-      {/* SECTION TITLE */}
+      {/* POCKET FRIENDLY ORDERS - Horizontal Scroll */}
       <div className="px-4 pt-4 pb-2">
-        <h2 className="text-xl font-semibold text-gray-900">
-          Restaurants With Orders
+        <h2 className="text-xl font-semibold text-gray-900 mb-3">
+          Pocket Friendly Orders
         </h2>
-      </div>
-
-      {/* RESTAURANTS LIST */}
-      <ScrollArea className="h-[calc(100vh-260px)] px-4">
-        <div className="space-y-4 pb-8">
-          {restaurantsWithOrders.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-gray-400">
-                No restaurants with active orders right now
-              </p>
-            </div>
-          ) : (
-            restaurantsWithOrders.map((restaurant) => (
+        <ScrollArea className="w-full whitespace-nowrap">
+          <div className="flex gap-3 pb-4 snap-x snap-mandatory">
+            {pocketFriendlyOrders.map((order) => (
               <Card
-                key={restaurant.id}
-                className="overflow-hidden border border-gray-100 shadow-sm rounded-3xl hover:shadow-md transition-shadow"
+                key={order.id}
+                className="w-52 flex-shrink-0 overflow-hidden border border-gray-100 rounded-3xl shadow-sm hover:shadow-md transition-shadow snap-start"
               >
-                <div className="relative">
-                  <img
-                    src={restaurant.image}
-                    alt={restaurant.name}
-                    className="w-full h-48 object-cover"
-                  />
-
-                  {/* Order count badge – exact match to design */}
-                  <div className="absolute top-4 right-4 bg-[#F26A1C] text-white text-xs font-semibold px-3 py-1 rounded-2xl flex items-center gap-1 shadow-md">
-                    <span>{restaurant.orderCount}</span>
-                    <span className="text-[10px]">Orders</span>
+                <CardContent className="p-0">
+                  {/* Circular Order Image */}
+                  <div className="flex justify-center pt-4 pb-2">
+                    <div className="w-50 h-50 rounded-full overflow-hidden border-4 border-white shadow-sm">
+                      <img
+                        src={order.image || order.items[0]?.image}
+                        alt={order.items[0]?.name}
+                        className="w-full h-full object-cover rounded-[50%]"
+                      />
+                    </div>
                   </div>
 
-                  {/* Bookmark icon (optional, matches previous design) */}
-                  <button className="absolute top-4 left-4 h-8 w-8 bg-white/90 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-sm">
-                    <Bell size={18} className="text-gray-700" />
-                  </button>
-                </div>
-
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-semibold text-gray-900 text-lg">
-                        {restaurant.name}
-                      </h3>
-                      <p className="flex items-center gap-1 text-sm text-gray-500 mt-0.5">
-                        <MapPin size={15} className="text-[#F26A1C]" />
-                        {restaurant.location} • {restaurant.distance}
-                      </p>
+                  <div className="p-3 text-center">
+                    <p className="font-medium text-sm line-clamp-1">
+                      Order #{order.orderNumber}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {order.items.length} items • {order.distance}
+                    </p>
+                    <div className="mt-3 flex justify-center">
+                      <Button
+                        size="sm"
+                        className="bg-[#F26A1C] hover:bg-[#F26A1C]/90 text-white text-xs h-9 px-6 rounded-2xl"
+                        onClick={() => handleViewOrderDetails(order.id)}
+                      >
+                        View Details
+                      </Button>
                     </div>
-
-                    <Button
-                      onClick={() => handleViewOrders(restaurant.id)}
-                      className="bg-[#F26A1C] hover:bg-[#F26A1C]/90 text-white font-medium px-7 rounded-2xl h-10"
-                    >
-                      View Orders
-                      <ChevronRight size={18} className="ml-1" />
-                    </Button>
                   </div>
                 </CardContent>
               </Card>
-            ))
-          )}
-        </div>
-      </ScrollArea>
+            ))}
+          </div>
+        </ScrollArea>
+      </div>
 
-      {/* Bottom Navigation */}
-      <BottomNav />
+      {/* RESTAURANTS WITH ACTIVE ORDERS */}
+      <div className="px-4 pt-2">
+        <h2 className="text-xl font-semibold text-gray-900 mb-3">
+          Restaurants With Active Orders
+        </h2>
+        <div className="space-y-4 pb-8">
+          {restaurantsWithOrders.map((restaurant) => (
+            <Card
+              key={restaurant.id}
+              className="overflow-hidden border border-gray-100 shadow-sm rounded-3xl hover:shadow-md transition-shadow"
+            >
+              <div className="relative h-48">
+                <img
+                  src={restaurant.image}
+                  alt={restaurant.name}
+                  className="w-full h-full object-cover rounded-t-3xl"
+                />
+                <div className="absolute top-4 right-4 bg-[#F26A1C] text-white text-xs font-semibold px-3 py-1 rounded-2xl flex items-center gap-1 shadow">
+                  <span>{restaurant.orderCount}</span>
+                  <span className="text-[10px]">Orders</span>
+                </div>
+              </div>
+
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold text-lg text-gray-900">
+                      {restaurant.name}
+                    </h3>
+                    <p className="flex items-center gap-1 text-sm text-gray-500 mt-0.5">
+                      <MapPin size={15} className="text-[#F26A1C]" />
+                      {restaurant.location} • {restaurant.distance}
+                    </p>
+                  </div>
+
+                  <Button
+                    onClick={() => handleViewRestaurantOrders(restaurant.id)}
+                    className="bg-[#F26A1C] hover:bg-[#F26A1C]/90 text-white font-medium px-6 rounded-2xl h-10"
+                  >
+                    View Orders
+                    <ChevronRight size={18} className="ml-1" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      <BottomNav activeTab="home" />
     </div>
   );
 }

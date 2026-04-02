@@ -1,3 +1,4 @@
+// src/store/delivery/deliveryStore.ts
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import db from "@/data/database.json";
@@ -11,6 +12,20 @@ interface RestaurantWithOrders {
   orderCount: number;
   location: string;
   distance: string;
+}
+
+interface PocketFriendlyOrder {
+  id: string;
+  orderNumber: string;
+  totalAmount: number;
+  distance: string;
+  items: Array<{
+    id: string;
+    name: string;
+    quantity: number;
+    image?: string;
+  }>;
+  image?: string; // Main food image for the card
 }
 
 interface DeliveryPerson {
@@ -30,6 +45,7 @@ interface DeliveryPerson {
 interface DeliveryDashboardState {
   deliveryPerson: DeliveryPerson | null;
   restaurantsWithOrders: RestaurantWithOrders[];
+  pocketFriendlyOrders: PocketFriendlyOrder[]; // ← Added
   isLoading: boolean;
   isOnline: boolean;
 
@@ -43,6 +59,7 @@ export const useDeliveryDashboardStore = create<DeliveryDashboardState>()(
     (set, get) => ({
       deliveryPerson: null,
       restaurantsWithOrders: [],
+      pocketFriendlyOrders: [], // ← New field
       isLoading: true,
       isOnline: true,
 
@@ -50,9 +67,9 @@ export const useDeliveryDashboardStore = create<DeliveryDashboardState>()(
         set({ isLoading: true });
 
         try {
-          await delay(650); // Simulate realistic network delay
+          await delay(650);
 
-          // Get delivery person (first one for now - you can enhance with auth later)
+          // Delivery Person
           const personData = db.users.delivery?.[0];
           const deliveryPerson: DeliveryPerson = personData
             ? {
@@ -73,11 +90,10 @@ export const useDeliveryDashboardStore = create<DeliveryDashboardState>()(
                 status: "available",
               };
 
-          // Get restaurants with orders from dedicated section (preferred)
+          // Restaurants with active orders
           let restaurantsWithOrders =
             db.deliveryDashboard?.restaurantsWithOrders;
 
-          // Fallback: derive from restaurants that have active orders
           if (!restaurantsWithOrders || restaurantsWithOrders.length === 0) {
             restaurantsWithOrders =
               db.restaurants
@@ -92,9 +108,23 @@ export const useDeliveryDashboardStore = create<DeliveryDashboardState>()(
                 })) || [];
           }
 
+          // Pocket Friendly Orders - Quick horizontal orders (from available orders)
+          const pocketFriendlyOrders: PocketFriendlyOrder[] =
+            db.orders?.available
+              ?.slice(0, 6) // Take first 6 for horizontal scroll
+              .map((order: any) => ({
+                id: order.id,
+                orderNumber: order.orderNumber,
+                totalAmount: order.totalAmount,
+                distance: order.distance,
+                items: order.items,
+                image: order.items[0]?.image || order.cafeImage,
+              })) || [];
+
           set({
             deliveryPerson,
             restaurantsWithOrders,
+            pocketFriendlyOrders, // ← Added
             isLoading: false,
             isOnline: deliveryPerson.isOnline,
           });
@@ -113,8 +143,6 @@ export const useDeliveryDashboardStore = create<DeliveryDashboardState>()(
             ? { ...state.deliveryPerson, isOnline: !currentOnline }
             : null,
         }));
-
-        // TODO: Later → call real API to update delivery person status
       },
     }),
 
@@ -122,7 +150,6 @@ export const useDeliveryDashboardStore = create<DeliveryDashboardState>()(
       name: "delivery-dashboard-storage",
       partialize: (state) => ({
         isOnline: state.isOnline,
-        // You can add more fields here if needed (e.g., preferred filters)
       }),
     },
   ),

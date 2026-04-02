@@ -22,13 +22,13 @@ export default function TabsLine() {
           <TabsList className="w-full bg-transparent border-b border-gray-200 p-0 h-auto rounded-none">
             <TabsTrigger
               value="signin"
-              className="flex-1 py-4 text-base font-semibold data-[state=active]:text-[#F26A1C] data-[state=inactive]:text-gray-500 border-b-2 border-transparent data-[state=active]:border-[#F26A1C] rounded-none"
+              className="flex-1 py-4 text-base font-semibold data-[state=active]:text-[#F26A1C] data-[state=inactive]:text-gray-500 border-b-2 border-transparent data-[state=active]:border-[#F26A1C] rounded-sm"
             >
               Sign In
             </TabsTrigger>
             <TabsTrigger
               value="signup"
-              className="flex-1 py-4 text-base font-semibold data-[state=active]:text-[#F26A1C] data-[state=inactive]:text-gray-500 border-b-2 border-transparent data-[state=active]:border-[#F26A1C] rounded-none"
+              className="flex-1 py-4 text-base font-semibold data-[state=active]:text-[#F26A1C] data-[state=inactive]:text-gray-500 border-b-2 border-transparent data-[state=active]:border-[#F26A1C] rounded-sm"
             >
               Sign Up
             </TabsTrigger>

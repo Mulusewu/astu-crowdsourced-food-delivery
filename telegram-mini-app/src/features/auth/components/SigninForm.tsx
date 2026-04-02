@@ -2,47 +2,27 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
+
 import { BrandCard } from "@/components/brand/BrandCard";
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-  FieldSet,
-} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 
-// Signin validation schema
+import { useAuthStore } from "@/store/auth/authStore";
+
 const signinSchema = z.object({
-  email: z
-    .string()
-    .email("Please enter a valid email address")
-    .min(5, "Email must be at least 5 characters")
-    .max(100, "Email must be less than 100 characters"),
-
-  password: z
-    .string()
-    .min(1, "Password is required")
-    .min(8, "Password must be at least 8 characters"),
+  email: z.string().email("Please enter a valid email"),
+  password: z.string().min(1, "Password is required"),
 });
 
 type SigninFormData = z.infer<typeof signinSchema>;
 
-// API response types
-interface ApiResponse {
-  success: boolean;
-  message: string;
-  errors?: Record<string, string>;
-  token?: string;
-  user?: {
-    id: string;
-    name: string;
-    email: string;
-  };
-}
-
 export default function SigninForm() {
-  const [apiError, setApiError] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const { signin, isLoading, error, clearError } = useAuthStore();
+
   const [showPassword, setShowPassword] = useState(false);
 
   const {
@@ -53,257 +33,143 @@ export default function SigninForm() {
   } = useForm<SigninFormData>({
     resolver: zodResolver(signinSchema),
     mode: "onBlur", // Validate on blur for better UX
+    reValidateMode: "onChange", // Re-validate on change
   });
 
   const onSubmit = async (data: SigninFormData) => {
+    clearError();
     try {
-      setApiError(null);
-
-      // Make API call to your Express backend
-      const response = await fetch("http://localhost:3000/api/auth/signin", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-        credentials: "include", // Important for cookies/sessions
+      await signin(data);
+      // Navigation happens inside signin or here based on role
+    } catch (err: any) {
+      // Set form error instead of just using store error
+      setError("root", {
+        type: "manual",
+        message: err.message || "Invalid email or password",
       });
-
-      const result: ApiResponse = await response.json();
-
-      if (!response.ok) {
-        // Handle field-specific errors from backend
-        if (result.errors) {
-          Object.entries(result.errors).forEach(([field, message]) => {
-            setError(field as keyof SigninFormData, {
-              type: "manual",
-              message,
-            });
-          });
-        }
-
-        // Handle general error
-        if (result.message) {
-          setApiError(result.message);
-        }
-
-        throw new Error(result.message || "Signin failed");
-      }
-
-      // Handle successful signin
-      console.log("Signin successful:", result);
-
-      // Store token if returned (adjust based on your auth strategy)
-      if (result.token) {
-        localStorage.setItem("authToken", result.token);
-      }
-
-      // Store user data if needed
-      if (result.user) {
-        localStorage.setItem("user", JSON.stringify(result.user));
-      }
-
-      // Show success message
-      setApiError(null);
-
-      // Redirect to dashboard or home page
-      setTimeout(() => {
-        window.location.href = "/dashboard"; // or your desired redirect path
-      }, 1000);
-    } catch (error) {
-      console.error("Signin error:", error);
-      if (error instanceof Error) {
-        setApiError(error.message);
-      } else {
-        setApiError("An unexpected error occurred. Please try again.");
-      }
     }
   };
 
-  const handleSignUpClick = () => {
-    window.location.href = "/signup";
-  };
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
   return (
-    <div className="min-h-screen bg-white px-4 py-6 flex flex-col">
-      {/* Brand Header */}
-      <div className="mb-8">
-        <BrandCard />
-      </div>
+    <div className="min-h-screen bg-white">
+      <div className="max-w-md mx-auto px-4 py-8">
+        <div className="space-y-6">
+          <BrandCard />
 
-      {/* Signin Form */}
-      <form onSubmit={handleSubmit(onSubmit)} className="flex-1">
-        <FieldSet className="w-full">
-          <FieldGroup className="space-y-4">
-            {/* API Error Message */}
-            {apiError && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                {apiError}
-              </div>
-            )}
+          <div className="text-center">
+            {/* <h2 className="text-2xl font-semibold text-gray-900">
+              Welcome back
+            </h2> */}
+            <h3 className="text-gray-500 mt-1">Sign in to continue</h3>
+          </div>
 
+          {/* Root/API Error */}
+          {(error || errors.root) && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl text-sm">
+              {errors.root?.message || error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             {/* Email Field */}
-            <Field>
-              <FieldLabel htmlFor="email">Email Address</FieldLabel>
+            <div>
+              <Label htmlFor="email" className="text-gray-700">
+                Email Address
+              </Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter your email"
                 {...register("email")}
-                className={`${errors.email ? "border-red-500" : "border-gray-300"} w-full focus:border-[#F26A1C] focus:ring-1 focus:ring-[#F26A1C] transition-colors`}
-                autoComplete="email"
+                placeholder="your@email.com"
+                className={`mt-1.5 h-12 rounded-xl border-gray-200 focus:border-primary focus:ring-primary ${
+                  errors.email ? "border-red-500 focus:border-red-500" : ""
+                }`}
+                aria-invalid={errors.email ? "true" : "false"}
               />
               {errors.email && (
-                <p className="text-sm text-red-500 mt-1">
+                <p className="text-red-500 text-sm mt-1" role="alert">
                   {errors.email.message}
                 </p>
               )}
-            </Field>
+            </div>
 
             {/* Password Field */}
-            <Field>
-              <FieldLabel htmlFor="password">Password</FieldLabel>
-              <div className="relative">
+            <div>
+              <Label htmlFor="password" className="text-gray-700">
+                Password
+              </Label>
+              <div className="relative mt-1.5">
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
                   {...register("password")}
-                  className={`${errors.password ? "border-red-500" : "border-gray-300"} w-full pr-10 focus:border-[#F26A1C] focus:ring-1 focus:ring-[#F26A1C] transition-colors`}
-                  autoComplete="current-password"
+                  placeholder="Enter your password"
+                  className={`h-12 rounded-xl border-gray-200 pr-12 focus:border-primary focus:ring-primary ${
+                    errors.password ? "border-red-500 focus:border-red-500" : ""
+                  }`}
+                  aria-invalid={errors.password ? "true" : "false"}
                 />
                 <button
                   type="button"
-                  onClick={togglePasswordVisibility}
-                  className=" flex absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500  hover:text-gray-700 focus:outline-none"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 >
-                  {showPassword ? (
-                    // Eye slash icon (password hidden)
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="w-5 h-5"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"
-                      />
-                    </svg>
-                  ) : (
-                    // Eye icon (password visible)
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="w-5 h-5"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
-                    </svg>
-                  )}
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
-
-              {/* Forgot password link */}
-              <div className="flex justify-end mt-1">
-                <button
-                  type="button"
-                  onClick={() => (window.location.href = "/forgot-password")}
-                  className="text-xs text-gray-500 hover:text-[#F26A1C] transition-colors"
-                >
-                  Forgot password?
-                </button>
-              </div>
-
               {errors.password && (
-                <p className="text-sm text-red-500 mt-1">
+                <p className="text-red-500 text-sm mt-1" role="alert">
                   {errors.password.message}
                 </p>
               )}
-            </Field>
-
-            {/* Remember me checkbox (optional) */}
-            <div className="flex items-center mt-2">
-              <input
-                type="checkbox"
-                id="remember"
-                className="w-4 h-4 text-[#F26A1C] border-gray-300 rounded focus:ring-[#F26A1C]"
-              />
-              <label htmlFor="remember" className="ml-2 text-sm text-gray-600">
-                Remember me
-              </label>
             </div>
-          </FieldGroup>
-        </FieldSet>
 
-        {/* Signin Button */}
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="rounded-full w-full mt-6 py-3 px-4 text-white font-medium transition-all disabled:opacity-50 hover:opacity-90 active:scale-[0.98]"
-          style={{ backgroundColor: "#F26A1C" }}
-        >
-          {isSubmitting ? (
-            <span className="flex items-center justify-center gap-2">
-              <svg
-                className="animate-spin h-5 w-5 text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
+            {/* Remember Me & Forgot Password */}
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="rounded border-gray-300 text-primary focus:ring-primary"
+                />
+                <span className="text-sm text-gray-600">Remember me</span>
+              </label>
+              <button
+                type="button"
+                onClick={() => navigate("/forgot-password")}
+                className="text-sm text-primary hover:underline"
               >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              Signing in...
-            </span>
-          ) : (
-            "Sign In"
-          )}
-        </button>
+                Forgot Password?
+              </button>
+            </div>
 
-        {/* Back to Sign Up Link/Button */}
-        <div className="mt-4 text-center">
-          <button
-            type="button"
-            onClick={handleSignUpClick}
-            className=" text-sm text-gray-600 hover:text-[#F26A1C] transition-colors bg-transparent border-none cursor-pointer"
-          >
+            {/* Submit Button */}
+            <Button
+              type="submit"
+              disabled={isLoading || isSubmitting}
+              className="w-full h-12 text-base font-semibold bg-[#F26A1C] hover:bg-[#F26A1C]/90 rounded-xl shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading || isSubmitting ? (
+                <div className="flex items-center justify-center gap-2">
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Signing in...</span>
+                </div>
+              ) : (
+                "Sign In"
+              )}
+            </Button>
+          </form>
+
+          <p className="text-center text-sm text-gray-600">
             Don't have an account?{" "}
-            <span style={{ color: "#F26A1C" }} className="font-medium">
+            <button
+              onClick={() => navigate("/auth?tab=signup")}
+              className="text-[#F26A1C] font-medium hover:underline"
+            >
               Sign up
-            </span>
-          </button>
+            </button>
+          </p>
         </div>
-      </form>
+      </div>
     </div>
   );
 }
