@@ -1,0 +1,225 @@
+{
+  "restaurants": [
+    {
+    "id": "rest-1",
+    "name": "Helen",
+    "image": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500&q=80",
+    "rating": 3.8,
+    "location": "In-Campus",
+    "deliveryTime": "10-15 min",
+    "phone": "+251911000000",
+    "tags": ["Restaurants", "Foods"],
+    "createdAt": "2024-01-01T10:00:00Z"
+  },
+  {
+    "id": "rest-2",
+    "name": "Mesi",
+    "image": "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=500&q=80",
+    "rating": 4.2,
+    "location": "In-Campus",
+    "deliveryTime": "15-20 min",
+    "phone": "+251911000001",
+    "tags": ["Restaurants", "Fast Foods"],
+    "createdAt": "2024-02-15T08:30:00Z"
+  },
+  {
+    "id": "rest-3",
+    "name": "Barch",
+    "image": "https://images.unsplash.com/photo-1537047902294-62a40c20a6ae?w=500&q=80",
+    "rating": 4.0,
+    "location": "In-Campus",
+    "deliveryTime": "5-10 min",
+    "phone": "+251911000002",
+    "tags": ["Fast Foods"],
+    "createdAt": "2024-03-10T12:00:00Z"
+  },
+  {
+    "id": "rest-4",
+    "name": "Mami",
+    "image": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&q=80",
+    "rating": 3.8,
+    "location": "Geda Gate",
+    "deliveryTime": "15-20 min",
+    "phone": "+251911000003",
+    "tags": ["Restaurants", "Foods"],
+    "createdAt": "2024-01-20T14:45:00Z"
+  },
+  {
+    "id": "rest-5",
+    "name": "Etu",
+    "image": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=500&q=80",
+    "rating": 4.2,
+    "location": "Geda Gate",
+    "deliveryTime": "10-25 min",
+    "phone": "+251911000004",
+    "tags": ["Restaurants", "Fast Foods"],
+    "createdAt": "2024-02-28T18:20:00Z"
+  },
+  {
+    "id": "rest-6",
+    "name": "Chala",
+    "image": "https://images.unsplash.com/photo-1466978913421-bac2e58c6421?w=500&q=80",
+    "rating": 3.9,
+    "location": "Geda Gate",
+    "deliveryTime": "15-30 min",
+    "phone": "+251911000005",
+    "tags": ["Foods", "Restaurants"],
+    "createdAt": "2024-03-05T09:15:00Z"
+  },
+  {
+    "id": "rest-7",
+    "name": "Helen's",
+    "image": "https://images.unsplash.com/photo-1590846406792-0b29ce37dff1?w=500&q=80",
+    "rating": 3.8,
+    "location": "Bole Gate",
+    "deliveryTime": "20-30 min",
+    "phone": "+251911000006",
+    "tags": ["Fast Foods", "Restaurants"],
+    "createdAt": "2024-01-10T11:30:00Z"
+  },
+  {
+    "id": "rest-8",
+    "name": "Barch's",
+    "image": "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500&q=80",
+    "rating": 3.9,
+    "location": "Bole Gate",
+    "deliveryTime": "10-20 min",
+    "phone": "+251911000007",
+    "tags": ["Foods"],
+    "createdAt": "2024-02-05T16:00:00Z"
+  },
+  {
+    "id": "rest-9",
+    "name": "Mesi",
+    "image": "https://images.unsplash.com/photo-1525648199074-cee30ba79a4a?w=500&q=80",
+    "rating": 3.9,
+    "location": "Bole Gate",
+    "deliveryTime": "15-25 min",
+    "phone": "+251911000008",
+    "tags": ["Fast Foods", "Foods"],
+    "createdAt": "2024-03-20T19:45:00Z"
+  },
+  {
+    "id": "rest-10",
+    "name": "Helen",
+    "image": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&q=80",
+    "rating": 3.8,
+    "location": "Kereyu Gate",
+    "deliveryTime": "15-20 min",
+    "phone": "+251911000009",
+    "tags": ["Restaurants", "Foods"],
+    "createdAt": "2024-01-05T13:10:00Z"
+  },
+  {
+    "id": "rest-11",
+    "name": "Mesi",
+    "image": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=500&q=80",
+    "rating": 4.2,
+    "location": "Kereyu Gate",
+    "deliveryTime": "20-30 min",
+    "phone": "+251911000010",
+    "tags": ["Restaurants", "Fast Foods"],
+    "createdAt": "2024-02-12T07:25:00Z"
+  },
+  {
+    "id": "rest-12",
+    "name": "Barch",
+    "image": "https://images.unsplash.com/photo-1466978913421-bac2e58c6421?w=500&q=80",
+    "rating": 3.7,
+    "location": "Kereyu Gate",
+    "deliveryTime": "10-15 min",
+    "phone": "+251911000011",
+    "tags": ["Foods"],
+    "createdAt": "2024-03-01T21:05:00Z"
+  },
+  {
+    "id": "rest-13",
+    "name": "Helen",
+    "image": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500&q=80",
+    "rating": 3.9,
+    "location": "Main Gate",
+    "deliveryTime": "15-20 min",
+    "phone": "+251911000012",
+    "tags": ["Foods", "Fast Foods"],
+    "createdAt": "2024-01-15T15:50:00Z"
+  },
+  {
+    "id": "rest-14",
+    "name": "Mesi",
+    "image": "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=500&q=80",
+    "rating": 4.0,
+    "location": "Main Gate",
+    "deliveryTime": "10-15 min",
+    "phone": "+251911000013",
+    "tags": ["Restaurants"],
+    "createdAt": "2024-02-22T06:40:00Z"
+  },
+  {
+    "id": "rest-15",
+    "name": "Barch",
+    "image": "https://images.unsplash.com/photo-1537047902294-62a40c20a6ae?w=500&q=80",
+    "rating": 3.8,
+    "location": "Main Gate",
+    "deliveryTime": "15-25 min",
+    "phone": "+251911000014",
+    "tags": ["Fast Foods"],
+    "createdAt": "2024-03-15T17:30:00Z"
+  }
+  ],
+  "users": [
+    {
+      "id": "user-1",
+      "name": "Helen",
+      "email": "helen.first@astu.edu.et",
+      "phone": "0949486753",
+      "password": "Password123"
+    }
+  ],
+  "orders": [
+    {
+      "id": 1,
+      "restaurantName": "Helen Cafe",
+      "orderNo": "Order #123",
+      "items": { "name": "Combo", "qty": "5 PCS", "images": [ "https://images.unsplash.com/photo-1544025162-d76694265947?w=100&q=80", "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=100&q=80", "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=100&q=80", "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=100&q=80" ] },
+      "price": "560 Birr",
+      "status": "Delivered",
+      "rating": 5
+    },
+    {
+      "id": 2,
+      "restaurantName": "Bole Mami",
+      "orderNo": "Order #124",
+      "items": { "name": "Pasta Besego", "qty": "1 PCS", "images": ["https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=200&q=80"] },
+      "price": "560 Birr",
+      "status": "Delivered",
+      "rating": 3
+    },
+    {
+      "id": 3,
+      "restaurantName": "Barch FoodZone",
+      "orderNo": "Order #125",
+      "items": { "name": "Combo", "qty": "4 PCS", "images": [ "https://images.unsplash.com/photo-1544025162-d76694265947?w=100&q=80", "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=100&q=80", "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=100&q=80", "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=100&q=80" ] },
+      "price": "560 Birr",
+      "status": "Cancelled",
+      "rating": 0
+    },
+    {
+      "id": 4,
+      "restaurantName": "Beza Cafe",
+      "orderNo": "Order #126",
+      "items": { "name": "Yesome Special", "qty": "1 PCS", "images": ["https://images.unsplash.com/photo-1589302168068-964664d93cb0?w=200&q=80"] },
+      "price": "560 Birr",
+      "status": "Delivered",
+      "rating": 3
+    },
+    {
+      "id": 5,
+      "restaurantName": "Bole Mami",
+      "orderNo": "Order #127",
+      "items": { "name": "Burger Combo", "qty": "2 PCS", "images": ["https://images.unsplash.com/photo-1550547660-d9450f859349?w=200&q=80"] },
+      "price": "420 Birr",
+      "status": "Delivered",
+      "rating": 4
+    }
+  ]
+}
