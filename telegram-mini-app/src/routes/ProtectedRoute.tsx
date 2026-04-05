@@ -1,6 +1,7 @@
+// // src/routes/ProtectedRoute.tsx
 // import { Navigate, Outlet, useLocation } from "react-router-dom";
-// import { useAuth } from "../contexts/AuthContext";
-// import { UserRole } from "@/types/user.types";
+// import { useAuthStore } from "@/store/auth/authStore";
+// import {type UserRole } from "@/types/user.types";
 // import { ROUTES } from "./routePaths";
 
 // interface ProtectedRouteProps {
@@ -12,38 +13,44 @@
 //   allowedRoles,
 //   redirectPath = ROUTES.AUTH,
 // }: ProtectedRouteProps) {
-//   const { user, isLoading } = useAuth();
+//   const { user, activeRole, isLoading } = useAuthStore();
 //   const location = useLocation();
 
-//   // Show loading state while checking authentication
+//   // 1. Still loading authentication
 //   if (isLoading) {
 //     return (
-//       <div className="min-h-screen flex items-center justify-center">
-//         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+//       <div className="min-h-screen flex items-center justify-center bg-white">
+//         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#F26A1C]" />
 //       </div>
 //     );
 //   }
 
-//   // Not authenticated - redirect to auth page with return URL
-//   if (!user) {
-//     return <Navigate to={redirectPath} state={{ from: location }} replace />;
+//   // 2. Not authenticated at all
+//   if (!user || !activeRole) {
+//     return (
+//       <Navigate
+//         to={redirectPath}
+//         state={{ from: location }}
+//         replace
+//       />
+//     );
 //   }
 
-//   // Check if user has required role
-//   if (!allowedRoles.includes(user.role)) {
-//     // Redirect to appropriate dashboard based on role
-//     switch (user.role) {
-//       case UserRole.CUSTOMER:
+//   // 3. User is authenticated but doesn't have the required active role
+//   if (!allowedRoles.includes(activeRole)) {
+//     // Redirect to the appropriate dashboard based on their current active role
+//     switch (activeRole) {
+//       case "customer":
 //         return <Navigate to={ROUTES.CUSTOMER.HOME} replace />;
-//       case UserRole.VENDOR:
+//       case "vendor":
 //         return <Navigate to={ROUTES.VENDOR.DASHBOARD} replace />;
-//       case UserRole.DELIVERY:
+//       case "delivery":
 //         return <Navigate to={ROUTES.DELIVERY.DASHBOARD} replace />;
 //       default:
 //         return <Navigate to={ROUTES.AUTH} replace />;
 //     }
 //   }
 
-//   // Authorized - render the protected route
+//   // 4. Everything is fine → render the protected content
 //   return <Outlet />;
 // }

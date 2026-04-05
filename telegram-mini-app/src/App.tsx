@@ -1,21 +1,21 @@
 import { Suspense, useEffect } from "react";
 import { AuthProvider } from "./contexts/AuthContext";
-import CartProvider from "./contexts/CartContext";
-import LocationProvider from "./contexts/LocationContext";
-import TelegramProvider from "./contexts/TelegramContext";
+import { CartProvider } from "./contexts/CartContext";
+import { LocationProvider } from "./contexts/LocationContext";
+import { TelegramProvider } from "./contexts/TelegramContext";
+import { ThemeProvider } from "./components/common/ThemeProvider";
 import AppRoutes from "./routes/AppRoutes";
-// import LoadingSpinner from "./components/common/LoadingSkeleton";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 import { useTelegram } from "./hooks/useTelegram";
 import LoadingSkeleton from "./components/common/LoadingSkeleton";
 
-function App() {
+function AppContent() {
   const { initTelegram } = useTelegram();
 
   useEffect(() => {
     // Initialize Telegram Mini-App
     initTelegram();
-  }, []);
+  }, [initTelegram]);
 
   return (
     <ErrorBoundary>
@@ -24,7 +24,7 @@ function App() {
           <LocationProvider>
             <CartProvider>
               <Suspense fallback={<LoadingSkeleton />}>
-                <div className="min-h-screen bg-white mobile-container">
+                <div className="min-h-screen bg-background text-foreground">
                   <AppRoutes />
                 </div>
               </Suspense>
@@ -33,6 +33,14 @@ function App() {
         </AuthProvider>
       </TelegramProvider>
     </ErrorBoundary>
+  );
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 }
 

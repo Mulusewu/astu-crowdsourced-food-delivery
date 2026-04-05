@@ -1,3 +1,4 @@
+// src/routes/AppRoutes.tsx
 import { Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { ROUTES } from "./routePaths";
@@ -7,51 +8,70 @@ import type { RouteGroup } from "./types/routes.types";
 
 // Import route groups
 import { authRoutes } from "./routeGroups/authRoutes";
-// import { customerRoutes } from "./routeGroups/customerRoutes";
+import { customerRoutes } from "./routeGroups/customerRoutes";
 // import { vendorRoutes } from "./routeGroups/vendorRoutes";
 import { deliveryRoutes } from "./routeGroups/deliveryRoutes";
 // import { sharedRoutes } from "./routeGroups/sharedRoutes";
-
-// Helper to render routes with protection
-const renderRouteGroup = (routes: RouteGroup[]) => {
-  return routes.map((route) => {
-    // If route has roles, wrap with ProtectedRoute
-    if (route.roles && route.roles.length > 0) {
-      return (
-        <Route
-          key={route.path}
-          // element={<ProtectedRoute allowedRoles={route.roles} />}
-        >
-          <Route path={route.path} element={route.element} />
-        </Route>
-      );
-    }
-
-    // Public route - no protection
-    return <Route key={route.path} path={route.path} element={route.element} />;
-  });
-};
 
 export default function AppRoutes() {
   return (
     <Suspense fallback={<LoadingSkeleton />}>
       <Routes>
-        {/* Public Auth Routes */}
-        {renderRouteGroup(authRoutes)}
+        {/* ====================== PUBLIC AUTH ROUTES ====================== */}
+        {authRoutes.map((route) => (
+          <Route
+            key={route.path}
+            path={route.path}
+            element={route.element}
+          />
+        ))}
 
-        {/* Customer Routes
-        {renderRouteGroup(customerRoutes)}
+        {/* ====================== CUSTOMER ROUTES ====================== */}
+        {customerRoutes.map((route) => (
+          <Route
+            key={route.path}
+            // element={
+            //   <ProtectedRoute 
+            //     allowedRoles={["customer"]} 
+            //     redirectPath={ROUTES.AUTH}
+            //   />
+            // }
+          >
+            <Route path={route.path} element={route.element} />
+          </Route>
+        ))}
 
-        {/* Vendor Routes */}
-        {/* {renderRouteGroup(vendorRoutes)} */}
+        {/* ====================== VENDOR ROUTES ====================== */}
+        {/* {vendorRoutes.map((route) => (
+          <Route
+            key={route.path}
+            element={
+              <ProtectedRoute 
+                allowedRoles={["vendor"]} 
+                redirectPath={ROUTES.AUTH}
+              />
+            }
+          >
+            <Route path={route.path} element={route.element} />
+          </Route>
+        ))} */}
 
-        {/* Delivery Routes */}
-        {renderRouteGroup(deliveryRoutes)}
+        {/* ====================== DELIVERY ROUTES ====================== */}
+        {deliveryRoutes.map((route) => (
+          <Route
+            key={route.path}
+            // element={
+            //   <ProtectedRoute 
+            //     allowedRoles={["delivery"]} 
+            //     redirectPath={ROUTES.AUTH}
+            //   />
+            // }
+          >
+            <Route path={route.path} element={route.element} />
+          </Route>
+        ))}
 
-        {/* Shared Routes */}
-        {/* {renderRouteGroup(sharedRoutes)} */}
-
-        {/* Fallback Routes */}
+        {/* ====================== FALLBACK ROUTES ====================== */}
         <Route path="/" element={<Navigate to={ROUTES.AUTH} replace />} />
         <Route path="*" element={<Navigate to={ROUTES.AUTH} replace />} />
       </Routes>

@@ -1,141 +1,141 @@
-import { Home, Bookmark, MessageCircle, User } from "lucide-react";
+import { Home, Bookmark, FileText, User } from "lucide-react";
 import { cn } from "@/lib/utils";
-import orderTrackingIcon from "/orderTrackingIcon.png"; // ← Image from public folder
-
 import { useNavigate } from "react-router-dom";
+import orderTrackingIcon from "/orderTrackingIcon.png";
 
 interface BottomNavProps {
   activeTab?: "home" | "bookmark" | "orders" | "messages" | "profile";
-  onTabChange?: (
-    tab: "home" | "bookmark" | "orders" | "messages" | "profile",
-  ) => void;
+  onTabChange?: (tab: "home" | "bookmark" | "orders" | "messages" | "profile") => void;
 }
 
-const BottomNav = ({ activeTab = "home", onTabChange }: BottomNavProps) => {
+export default function BottomNav({ activeTab = "home", onTabChange }: BottomNavProps) {
   const navigate = useNavigate();
 
-  const navigateToActiveOrders = () => {
+  const handleCenterClick = () => {
+    onTabChange?.("orders");
     navigate("/delivery/active");
   };
+  const handleHomeClick = () => {
+    onTabChange?.("home");
+    navigate("/delivery/dashboard");
+  };
+
+  const handleProfileClick = () => {
+    onTabChange?.("profile");
+    navigate("/delivery/profile");
+  };
+
   return (
-    <nav className="fixed bottom-4 left-0 right-0 z-50 flex justify-center px-4">
-      <div
-        className="w-full max-w-md rounded-3xl shadow-2xl overflow-hidden"
-        style={{
-          backgroundColor: "#F26A1C",
-          boxShadow:
-            "0 12px 35px -10px rgba(242, 106, 28, 0.4), 0 4px 12px -4px rgba(0, 0, 0, 0.15)",
-        }}
-      >
-        <div className="flex items-center justify-between px-2 py-3 relative">
+    <nav className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-md">
+      <div className="relative w-full h-[65px]">
+        
+        {/* 1. Custom SVG Background for the Wavy Shape */}
+        <svg 
+          className="absolute inset-0 w-full h-full drop-shadow-[0_8px_16px_rgba(242,106,28,0.3)]" 
+          viewBox="0 0 375 70" 
+          preserveAspectRatio="none"
+        >
+          <path 
+            d="M24,0 H132 C145,0 152,38 187.5,38 C223,38 230,0 243,0 H351 C364.25,0 375,10.75 375,24 V46 C375,59.25 364.25,70 351,70 H24 C10.75,70 0,59.25 0,46 V24 C0,10.75 10.75,0 24,0 Z" 
+            fill="#F26A1C" 
+          />
+        </svg>
+
+        {/* 2. Navigation Items */}
+        <div className="absolute inset-0 flex justify-between items-center px-6">
+          
           {/* Home */}
-          <NavButton
+          <NavIconButton
             icon={Home}
-            label="Home"
             isActive={activeTab === "home"}
-            onClick={() => onTabChange?.("home")}
+            // onClick={() => onTabChange?.("home")}
+             onClick={handleHomeClick}
           />
 
           {/* Bookmark */}
-          <NavButton
+          <NavIconButton
             icon={Bookmark}
-            label="Bookmark"
             isActive={activeTab === "bookmark"}
             onClick={() => onTabChange?.("bookmark")}
           />
 
-          {/* Center Order Tracking Button - Using Your Exact Image */}
-          <div className="relative -mt-10 z-20">
-            <button
-              // onClick={() => onTabChange?.("orders")}
-              onClick={navigateToActiveOrders}
-              className={cn(
-                "flex h-20 w-20 items-center justify-center rounded-full transition-all active:scale-95 overflow-hidden",
-                activeTab === "orders" ? "bg-white" : "bg-white",
-              )}
-              style={{
-                boxShadow:
-                  "0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 6px 15px -6px rgba(242, 106, 28, 0.35)",
-              }}
-            >
-              <img
-                src={orderTrackingIcon}
-                alt="Order Tracking"
-                className={cn(
-                  "h-10 w-10 transition-all duration-200 object-contain",
-                  activeTab === "orders" ? "scale-110" : "scale-100",
-                )}
-              />
-            </button>
-          </div>
+          {/* Invisible spacer for the center button */}
+          <div className="w-[60px]" />
 
-          {/* Messages */}
-          <NavButton
-            icon={MessageCircle}
-            label="Messages"
+          {/* Messages / Orders list */}
+          <NavIconButton
+            icon={FileText}
             isActive={activeTab === "messages"}
             onClick={() => onTabChange?.("messages")}
           />
 
-          {/* Profile */}
-          <NavButton
-            icon={User}
-            label="Profile"
-            isActive={activeTab === "profile"}
-            onClick={() => onTabChange?.("profile")}
-          />
+          {/* Profile (Wrapped in a circular border to match the design) */}
+          <button
+            // onClick={() => onTabChange?.("profile")  || handleProfileClick}
+            onClick={ handleProfileClick}
+            className="relative flex items-center justify-center p-1 transition-transform active:scale-95"
+          >
+            <div className={cn(
+              "flex items-center justify-center rounded-full border-[2.5px] transition-colors p-1",
+              activeTab === "profile" ? "border-white bg-white/20" : "border-white/80"
+            )}>
+              <User
+                size={20}
+                className={cn("transition-colors", activeTab === "profile" ? "fill-white text-white" : "fill-white/80 text-white/80")}
+              />
+            </div>
+          </button>
         </div>
+
+        {/* 3. Floating Center Action Button */}
+        <div className="absolute top-[-24px] left-1/2 -translate-x-1/2 z-20">
+          <button
+            onClick={handleCenterClick}
+            className="flex h-[64px] w-[64px] items-center justify-center rounded-full bg-white shadow-[0_4px_12px_rgba(0,0,0,0.15)] transition-transform active:scale-95"
+          >
+            {/* Inner Orange Ring matching your design */}
+            <div className="flex h-[48px] w-[48px] items-center justify-center rounded-full border-[2px] border-[#F26A1C]">
+              <img
+                src={orderTrackingIcon}
+                alt="Track Order"
+                className={cn(
+                  "h-7 w-7 object-contain transition-transform duration-300",
+                  activeTab === "orders" ? "scale-110" : "scale-100"
+                )}
+              />
+            </div>
+          </button>
+        </div>
+
       </div>
     </nav>
   );
-};
+}
 
-// Reusable Side Button (unchanged - clean & independent)
-interface NavButtonProps {
+// --- Subcomponent for standard icons ---
+interface NavIconButtonProps {
   icon: React.ElementType;
-  label: string;
   isActive: boolean;
   onClick: () => void;
 }
 
-const NavButton = ({
-  icon: Icon,
-  label,
-  isActive,
-  onClick,
-}: NavButtonProps) => {
+function NavIconButton({ icon: Icon, isActive, onClick }: NavIconButtonProps) {
   return (
     <button
       onClick={onClick}
-      className="flex flex-col items-center justify-center py-1 px-4 transition-all active:scale-95 relative min-w-[60px]"
+      className="relative flex flex-col items-center justify-center p-2 transition-transform active:scale-95"
     >
-      {/* Active Indicator Dot */}
-      {isActive && (
-        <span className="absolute -top-1 left-1/2 -translate-x-1/2 h-1.5 w-1.5 rounded-full bg-white" />
-      )}
-
       <Icon
-        size={21}
-        strokeWidth={isActive ? 2.75 : 2.25}
+        size={26}
         className={cn(
-          "transition-all duration-200",
-          isActive ? "text-white scale-110" : "text-white/80",
+          "transition-all duration-300",
+          isActive ? "fill-white text-white drop-shadow-md" : "fill-white/80 text-white/80"
         )}
       />
-
-      <span
-        className={cn(
-          "text-[10px] font-medium mt-1 transition-all tracking-tight",
-          isActive ? "text-white font-semibold" : "text-white/70",
-        )}
-      >
-        {label}
-      </span>
-
-      {/* Subtle tap feedback */}
-      <span className="absolute inset-0 rounded-2xl bg-white/15 opacity-0 active:opacity-30 transition-opacity duration-150" />
+      {/* Subtle indicator dot (Optional, keeping it clean based on design) */}
+      {isActive && (
+        <span className="absolute -bottom-1 h-1 w-1 rounded-full bg-white" />
+      )}
     </button>
   );
-};
-
-export default BottomNav;
+}

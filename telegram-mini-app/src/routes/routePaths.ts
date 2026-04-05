@@ -1,6 +1,6 @@
 export const ROUTES = {
   // ==================== PUBLIC ROUTES ====================
-  AUTH: "/auth",
+  AUTH: "/",
   // SIGNIN: "/signin",
   // SIGNUP: "/signup",
   FORGOT_PASSWORD: "/forgot-password",
@@ -11,7 +11,7 @@ export const ROUTES = {
   // ==================== CUSTOMER ROUTES ====================
   CUSTOMER: {
     // Core navigation
-    HOME: "/",
+    HOME: "/customer/home",
     SEARCH: "/search",
     NOTIFICATIONS: "/notifications",
 
@@ -52,10 +52,10 @@ export const ROUTES = {
     },
 
     // User profile
-    PROFILE: "/profile",
-    ADDRESSES: "/profile/addresses",
-    ADD_ADDRESS: "/profile/addresses/add",
-    EDIT_ADDRESS: "/profile/addresses/:addressId/edit",
+    PROFILE: "/user/profile",
+    ADDRESSES: "/user/profile/addresses",
+    ADD_ADDRESS: "/user/profile/addresses/add",
+    EDIT_ADDRESS: "/user/profile/addresses/:addressId/edit",
     FAVORITES: "/favorites",
     SETTINGS: "/settings",
   },
@@ -228,6 +228,8 @@ export const ROUTES = {
     SETTINGS: "/delivery/settings",
     NOTIFICATIONS: "/delivery/notifications",
     SUPPORT: "/delivery/support",
+    PASSWORD: "/delivery/profile/password",
+    PAYMENT: "/delivery/profile/payment",
   },
 
   // ==================== SHARED ROUTES ====================

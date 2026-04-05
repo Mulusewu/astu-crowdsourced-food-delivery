@@ -41,7 +41,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Progress } from "@/components/ui/progress";
-import BottomNav from "@/components/common/BottomNav";
+import BottomNav from "@/components/common/BottomNav1";
 
 // Types for Active Delivery
 interface ActiveDelivery {

@@ -1,15 +1,9 @@
 import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { MapPin, Clock, ChevronLeft } from "lucide-react";
+import { MapPin, ArrowLeft, UtensilsCrossed, Store } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-
 import { useOrderDetailsStore } from "@/store/orderDetailsStore";
-import { formatCurrency } from "@/lib/utils"; // or inline
 
 export default function AvailableDeliveryDetailsPage() {
   const { orderId } = useParams<{ orderId: string }>();
@@ -28,152 +22,164 @@ export default function AvailableDeliveryDetailsPage() {
     if (orderId) fetchOrderDetails(orderId);
   }, [orderId, fetchOrderDetails]);
 
+  // Loading Skeleton
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white">
-        <div className="px-4 py-4">
-          <Skeleton className="h-8 w-40" />
-        </div>
-        <div className="px-4 space-y-4">
+      <div className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 px-5 pt-6">
+        <Skeleton className="h-10 w-full mb-8 rounded-xl" />
+        <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-28 w-full rounded-3xl" />
+            <Skeleton key={i} className="h-24 w-full rounded-[24px]" />
           ))}
-          <Skeleton className="h-40 w-full rounded-3xl mt-8" />
+          <Skeleton className="h-64 w-full rounded-[32px] mt-8" />
         </div>
       </div>
     );
   }
 
+  // Error / Not Found State
   if (!order) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-500">Order not found</p>
-          <Button onClick={() => navigate(-1)} className="mt-4">
+          <p className="text-gray-500 font-medium">Order not found</p>
+          <button
+            onClick={() => navigate(-1)}
+            className="mt-4 bg-[#F26A1C] text-white px-6 py-2 rounded-full font-bold"
+          >
             Go Back
-          </Button>
+          </button>
         </div>
       </div>
     );
   }
 
+  // Helper for the summary rows
+  const SummaryRow = ({
+    label,
+    value,
+  }: {
+    label: string;
+    value: string | number;
+  }) => (
+    <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-gray-800 last:border-0">
+      <span className="text-[13px] font-bold text-gray-800 dark:text-gray-300">
+        {label}
+      </span>
+      <span className="text-[13px] font-black text-[#F26A1C]">{value}</span>
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 font-sans pb-8 flex flex-col">
       {/* HEADER */}
-      <div className="sticky top-0 z-50 bg-white border-b border-gray-100 px-4 py-4 flex items-center justify-between">
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-1 text-gray-700"
-        >
-          <ChevronLeft size={24} />
-        </button>
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">👋</span>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Order #{order.orderNumber}
-          </h1>
+      <header className="sticky top-0 z-50 bg-[#FDFDFD]/90 dark:bg-gray-950/90 backdrop-blur-md px-5 pt-6 pb-4">
+        <div className="relative flex items-center justify-center">
+          <button
+            onClick={() => navigate(-1)}
+            className="absolute left-0 w-10 h-10 bg-orange-50 dark:bg-gray-800 rounded-xl flex items-center justify-center text-[#F26A1C] active:scale-95 transition-transform"
+          >
+            <ArrowLeft size={20} />
+          </button>
+
+          <div className="flex items-center gap-2">
+            <Store className="text-[#F26A1C]" size={22} strokeWidth={2.5} />
+            <h1 className="text-xl font-black text-gray-900 dark:text-white tracking-wide">
+              {order.cafeName || "Helen Cafe"}
+            </h1>
+          </div>
         </div>
-        <div className="w-8" /> {/* spacer for balance */}
-      </div>
+      </header>
 
       {/* ITEMS LIST */}
-      <div className="flex-1 px-4 py-6 space-y-4 overflow-y-auto">
-        {order.items.map((item) => (
-          <Card
-            key={item.id}
-            className="overflow-hidden border border-gray-100 shadow-sm rounded-3xl"
-          >
-            <CardContent className="p-0 flex">
-              {/* Food Image */}
-              <div className="w-24 h-24 flex-shrink-0">
+      <main className="flex-1 px-5 mt-2 overflow-y-auto">
+        <div className="space-y-4">
+          {order.items.map((item) => (
+            <div
+              key={item.id}
+              className="flex items-center gap-4 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-[24px] p-3 shadow-[0_4px_15px_rgba(0,0,0,0.02)]"
+            >
+              {/* Circular Food Image */}
+              <div className="w-[70px] h-[70px] shrink-0">
                 <img
                   src={item.image}
                   alt={item.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover rounded-full shadow-sm"
                 />
               </div>
 
               {/* Item Details */}
-              <div className="flex-1 p-4 flex flex-col justify-between">
-                <div>
-                  <h3 className="font-semibold text-lg text-gray-900">
-                    {item.name}
-                  </h3>
-                  <p className="text-sm text-gray-500 flex items-center gap-1 mt-0.5">
-                    <MapPin size={14} className="text-[#F26A1C]" />
-                    {order.customer.address.split(",")[0]} • Dorm{" "}
-                    {
-                      order.customer.address.split(" ")[
-                        order.customer.address.split(" ").length - 1
-                      ]
-                    }
-                  </p>
-                </div>
+              <div className="flex flex-col justify-center flex-1">
+                <h3 className="font-black text-[15px] text-gray-900 dark:text-white leading-tight">
+                  {item.name}
+                </h3>
+                <p className="font-bold text-[13px] text-gray-600 dark:text-gray-400 mt-0.5">
+                  {item.price * item.quantity} ETB
+                </p>
 
-                <div className="flex items-baseline justify-between">
-                  <span className="text-xs text-gray-500">
-                    Qty: {item.quantity}
-                  </span>
-                  <span className="font-bold text-[#F26A1C] text-2xl">
-                    {formatCurrency(item.price * item.quantity)}
+                <div className="flex items-center gap-1 mt-1.5 text-gray-500">
+                  <MapPin
+                    size={12}
+                    className="text-[#F26A1C] shrink-0"
+                    strokeWidth={3}
+                  />
+                  <span className="text-[11px] font-semibold line-clamp-1">
+                    {order.customer.address}
                   </span>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+            </div>
+          ))}
+        </div>
+      </main>
 
-      {/* SUMMARY BOX */}
-      <div className="px-4 pb-6">
-        <Card className="border border-[#F26A1C]/20 bg-white rounded-3xl overflow-hidden">
-          <CardContent className="p-5 space-y-4">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Sub Total</span>
-              <span className="font-semibold">
-                {formatCurrency(order.subtotal)}
-              </span>
-            </div>
-            <Separator className="bg-gray-100" />
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Delivery Fee</span>
-              <span className="font-semibold">
-                {formatCurrency(order.deliveryFee)}
-              </span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Delivery Distance</span>
-              <span className="font-semibold">{order.distance}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Time To Deliver</span>
-              <span className="font-semibold">
-                {order.estimatedDeliveryTime}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* ORDER SUMMARY CARD */}
+      <div className="px-5 mt-6 mb-4">
+        <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-[32px] p-6 shadow-[0_4px_25px_rgba(0,0,0,0.04)]">
+          {/* Card Header */}
+          <div className="flex justify-center items-center gap-2 mb-4">
+            <UtensilsCrossed
+              className="text-[#F26A1C]"
+              size={20}
+              strokeWidth={2.5}
+            />
+            <h2 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">
+              Order #{order.orderNumber || order.id.slice(-3)}
+            </h2>
+          </div>
 
-      {/* ACTION BUTTONS */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4">
-        <div className="max-w-md mx-auto flex gap-3">
-          <Button
-            variant="outline"
-            onClick={declineOrder}
-            className="flex-1 h-14 text-base font-semibold border-gray-300 rounded-2xl"
-            disabled={isAccepting}
-          >
-            Decline
-          </Button>
+          {/* Breakdown Rows */}
+          <div className="mb-6">
+            <SummaryRow label="Sub Total" value={`${order.subtotal} ETB`} />
+            <SummaryRow
+              label="Delivery Fee"
+              value={`${order.deliveryFee} ETB`}
+            />
+            <SummaryRow label="Delivery Distance" value={order.distance} />
+            <SummaryRow
+              label="Time To Deliver"
+              value={`${order.estimatedDeliveryTime || "30"} Min`}
+            />
+          </div>
 
-          <Button
-            onClick={acceptOrder}
-            disabled={isAccepting || order.status !== "pending"}
-            className="flex-1 h-14 text-base font-semibold bg-[#F26A1C] hover:bg-[#F26A1C]/90 rounded-2xl text-white"
-          >
-            {isAccepting ? "Accepting..." : "Accept"}
-          </Button>
+          {/* Action Buttons */}
+          <div className="flex gap-4">
+            <button
+              onClick={acceptOrder}
+              disabled={isAccepting || order.status !== "pending"}
+              className="flex-1 bg-[#F26A1C] hover:bg-[#e05d15] text-white rounded-full py-3.5 font-bold text-[15px] shadow-lg shadow-orange-500/20 active:scale-95 transition-all disabled:opacity-50"
+            >
+              {isAccepting ? "..." : "Accept"}
+            </button>
+
+            <button
+              onClick={declineOrder}
+              disabled={isAccepting}
+              className="flex-1 bg-transparent border-2 border-[#F26A1C] text-[#F26A1C] hover:bg-orange-50 dark:hover:bg-gray-800 rounded-full py-3.5 font-bold text-[15px] active:scale-95 transition-all disabled:opacity-50"
+            >
+              Decline
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -1,29 +1,25 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ChevronLeft,
+  ArrowLeft,
   MapPin,
   Clock,
   Phone,
-  User,
-  Store,
-  Bike,
-  Navigation,
   MessageCircle,
   Star,
-  AlertCircle,
+  Bike,
+  Navigation,
+  CheckCircle2,
+  Package,
+  Store,
+  User
 } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import BottomNav from "@/components/common/BottomNav1";
 
+// Zustand Stores
 import { useActiveDeliveriesStore } from "@/store/activeDeliveriesStore";
-import { formatCurrency } from "@/lib/utils";
-import BottomNav from "@/components/common/BottomNav";
 
 export default function ActiveDeliveriesPage() {
   const navigate = useNavigate();
@@ -50,271 +46,239 @@ export default function ActiveDeliveriesPage() {
   };
 
   const handleNavigate = (address: string) => {
-    window.open(`https://maps.google.com/?q=${encodeURIComponent(address)}`);
+    window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`);
   };
 
   const handleAction = (deliveryId: string, action: string) => {
     if (action === "details") {
       navigate(`/delivery/active/${deliveryId}`);
     } else {
-      // Example: Mark as picked up, start delivery, complete, etc.
       updateDeliveryStatus(deliveryId, action);
     }
   };
 
+  const formatCurrency = (amount: number) => `${amount.toLocaleString()} ETB`;
+
+  // Loading State
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white">
-        <div className="px-4 py-4">
-          <Skeleton className="h-10 w-40" />
+      <div className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 px-5 pt-6 pb-20">
+        <div className="flex justify-between items-center mb-8">
+          <Skeleton className="h-10 w-10 rounded-xl" />
+          <Skeleton className="h-8 w-40 rounded-full" />
         </div>
-        <div className="px-4 space-y-4">
-          {[1, 2].map((i) => (
-            <Skeleton key={i} className="h-72 w-full rounded-3xl" />
-          ))}
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-20 rounded-[20px]" />)}
+        </div>
+        <div className="space-y-4">
+          {[1, 2].map((i) => <Skeleton key={i} className="h-64 w-full rounded-[24px]" />)}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      {/* Header */}
-      <div className="sticky top-0 z-50 bg-white border-b border-gray-100 px-4 py-4">
-        <div className="flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="icon"
+    <div className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 font-sans pb-28">
+      
+      {/* HEADER SECTION */}
+      <header className="sticky top-0 z-30 bg-[#FDFDFD]/90 dark:bg-gray-950/90 backdrop-blur-md px-5 pt-6 pb-2">
+        <div className="relative flex items-center justify-center mb-4">
+          <button 
             onClick={() => navigate("/delivery/dashboard")}
-            className="h-10 w-10"
+            className="absolute left-0 w-10 h-10 bg-orange-50 dark:bg-gray-800 rounded-xl flex items-center justify-center text-[#F26A1C] active:scale-95 transition-transform"
           >
-            <ChevronLeft size={24} />
-          </Button>
-
-          <div>
-            <h1 className="text-xl font-semibold text-gray-900">
+            <ArrowLeft size={20} />
+          </button>
+          <div className="flex flex-col items-center">
+            <h1 className="font-black text-xl text-gray-900 dark:text-white tracking-wide leading-tight">
               Active Deliveries
             </h1>
-            <p className="text-xs text-gray-500">
-              {refreshing ? "Updating..." : `${activeDeliveries.length} active`}
+            <p className="text-[11px] font-bold text-[#F26A1C]">
+              {refreshing ? "Syncing..." : `${activeDeliveries.length} Ongoing`}
             </p>
           </div>
+        </div>
+      </header>
 
-          <Badge className="bg-[#F26A1C]/10 text-[#F26A1C] border-0">
-            {formatCurrency(stats.earningsToday)} today
-          </Badge>
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div className="px-4 py-4 grid grid-cols-4 gap-3">
-        <div className="bg-white rounded-2xl p-3 text-center shadow-sm">
-          <p className="text-xs text-gray-500">Active</p>
-          <p className="text-2xl font-bold text-[#F26A1C]">
-            {stats.activeDeliveries}
-          </p>
-        </div>
-        <div className="bg-white rounded-2xl p-3 text-center shadow-sm">
-          <p className="text-xs text-gray-500">Completed</p>
-          <p className="text-2xl font-bold text-green-600">
-            {stats.completedToday}
-          </p>
-        </div>
-        <div className="bg-white rounded-2xl p-3 text-center shadow-sm">
-          <p className="text-xs text-gray-500">Avg Time</p>
-          <p className="text-2xl font-bold text-blue-600">
-            {stats.averageTime}m
-          </p>
-        </div>
-        <div className="bg-white rounded-2xl p-3 text-center shadow-sm">
-          <p className="text-xs text-gray-500">Rating</p>
-          <div className="flex items-center justify-center gap-1">
-            <Star size={16} className="text-yellow-500 fill-yellow-500" />
-            <span className="text-2xl font-bold text-yellow-600">
-              {stats.rating}
-            </span>
+      <main className="px-5 mt-2">
+        
+        {/* STATS GRID */}
+        <div className="grid grid-cols-2 gap-3 mb-8">
+          <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-[20px] p-3 shadow-sm flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center shrink-0">
+              <Bike size={18} className="text-[#F26A1C]" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-gray-500 uppercase">Active</p>
+              <p className="font-black text-[16px] text-gray-900 dark:text-white leading-none">{stats.activeDeliveries}</p>
+            </div>
+          </div>
+          
+          <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-[20px] p-3 shadow-sm flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-green-50 dark:bg-green-900/20 flex items-center justify-center shrink-0">
+              <CheckCircle2 size={18} className="text-green-500" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-gray-500 uppercase">Completed</p>
+              <p className="font-black text-[16px] text-gray-900 dark:text-white leading-none">{stats.completedToday}</p>
+            </div>
+          </div>
+          
+          <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-[20px] p-3 shadow-sm flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center shrink-0">
+              <Clock size={18} className="text-blue-500" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-gray-500 uppercase">Avg Time</p>
+              <p className="font-black text-[16px] text-gray-900 dark:text-white leading-none">{stats.averageTime}m</p>
+            </div>
+          </div>
+          
+          <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-[20px] p-3 shadow-sm flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-yellow-50 dark:bg-yellow-900/20 flex items-center justify-center shrink-0">
+              <Star size={18} className="text-yellow-500 fill-yellow-500" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-gray-500 uppercase">Rating</p>
+              <p className="font-black text-[16px] text-gray-900 dark:text-white leading-none">{stats.rating}</p>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Deliveries List */}
-      <ScrollArea className="h-[calc(100vh-220px)] px-4">
-        <div className="space-y-4 pb-8">
+        {/* DELIVERIES LIST */}
+        <div className="space-y-5">
           {activeDeliveries.length === 0 ? (
-            <div className="text-center py-16">
-              <Bike size={48} className="mx-auto text-gray-300 mb-4" />
-              <h3 className="font-semibold text-gray-900">
-                No Active Deliveries
-              </h3>
-              <p className="text-sm text-gray-500 mt-2">
-                Browse available orders to get started
-              </p>
-              <Button
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="w-20 h-20 bg-gray-50 dark:bg-gray-900 rounded-full flex items-center justify-center mb-4 border border-gray-100 dark:border-gray-800 shadow-sm">
+                <Bike size={32} className="text-gray-300 dark:text-gray-600" strokeWidth={2} />
+              </div>
+              <h3 className="font-black text-lg text-gray-900 dark:text-white">No Active Deliveries</h3>
+              <p className="text-[13px] font-medium text-gray-500 mt-1 mb-6">You are all caught up for now.</p>
+              <button
                 onClick={() => navigate("/delivery/available")}
-                className="mt-6 bg-[#F26A1C] hover:bg-[#F26A1C]/90"
+                className="bg-[#F26A1C] hover:bg-[#e05d15] text-white font-bold text-[13px] px-8 py-3 rounded-full shadow-lg shadow-orange-500/20 active:scale-95 transition-all"
               >
-                Browse Orders
-              </Button>
+                Find New Orders
+              </button>
             </div>
           ) : (
             activeDeliveries.map((delivery) => (
-              <Card
+              <div
                 key={delivery.id}
-                className="overflow-hidden rounded-3xl border border-gray-100 shadow-sm"
+                className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-[24px] overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.03)] p-4 flex flex-col"
               >
-                <CardContent className="p-0">
-                  {/* Status Header */}
-                  <div className="flex items-center justify-between px-4 pt-4 pb-2">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-[#F26A1C]/10 rounded-2xl">
-                        <Bike size={20} className="text-[#F26A1C]" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold">
-                          #{delivery.orderNumber}
-                        </h3>
-                        <p className="text-xs text-gray-500">
-                          {delivery.distance} • {delivery.timeRemaining} min
-                        </p>
-                      </div>
+                {/* Header: Order Info */}
+                <div className="flex items-center justify-between border-b border-gray-50 dark:border-gray-800/50 pb-3 mb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center">
+                      <Package size={14} className="text-[#F26A1C]" />
                     </div>
-                    {delivery.priority && (
-                      <Badge className="bg-orange-100 text-orange-700">
-                        Priority
-                      </Badge>
-                    )}
-                  </div>
-
-                  {/* Restaurant & Customer */}
-                  <div className="px-4 py-3 bg-gray-50 space-y-4">
-                    {/* Restaurant */}
-                    <div className="flex gap-3">
-                      <Avatar className="h-11 w-11">
-                        <AvatarImage src={delivery.restaurant.image} />
-                        <AvatarFallback>
-                          {delivery.restaurant.name[0]}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <p className="font-medium text-gray-900">
-                          {delivery.restaurant.name}
-                        </p>
-                        <p className="text-xs text-gray-500 line-clamp-1">
-                          {delivery.restaurant.address}
-                        </p>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() =>
-                          handleNavigate(delivery.restaurant.address)
-                        }
-                      >
-                        <Navigation size={18} />
-                      </Button>
-                    </div>
-
-                    {/* Customer */}
-                    <div className="flex gap-3">
-                      <Avatar className="h-11 w-11">
-                        <AvatarImage src={delivery.customer.avatar} />
-                        <AvatarFallback>
-                          {delivery.customer.name[0]}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <p className="font-medium text-gray-900">
-                          {delivery.customer.name}
-                        </p>
-                        <p className="text-xs text-gray-500 line-clamp-1">
-                          {delivery.customer.address}
-                        </p>
-                      </div>
-                      <div className="flex gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() =>
-                            handleCallCustomer(delivery.customer.phone)
-                          }
-                        >
-                          <Phone size={18} />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() =>
-                            handleMessageCustomer(delivery.customer.id)
-                          }
-                        >
-                          <MessageCircle size={18} />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Total & Payment */}
-                  <div className="px-4 py-4 flex items-center justify-between border-t">
                     <div>
-                      <p className="text-xs text-gray-500">Total</p>
-                      <p className="font-bold text-xl text-[#F26A1C]">
-                        {formatCurrency(delivery.totalAmount)}
+                      <h3 className="font-black text-[14px] text-gray-900 dark:text-white leading-none">
+                        Order #{delivery.orderNumber}
+                      </h3>
+                      <p className="text-[10px] font-bold text-gray-500 mt-1">
+                        {delivery.timeRemaining} MINS REMAINING
                       </p>
                     </div>
-                    <Badge variant="outline">
-                      {delivery.paymentMethod === "cash"
-                        ? "💵 Cash"
-                        : delivery.paymentMethod === "card"
-                          ? "💳 Card"
-                          : "⭐ Stars"}
-                    </Badge>
                   </div>
+                  <div className="flex flex-col items-end">
+                    <span className="font-black text-[#F26A1C] text-[15px]">{formatCurrency(delivery.totalAmount)}</span>
+                    <span className="text-[10px] font-bold text-gray-400 uppercase">{delivery.paymentMethod}</span>
+                  </div>
+                </div>
 
-                  {/* Action Buttons */}
-                  <div className="p-4 flex gap-3 border-t">
-                    <Button
-                      variant="outline"
-                      className="flex-1"
-                      onClick={() => handleAction(delivery.id, "details")}
+                {/* Body: Timeline */}
+                <div className="relative pl-3 py-2 space-y-5">
+                  {/* Timeline connector line */}
+                  <div className="absolute left-[19px] top-6 bottom-6 w-[2px] bg-gray-100 dark:bg-gray-800 rounded-full" />
+
+                  {/* Restaurant Node */}
+                  <div className="relative flex gap-3 items-start z-10">
+                    <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 border-2 border-white dark:border-gray-900 flex items-center justify-center shrink-0 mt-0.5">
+                      <Store size={14} className="text-gray-500" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-bold text-[13px] text-gray-900 dark:text-white leading-none">{delivery.restaurant.name}</p>
+                      <p className="text-[11px] font-medium text-gray-500 line-clamp-1 mt-1">{delivery.restaurant.address}</p>
+                    </div>
+                    <button
+                      onClick={() => handleNavigate(delivery.restaurant.address)}
+                      className="w-8 h-8 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-500 hover:text-[#F26A1C] active:scale-95 transition-all"
                     >
-                      View Details
-                    </Button>
-
-                    {delivery.status === "assigned" && (
-                      <Button
-                        className="flex-1 bg-[#F26A1C] hover:bg-[#F26A1C]/90"
-                        onClick={() => handleAction(delivery.id, "picked_up")}
-                      >
-                        Mark Picked Up
-                      </Button>
-                    )}
-
-                    {delivery.status === "picked_up" && (
-                      <Button
-                        className="flex-1 bg-[#F26A1C] hover:bg-[#F26A1C]/90"
-                        onClick={() => handleAction(delivery.id, "in_transit")}
-                      >
-                        Start Delivery
-                      </Button>
-                    )}
-
-                    {delivery.status === "in_transit" && (
-                      <Button
-                        className="flex-1 bg-green-600 hover:bg-green-700"
-                        onClick={() => handleAction(delivery.id, "delivered")}
-                      >
-                        Complete Delivery
-                      </Button>
-                    )}
+                      <Navigation size={14} />
+                    </button>
                   </div>
-                </CardContent>
-              </Card>
+
+                  {/* Customer Node */}
+                  <div className="relative flex gap-3 items-start z-10">
+                    <div className="w-8 h-8 rounded-full bg-orange-50 dark:bg-orange-900/20 border-2 border-white dark:border-gray-900 flex items-center justify-center shrink-0 mt-0.5">
+                      <User size={14} className="text-[#F26A1C]" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-bold text-[13px] text-gray-900 dark:text-white leading-none">{delivery.customer.name}</p>
+                      <p className="text-[11px] font-medium text-gray-500 line-clamp-1 mt-1">{delivery.customer.address}</p>
+                    </div>
+                    <div className="flex gap-1.5">
+                      <button
+                        onClick={() => handleMessageCustomer(delivery.customer.id)}
+                        className="w-8 h-8 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-500 hover:text-[#F26A1C] active:scale-95 transition-all"
+                      >
+                        <MessageCircle size={14} />
+                      </button>
+                      <button
+                        onClick={() => handleCallCustomer(delivery.customer.phone)}
+                        className="w-8 h-8 rounded-full bg-green-50 dark:bg-green-900/20 flex items-center justify-center text-green-600 hover:bg-green-100 active:scale-95 transition-all"
+                      >
+                        <Phone size={14} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Footer */}
+                <div className="mt-4 pt-3 border-t border-gray-50 dark:border-gray-800/50 flex gap-2">
+                  <button
+                    onClick={() => handleAction(delivery.id, "details")}
+                    className="flex-1 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold text-[12px] py-3 rounded-full active:scale-95 transition-all"
+                  >
+                    Details
+                  </button>
+
+                  {delivery.status === "assigned" && (
+                    <button
+                      onClick={() => handleAction(delivery.id, "picked_up")}
+                      className="flex-[2] bg-[#F26A1C] hover:bg-[#e05d15] text-white font-bold text-[12px] py-3 rounded-full shadow-lg shadow-orange-500/20 active:scale-95 transition-all"
+                    >
+                      Confirm Pickup
+                    </button>
+                  )}
+
+                  {delivery.status === "picked_up" && (
+                    <button
+                      onClick={() => handleAction(delivery.id, "in_transit")}
+                      className="flex-[2] bg-blue-500 hover:bg-blue-600 text-white font-bold text-[12px] py-3 rounded-full shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
+                    >
+                      Start Navigation
+                    </button>
+                  )}
+
+                  {delivery.status === "in_transit" && (
+                    <button
+                      onClick={() => handleAction(delivery.id, "delivered")}
+                      className="flex-[2] bg-[#34C759] hover:bg-[#2db34e] text-white font-bold text-[12px] py-3 rounded-full shadow-lg shadow-green-500/20 active:scale-95 transition-all"
+                    >
+                      Complete Delivery
+                    </button>
+                  )}
+                </div>
+              </div>
             ))
           )}
         </div>
-      </ScrollArea>
+      </main>
 
-      <BottomNav activeTab="home" />
+      <BottomNav activeTab="orders" />
     </div>
   );
 }
