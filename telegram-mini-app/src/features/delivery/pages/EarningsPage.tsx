@@ -1,7 +1,23 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import {
+  TrendingUp,
+  DollarSign,
+  Package,
+  Star,
+  ChevronRight,
+  Calendar,
+} from "lucide-react";
+import BottomNav from "@/components/common/BottomNav1";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
-function EarningsPage() {
-  return <div>EarningsPage</div>;
+interface EarningsSummary {
+  today: number;
+  thisWeek: number;
+  thisMonth: number;
+  totalDeliveries: number;
+  averageRating: number;
+  pendingPayout: number;
 }
 
 export default EarningsPage;
