@@ -27,9 +27,19 @@ export const ROUTES = {
   // Delivery
   DELIVERY: {
     DASHBOARD: "/delivery/dashboard",
+    ORDERS: "/delivery/orders",
+    ORDER_DETAIL: "/delivery/orders/:orderId",
     AVAILABLE: "/delivery/available",
     ACTIVE: "/delivery/active",
     EARNINGS: "/delivery/earnings",
+    HISTORY: "/delivery/history",
+    SAVED: "/delivery/saved",
+    PROFILE: "/delivery/profile",
+    SignUp: "/delivery/signup",
+    Offline: "/delivery/offline",
+    VERIFY_OTP: "/delivery/verify-otp",
+    CHANGE_PASSWORD: "/delivery/change-password",
+    PAYMENT_INFO: "/delivery/payment-info"
   },
   TEST: "/test",
 

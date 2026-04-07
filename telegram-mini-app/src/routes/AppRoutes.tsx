@@ -1,8 +1,8 @@
-import { lazy } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { lazy, Suspense } from "react";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { ROUTES } from "./routePaths";
 // import ProtectedRoute from "./ProtectedRoute";
-import { UserRole } from "../types/user.types";
+import LoadingSpinner from "../components/common/LoadingSpinner";
 
 // Lazy load pages for better performance
 const SigninPage = lazy(() => import("../features/auth/pages/SigninPage"));
@@ -50,6 +50,12 @@ const VendorSettingsPage = lazy(
 const DeliveryDashboard = lazy(
   () => import("../features/delivery/pages/DeliveryDashboard"),
 );
+const DeliveryOrdersPage = lazy(
+  () => import("../features/delivery/pages/DeliveryOrdersPage"),
+);
+const DeliveryOrderDetailPage = lazy(
+  () => import("../features/delivery/pages/DeliveryOrderDetailPage"),
+);
 const AvailableDeliveriesPage = lazy(
   () => import("../features/delivery/pages/AvailableDeliveries"),
 );
@@ -59,9 +65,66 @@ const ActiveDeliveryPage = lazy(
 const DeliveryEarningsPage = lazy(
   () => import("../features/delivery/pages/EarningsPage"),
 );
+const DeliveryHistoryPage = lazy(
+  () => import("../features/delivery/pages/history"),
+);
+const SavedItemsPage = lazy(
+  () => import("../features/delivery/pages/SavedItemsPage"),
+);
+const DelivererProfilePage = lazy(
+  () => import("../features/profiles/DelivererProfilePage"),
+);
+const OfflinePage = lazy(
+  () => import("../features/delivery/pages/OfflinePage"),
+);
+const OTPVerificationPage = lazy(
+  () => import("../features/delivery/pages/OTPVerificationPage"),
+);
+const ChangePasswordPage = lazy(
+  () => import("../features/delivery/pages/ChangePasswordPage"),
+);
+const PaymentInformationPage = lazy(
+  () => import("../features/delivery/pages/PaymentInformationPage"),
+);
 
 // Payment page
 const PaymentPage = lazy(() => import("../features/payment/pages/PaymentPage"));
+
+/**
+ * TEMPORARY — remove when delivery routes use `ProtectedRoute` and RR7 splat is stable:
+ * React Router v7 can send some valid URLs to `path="*"`; render the real page here so we
+ * do not redirect to sign-in. `DeliveryOrderDetailPage` reads order id from the URL when
+ * `useParams` is empty.
+ */
+function isDeliveryOrderDetailPath(pathname: string): boolean {
+  return /^\/delivery\/orders\/[^/]+$/.test(pathname);
+}
+
+function TempDevCatchAll() {
+  const { pathname } = useLocation();
+  const normalized = pathname.replace(/\/+$/, "") || "/";
+
+  if (isDeliveryOrderDetailPath(normalized)) {
+    return (
+      <Suspense fallback={<LoadingSpinner />}>
+        <DeliveryOrderDetailPage />
+      </Suspense>
+    );
+  }
+
+  if (
+    import.meta.env.DEV &&
+    normalized === ROUTES.DELIVERY.PROFILE
+  ) {
+    return (
+      <Suspense fallback={<LoadingSpinner />}>
+        <DelivererProfilePage />
+      </Suspense>
+    );
+  }
+
+  return <Navigate to={ROUTES.SIGNIN} replace />;
+}
 
 function AppRoutes() {
   return (
@@ -72,6 +135,12 @@ function AppRoutes() {
       <Route path={ROUTES.FORGOT_PASSWORD} element={<ForgotPasswordPage />} />
       <Route path={ROUTES.AUTH} element={<AuthPage />} />
       <Route path={ROUTES.TEST} element={<TestPage />} />
+
+      {/* TEMPORARY — dev/public access (no auth). Move under ProtectedRoute when delivery auth is on. */}
+      <Route
+        path={ROUTES.DELIVERY.PROFILE}
+        element={<DelivererProfilePage />}
+      />
 
       {/* Customer Routes */}
       {/* <Route element={<ProtectedRoute allowedRoles={[UserRole.CUSTOMER]} />}> */}
@@ -95,6 +164,11 @@ function AppRoutes() {
       {/* Delivery Routes */}
       {/* <Route element={<ProtectedRoute allowedRoles={[UserRole.DELIVERY]} />}> */}
       <Route path={ROUTES.DELIVERY.DASHBOARD} element={<DeliveryDashboard />} />
+      {/* More specific path first (RR7): list `/delivery/orders` must not shadow `:orderId`. */}
+      <Route
+        path={ROUTES.DELIVERY.ORDER_DETAIL} element={<DeliveryOrderDetailPage />}
+      />
+      <Route path={ROUTES.DELIVERY.ORDERS} element={<DeliveryOrdersPage />} />
       <Route
         path={ROUTES.DELIVERY.AVAILABLE}
         element={<AvailableDeliveriesPage />}
@@ -103,6 +177,34 @@ function AppRoutes() {
       <Route
         path={ROUTES.DELIVERY.EARNINGS}
         element={<DeliveryEarningsPage />}
+      />
+      <Route
+        path={ROUTES.DELIVERY.HISTORY}
+        element={<DeliveryHistoryPage />}
+      />
+      <Route
+        path={ROUTES.DELIVERY.SAVED}
+        element={<SavedItemsPage />}
+      />
+      <Route
+        path={ROUTES.DELIVERY.SignUp}
+        element={<SignupPage />}
+      />
+      <Route
+        path={ROUTES.DELIVERY.Offline}
+        element={<OfflinePage />}
+      />
+      <Route
+        path={ROUTES.DELIVERY.VERIFY_OTP}
+        element={<OTPVerificationPage />}
+      />
+      <Route
+        path={ROUTES.DELIVERY.CHANGE_PASSWORD}
+        element={<ChangePasswordPage />}
+      />
+      <Route
+        path={ROUTES.DELIVERY.PAYMENT_INFO}
+        element={<PaymentInformationPage />}
       />
       {/* </Route> */}
 
@@ -117,7 +219,7 @@ function AppRoutes() {
 
       {/* Default redirect */}
       <Route path="/" element={<Navigate to={ROUTES.SIGNIN} replace />} />
-      <Route path="*" element={<Navigate to={ROUTES.SIGNIN} replace />} />
+      <Route path="*" element={<TempDevCatchAll />} />
     </Routes>
   );
 }
