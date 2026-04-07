@@ -39,7 +39,8 @@ export const ROUTES = {
     Offline: "/delivery/offline",
     VERIFY_OTP: "/delivery/verify-otp",
     CHANGE_PASSWORD: "/delivery/change-password",
-    PAYMENT_INFO: "/delivery/payment-info"
+    PAYMENT_INFO: "/delivery/payment-info",
+    REPORT_ISSUE: "/delivery/report-issue"
   },
   TEST: "/test",
 

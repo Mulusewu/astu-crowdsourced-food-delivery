@@ -6,25 +6,22 @@ import {
   User,
   type LucideIcon,
 } from "lucide-react";
-
-interface BottomNavProps {
-  activeTab?: string;
-  onTabChange?: (tab: string) => void;
-}
+import { useNavigate, useLocation } from "react-router-dom";
 
 type NavItemConfig = {
   id: string;
   icon: LucideIcon;
   label: string;
+  path: string;
   center?: boolean;
 };
 
 const NAV_ITEMS: NavItemConfig[] = [
-  { id: "home", icon: Home, label: "Home" },
-  { id: "bookmark", icon: Bookmark, label: "Bookmarks" },
-  { id: "wallet", icon: Package, label: "Orders", center: true },
-  { id: "messages", icon: Newspaper, label: "Updates" },
-  { id: "profile", icon: User, label: "Profile" },
+  { id: "home", path: "/delivery/dashboard", icon: Home, label: "Home" },
+  { id: "bookmark", path: "/delivery/saved", icon: Bookmark, label: "Bookmarks" },
+  { id: "active", path: "/delivery/active", icon: Package, label: "Active", center: true },
+  { id: "updates", path: "/delivery/history", icon: Newspaper, label: "Updates" },
+  { id: "profile", path: "/delivery/profile", icon: User, label: "Profile" },
 ];
 
 function NotchedBarBg() {
@@ -54,7 +51,10 @@ function NotchedBarBg() {
   );
 }
 
-const BottomNav = ({ activeTab = "home", onTabChange }: BottomNavProps) => {
+const BottomNav = () => {
+  const location = useLocation();
+  const activePath = location.pathname;
+
   const sideItems = NAV_ITEMS.filter((i) => !i.center);
   const centerItem = NAV_ITEMS.find((i) => i.center)!;
 
@@ -77,8 +77,7 @@ const BottomNav = ({ activeTab = "home", onTabChange }: BottomNavProps) => {
               <NavSideButton
                 key={item.id}
                 item={item}
-                activeTab={activeTab}
-                onTabChange={onTabChange}
+                activePath={activePath}
               />
             ))}
 
@@ -87,8 +86,7 @@ const BottomNav = ({ activeTab = "home", onTabChange }: BottomNavProps) => {
               <div className="pointer-events-auto absolute left-1/2 top-0 z-[2] -translate-x-1/2 -translate-y-[115%]">
                 <NavCenterButton
                   item={centerItem}
-                  activeTab={activeTab}
-                  onTabChange={onTabChange}
+                  activePath={activePath}
                 />
               </div>
             </div>
@@ -97,8 +95,7 @@ const BottomNav = ({ activeTab = "home", onTabChange }: BottomNavProps) => {
               <NavSideButton
                 key={item.id}
                 item={item}
-                activeTab={activeTab}
-                onTabChange={onTabChange}
+                activePath={activePath}
               />
             ))}
           </div>
@@ -110,23 +107,31 @@ const BottomNav = ({ activeTab = "home", onTabChange }: BottomNavProps) => {
 
 function NavSideButton({
   item,
-  activeTab,
-  onTabChange,
+  activePath,
 }: {
   item: NavItemConfig;
-  activeTab: string;
-  onTabChange?: (tab: string) => void;
+  activePath: string;
 }) {
   const Icon = item.icon;
+  const navigate = useNavigate();
+  // Check if current route starts with or precisely matches path
+  const isActive = activePath === item.path || activePath.startsWith(item.path + '/');
 
   return (
     <div className="flex h-full items-center justify-center">
       <button
         type="button"
-        onClick={() => onTabChange?.(item.id)}
-        className="flex items-center justify-center transition-transform duration-200 hover:scale-105 active:scale-95"
+        onClick={() => navigate(item.path)}
+        className={`flex h-[42px] w-[42px] items-center justify-center rounded-full transition-all duration-300 hover:scale-105 active:scale-95 ${
+          isActive ? "bg-white shadow-sm scale-110" : "bg-transparent"
+        }`}
+        aria-label={item.label}
+        aria-current={isActive ? "page" : undefined}
       >
-        <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" strokeWidth={2} />
+        <Icon 
+          className={`h-5 w-5 sm:h-6 sm:w-6 transition-colors duration-300 ${isActive ? "text-[#f97316]" : "text-white"}`} 
+          strokeWidth={isActive ? 2.5 : 2} 
+        />
       </button>
     </div>
   );
@@ -134,24 +139,30 @@ function NavSideButton({
 
 function NavCenterButton({
   item,
-  activeTab,
-  onTabChange,
+  activePath,
 }: {
   item: NavItemConfig;
-  activeTab: string;
-  onTabChange?: (tab: string) => void;
+  activePath: string;
 }) {
   const Icon = item.icon;
+  const navigate = useNavigate();
+  const isActive = activePath === item.path || activePath.startsWith(item.path + '/');
 
   return (
     <button
       type="button"
-      onClick={() => onTabChange?.(item.id)}
-      className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-orange-500 shadow-[0_12px_30px_rgba(0,0,0,0.2),0_4px_10px_rgba(242,106,28,0.25)] transition-all duration-200 hover:scale-110 active:scale-95 sm:h-14 sm:w-14 md:h-[3.5rem] md:w-[3.5rem]"
+      onClick={() => navigate(item.path)}
+      className={`flex h-12 w-12 items-center justify-center rounded-full bg-white text-orange-500 transition-all duration-300 hover:scale-110 active:scale-95 sm:h-14 sm:w-14 md:h-[3.5rem] md:w-[3.5rem] ${
+        isActive 
+          ? "shadow-[0_12px_30px_rgba(242,106,28,0.4),0_6px_15px_rgba(242,106,28,0.4)] scale-110 border-2 border-orange-100" 
+          : "shadow-[0_12px_30px_rgba(0,0,0,0.2),0_4px_10px_rgba(242,106,28,0.25)]"
+      }`}
+      aria-label={item.label}
+      aria-current={isActive ? "page" : undefined}
     >
       <Icon
-        className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-orange-500"
-        strokeWidth={2.5}
+        className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-[#f97316]"
+        strokeWidth={isActive ? 3 : 2.5}
       />
     </button>
   );

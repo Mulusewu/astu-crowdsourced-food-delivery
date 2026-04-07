@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/routes/routePaths";
 import {
   User,
   MapPin,
@@ -74,6 +76,7 @@ function firstInitial(fullName: string) {
 }
 
 export default function DeliveryDashboard() {
+  const navigate = useNavigate();
   const [deliveryPerson, setDeliveryPerson] = useState<DeliveryPerson | null>(
     null,
   );
@@ -433,6 +436,7 @@ export default function DeliveryDashboard() {
                 <Button
                   type="button"
                   size="sm"
+                  onClick={() => navigate(ROUTES.DELIVERY.ORDER_DETAIL.replace(':orderId', order.id))}
                   className="mt-3 h-9 w-full rounded-full bg-primary text-xs font-semibold text-white hover:bg-primary/90"
                 >
                   View Detail
@@ -499,6 +503,7 @@ export default function DeliveryDashboard() {
                   <Button
                   type="button"
                   size="sm"
+                  onClick={() => navigate(ROUTES.DELIVERY.ORDERS)}
                   className="mt-3 h-9 w-25 rounded-full bg-primary text-xs font-semibold text-white hover:bg-primary/90"
                 >
                   View orders

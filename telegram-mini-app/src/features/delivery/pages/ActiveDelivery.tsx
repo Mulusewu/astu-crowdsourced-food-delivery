@@ -1,5 +1,7 @@
 import React from "react";
 import { Truck, Phone } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/routes/routePaths";
 import BottomNav from "@/components/common/BottomNav1";
 
 // Types
@@ -18,6 +20,8 @@ const OrderItem: React.FC<OrderItemProps> = ({ name, qty, price }) => (
 );
 
 const ActiveOrderCard: React.FC = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="bg-white rounded-2xl shadow-md p-4">
       {/* Date & Timer */}
@@ -59,7 +63,10 @@ const ActiveOrderCard: React.FC = () => {
 
       {/* Button */}
       <div className="flex justify-center mt-4">
-        <button className="px-6 py-2 border border-orange-500 text-orange-500 rounded-full text-sm font-medium">
+        <button 
+          onClick={() => navigate(ROUTES.DELIVERY.REPORT_ISSUE)}
+          className="px-6 py-2 border border-orange-500 text-orange-500 rounded-full text-sm font-medium hover:bg-orange-50 transition-colors active:scale-95"
+        >
           Report Issue
         </button>
       </div>

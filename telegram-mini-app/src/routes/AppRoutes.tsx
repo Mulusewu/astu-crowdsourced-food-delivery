@@ -86,6 +86,9 @@ const ChangePasswordPage = lazy(
 const PaymentInformationPage = lazy(
   () => import("../features/delivery/pages/PaymentInformationPage"),
 );
+const IssueReportPage = lazy(
+  () => import("../features/delivery/pages/IssueReportPage"),
+);
 
 // Payment page
 const PaymentPage = lazy(() => import("../features/payment/pages/PaymentPage"));
@@ -205,6 +208,10 @@ function AppRoutes() {
       <Route
         path={ROUTES.DELIVERY.PAYMENT_INFO}
         element={<PaymentInformationPage />}
+      />
+      <Route
+        path={ROUTES.DELIVERY.REPORT_ISSUE}
+        element={<IssueReportPage />}
       />
       {/* </Route> */}
 
