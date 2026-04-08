@@ -10,6 +10,10 @@ const DeliveryDashboard = lazy(
   () => import("../../features/delivery/pages/DeliveryDashboard"),
 );
 
+const SavedItemsPage = lazy(
+  () => import("../../features/delivery/pages/SavedItemsPage"),
+);
+
 const DeliveryPaymentPage = lazy(
   () => import("../../features/delivery/pages/paymentMethod"),
 );
@@ -142,6 +146,11 @@ export const deliveryRoutes: RouteGroup[] = [
   {
     path: ROUTES.DELIVERY.PAYMENT,
     element: <DeliveryPaymentPage />,
+    roles: [UserRoles.DELIVERY], // Use UserRoles.DELIVERY instead of UserRole.DELIVERY
+  },
+  {
+    path: ROUTES.DELIVERY.SAVED,
+    element: <SavedItemsPage />,
     roles: [UserRoles.DELIVERY], // Use UserRoles.DELIVERY instead of UserRole.DELIVERY
   },
 

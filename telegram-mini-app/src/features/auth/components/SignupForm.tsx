@@ -2,7 +2,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 
 import { BrandCard } from "@/components/brand/BrandCard";
@@ -28,8 +27,7 @@ const signupSchema = z
 type SignupFormData = z.infer<typeof signupSchema>;
 
 export default function SignupForm() {
-  const navigate = useNavigate();
-  const { signup, isLoading, error, clearError } = useAuthStore();
+  const { signup, isLoading, clearError } = useAuthStore();
 
   const [apiError, setApiError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -54,7 +52,7 @@ export default function SignupForm() {
         password: data.password,
         role: "customer",
       });
-      navigate("/verify-email");
+      // Redirect is handled by authStore after successful signup
     } catch (err: any) {
       // Simulate the "User Already Exists" error from the design
       setApiError(err.message || "User Already Exists With This Email!");
@@ -184,7 +182,7 @@ export default function SignupForm() {
             <button
               type="submit"
               disabled={isLoading}
-              className="bg-[#F26A1C] hover:bg-[#e05d15] text-white font-bold text-[15px] px-12 py-3.5 rounded-full shadow-lg shadow-orange-500/20 active:scale-95 transition-all disabled:opacity-70 min-w-[160px]"
+              className="bg-[#F26A1C] hover:bg-[#e05d15] text-white font-bold text-[15px] px-12 py-3.5 rounded-full shadow-lg shadow-orange-500/20 active:scale-95 transition-all disabled:opacity-70 min-w-40"
             >
               {isLoading ? "Wait..." : "Sign Up"}
             </button>

@@ -12,8 +12,8 @@ export const ROUTES = {
   CUSTOMER: {
     // Core navigation
     HOME: "/customer/home",
-    SEARCH: "/search",
-    NOTIFICATIONS: "/notifications",
+    SEARCH: "customer/search",
+    NOTIFICATIONS: "/customer/notifications",
 
     // Restaurant & Food discovery
     RESTAURANT: {
@@ -166,6 +166,7 @@ export const ROUTES = {
     DASHBOARD: "/delivery/dashboard",
     STATUS: "/delivery/status",
     AVAILABILITY: "/delivery/availability",
+    SAVED: "/delivery/saved",
 
     // Available Deliveries
     AVAILABLE: {
