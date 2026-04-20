@@ -22,69 +22,22 @@ interface OrderHistoryItem {
     status: OrderStatus;
 }
 
-// ─── mock data ────────────────────────────────────────────────────────────────
-const HISTORY_ITEMS: OrderHistoryItem[] = [
-    {
-        id: "1",
-        restaurantName: "Helen Cafe",
-        orderNumber: "123",
-        foodImage:
-            "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&h=200&fit=crop",
-        foodName: "Combo",
-        quantity: 5,
-        priceEtb: 560,
-        rating: 5,
-        status: "delivered",
-    },
-    {
-        id: "2",
-        restaurantName: "Bole Mami",
-        orderNumber: "123",
-        foodImage:
-            "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=200&h=200&fit=crop",
-        foodName: "Pasta Besego",
-        quantity: 1,
-        priceEtb: 560,
-        rating: 3,
-        status: "delivered",
-    },
-    {
-        id: "3",
-        restaurantName: "Barch FoodZone",
-        orderNumber: "123",
-        foodImage:
-            "https://images.unsplash.com/photo-1512058564366-18510be2db19?w=200&h=200&fit=crop",
-        foodName: "Combo",
-        quantity: 4,
-        priceEtb: 560,
-        rating: null,
-        status: "cancelled",
-    },
-    {
-        id: "4",
-        restaurantName: "Beza Cafe",
-        orderNumber: "123",
-        foodImage:
-            "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=200&h=200&fit=crop",
-        foodName: "Yesome Special",
-        quantity: 1,
-        priceEtb: 560,
-        rating: 3,
-        status: "delivered",
-    },
-    {
-        id: "5",
-        restaurantName: "Bole Mami",
-        orderNumber: "123",
-        foodImage:
-            "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=200&h=200&fit=crop",
-        foodName: "Pasta Besego",
-        quantity: 1,
-        priceEtb: 560,
-        rating: 3,
-        status: "delivered",
-    },
-];
+import database from "@/data/database.json";
+
+const HISTORY_ITEMS: OrderHistoryItem[] = database.orders.history.map((order: any) => ({
+    id: order.id,
+    restaurantName: order.cafeName || "Unknown Cafe",
+    orderNumber: order.orderNumber?.replace("ORD-", "") || "000",
+    foodImage:
+        order.items && order.items.length > 0 && order.items[0].image
+            ? order.items[0].image
+            : "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&h=200&fit=crop",
+    foodName: order.items && order.items.length > 0 ? order.items[0].name : "Order",
+    quantity: order.items && order.items.length > 0 ? order.items[0].quantity : 1,
+    priceEtb: order.totalAmount,
+    rating: order.rating || null,
+    status: order.status === "cancelled" ? "cancelled" : "delivered",
+}));
 
 // ─── StarRating ───────────────────────────────────────────────────────────────
 function StarRating({ rating, max = 5 }: { rating: number; max?: number }) {

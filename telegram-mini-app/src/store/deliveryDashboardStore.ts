@@ -42,16 +42,36 @@ interface DeliveryPerson {
   };
 }
 
+type OrderStatus =
+  | "pending"
+  | "accepted"
+  | "awaiting_payment"
+  | "paid"
+  | "in_progress"
+  | "completed"
+  | "cancelled";
+
+type CustomerActivity = "idle" | "viewing" | "paying";
+
 interface DeliveryDashboardState {
   deliveryPerson: DeliveryPerson | null;
   restaurantsWithOrders: RestaurantWithOrders[];
-  pocketFriendlyOrders: PocketFriendlyOrder[]; // ← Added
+  pocketFriendlyOrders: PocketFriendlyOrder[];
   isLoading: boolean;
   isOnline: boolean;
+
+  // Payment-waiting state
+  orderStatus: OrderStatus;
+  paymentTimer: number; // seconds
+  customerActivity: CustomerActivity;
 
   // Actions
   fetchDashboardData: () => Promise<void>;
   toggleAvailability: () => void;
+  setOrderStatus: (status: OrderStatus) => void;
+  decreasePaymentTimer: () => void;
+  resetPaymentTimer: (seconds?: number) => void;
+  setCustomerActivity: (activity: CustomerActivity) => void;
 }
 
 export const useDeliveryDashboardStore = create<DeliveryDashboardState>()(
@@ -59,9 +79,14 @@ export const useDeliveryDashboardStore = create<DeliveryDashboardState>()(
     (set, get) => ({
       deliveryPerson: null,
       restaurantsWithOrders: [],
-      pocketFriendlyOrders: [], // ← New field
+      pocketFriendlyOrders: [],
       isLoading: true,
       isOnline: true,
+
+      // Payment-waiting defaults
+      orderStatus: "pending",
+      paymentTimer: 300, // 5 minutes default
+      customerActivity: "idle",
 
       fetchDashboardData: async () => {
         set({ isLoading: true });
@@ -73,26 +98,26 @@ export const useDeliveryDashboardStore = create<DeliveryDashboardState>()(
           const personData = db.users.delivery?.[0];
           const deliveryPerson: DeliveryPerson = personData
             ? {
-                id: personData.id,
-                name: personData.name,
-                avatar: personData.avatar,
-                isOnline: personData.isActive ?? true,
-                isActive: personData.isActive ?? true,
-                status: personData.status || "available",
-                stats: personData.stats,
-              }
+              id: personData.id,
+              name: personData.name,
+              avatar: personData.avatar,
+              isOnline: personData.isActive ?? true,
+              isActive: personData.isActive ?? true,
+              status: personData.status || "available",
+              stats: personData.stats,
+            }
             : {
-                id: "del_001",
-                name: "Biruk Wondimu",
-                avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Biruk",
-                isOnline: true,
-                isActive: true,
-                status: "available",
-              };
+              id: "del_001",
+              name: "Biruk Wondimu",
+              avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Biruk",
+              isOnline: true,
+              isActive: true,
+              status: "available",
+            };
 
           // Restaurants with active orders
           let restaurantsWithOrders =
-            db.deliveryDashboard?.restaurantsWithOrders;
+            (db.deliveryDashboard as any)?.restaurantsWithOrders;
 
           if (!restaurantsWithOrders || restaurantsWithOrders.length === 0) {
             restaurantsWithOrders =
@@ -144,12 +169,26 @@ export const useDeliveryDashboardStore = create<DeliveryDashboardState>()(
             : null,
         }));
       },
+
+      setOrderStatus: (status) => set({ orderStatus: status }),
+
+      decreasePaymentTimer: () =>
+        set((state) => ({
+          paymentTimer: Math.max(0, state.paymentTimer - 1),
+        })),
+
+      resetPaymentTimer: (seconds = 300) => set({ paymentTimer: seconds }),
+
+      setCustomerActivity: (activity) => set({ customerActivity: activity }),
     }),
 
     {
       name: "delivery-dashboard-storage",
       partialize: (state) => ({
         isOnline: state.isOnline,
+        orderStatus: state.orderStatus,
+        paymentTimer: state.paymentTimer,
+        customerActivity: state.customerActivity,
       }),
     },
   ),

@@ -167,6 +167,7 @@ export const ROUTES = {
     STATUS: "/delivery/status",
     AVAILABILITY: "/delivery/availability",
     SAVED: "/delivery/saved",
+    OFFLINE: "/delivery/offline",
 
     // Available Deliveries
     AVAILABLE: {

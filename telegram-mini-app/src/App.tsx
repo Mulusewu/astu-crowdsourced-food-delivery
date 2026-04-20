@@ -8,6 +8,8 @@ import AppRoutes from "./routes/AppRoutes";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 import { useTelegram } from "./hooks/useTelegram";
 import LoadingSkeleton from "./components/common/LoadingSkeleton";
+import WaitingForPaymentModal from "./components/delivery-person/WaitingForPaymentModal";
+import PaymentSuccessModal from "./components/delivery-person/PaymentSuccessModal";
 
 function AppContent() {
   const { initTelegram } = useTelegram();
@@ -28,6 +30,9 @@ function AppContent() {
                   <AppRoutes />
                 </div>
               </Suspense>
+              {/* Global modals — react to Zustand orderStatus from any page */}
+              <WaitingForPaymentModal />
+              <PaymentSuccessModal />
             </CartProvider>
           </LocationProvider>
         </AuthProvider>

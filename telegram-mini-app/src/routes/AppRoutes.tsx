@@ -72,15 +72,9 @@ export default function AppRoutes() {
         {deliveryRoutes.map((route) => (
           <Route
             key={route.path}
-            element={
-              <ProtectedRoute
-                allowedRoles={["delivery"]}
-                redirectPath={ROUTES.AUTH}
-              />
-            }
-          >
-            <Route path={route.path} element={route.element} />
-          </Route>
+            path={route.path}
+            element={route.element}
+          />
         ))}
 
         {/* ====================== FALLBACK ROUTES ====================== */}

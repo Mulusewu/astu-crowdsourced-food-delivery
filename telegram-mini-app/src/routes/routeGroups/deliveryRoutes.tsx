@@ -22,6 +22,10 @@ const DeliveryPasswordChangePage = lazy(
   () => import("../../features/delivery/pages/changePassword"),
 );
 
+const OfflinePage = lazy(
+  () => import("../../features/delivery/pages/OfflinePage"),
+);
+
 // ================= STATUS =================
 const DeliveryStatusPage = lazy(
   () => import("../../features/delivery/pages/StatusPage"),
@@ -58,9 +62,9 @@ const ActiveDeliveryTrackPage = lazy(
 const DeliveryStatsPage = lazy(
   () => import("../../features/delivery/pages/StatsPage"),
 );
-// const DeliveryHistoryPage = lazy(
-//   () => import("../../features/delivery/pages/HistoryPage"),
-// );
+const DeliveryHistoryPage = lazy(
+  () => import("../../features/delivery/pages/history"),
+);
 // const DeliveryHistoryDetailsPage = lazy(
 //   () => import("../../features/delivery/pages/HistoryDetailsPage"),
 // );
@@ -130,6 +134,10 @@ const UpdateLocationPage = lazy(
   () => import("../../features/delivery/pages/UpdateLocationPage"),
 );
 
+const ReportIssuePage = lazy(
+  () => import("../../features/delivery/pages/ReportIssuePage"),
+);
+
 export const deliveryRoutes: RouteGroup[] = [
   // ================= DASHBOARD =================
   {
@@ -141,6 +149,11 @@ export const deliveryRoutes: RouteGroup[] = [
     path: ROUTES.DELIVERY.PASSWORD,
     element: <DeliveryPasswordChangePage />,
     roles: [UserRoles.DELIVERY], // Use UserRoles.DELIVERY instead of UserRole.DELIVERY
+  },
+  {
+    path: ROUTES.DELIVERY.OFFLINE,
+    element: <OfflinePage />,
+    roles: [UserRoles.DELIVERY],
   },
 
   {
@@ -257,11 +270,11 @@ export const deliveryRoutes: RouteGroup[] = [
   // },
 
   // ================= HISTORY =================
-  // {
-  //   path: ROUTES.DELIVERY.HISTORY.LIST,
-  //   element: <DeliveryHistoryPage />,
-  //   roles: [UserRoles.DELIVERY],
-  // },
+  {
+    path: ROUTES.DELIVERY.HISTORY.LIST,
+    element: <DeliveryHistoryPage />,
+    roles: [UserRoles.DELIVERY],
+  },
   // {
   //   path: ROUTES.DELIVERY.HISTORY.DETAILS,
   //   element: <DeliveryHistoryDetailsPage />,
@@ -316,4 +329,9 @@ export const deliveryRoutes: RouteGroup[] = [
   //   element: <DeliverySupportPage />,
   //   roles: [UserRoles.DELIVERY],
   // },
+  {
+    path: ROUTES.DELIVERY.COMMUNICATION.REPORT,
+    element: <ReportIssuePage />,
+    roles: [UserRoles.DELIVERY],
+  },
 ];

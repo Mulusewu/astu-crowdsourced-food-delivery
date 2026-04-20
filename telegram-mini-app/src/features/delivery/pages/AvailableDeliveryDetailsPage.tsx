@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { MapPin, ArrowLeft, UtensilsCrossed, Store } from "lucide-react";
-
 import { Skeleton } from "@/components/ui/skeleton";
 import { useOrderDetailsStore } from "@/store/orderDetailsStore";
+import { useDeliveryDashboardStore } from "@/store/deliveryDashboardStore";
 
 export default function AvailableDeliveryDetailsPage() {
   const { orderId } = useParams<{ orderId: string }>();
@@ -17,6 +17,8 @@ export default function AvailableDeliveryDetailsPage() {
     declineOrder,
     isAccepting,
   } = useOrderDetailsStore();
+
+  const { setOrderStatus } = useDeliveryDashboardStore();
 
   useEffect(() => {
     if (orderId) fetchOrderDetails(orderId);
@@ -165,7 +167,10 @@ export default function AvailableDeliveryDetailsPage() {
           {/* Action Buttons */}
           <div className="flex gap-4">
             <button
-              onClick={acceptOrder}
+              onClick={async () => {
+                await acceptOrder();
+                setOrderStatus("awaiting_payment");
+              }}
               disabled={isAccepting || order.status !== "pending"}
               className="flex-1 bg-[#F26A1C] hover:bg-[#e05d15] text-white rounded-full py-3.5 font-bold text-[15px] shadow-lg shadow-orange-500/20 active:scale-95 transition-all disabled:opacity-50"
             >

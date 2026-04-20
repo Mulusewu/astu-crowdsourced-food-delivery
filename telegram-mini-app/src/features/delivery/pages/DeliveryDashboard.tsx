@@ -1,400 +1,465 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/routes/routePaths";
 import {
+  User,
+  MapPin,
+  Bookmark,
   Search,
   SlidersHorizontal,
-  ChevronDown,
-  Bookmark,
-  MapPin,
-  FileText,
+  LogOut,
+  Settings,
   Package,
-  AlertCircle,
-  Bike,
-  Check,
+  ChevronDown,
 } from "lucide-react";
-
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAuthStore } from "@/store/auth/authStore";
-import { useDeliveryDashboardStore } from "@/store/deliveryDashboardStore";
-import {
-  getRoleIcon,
-  getRoleDisplayName,
-  getAvailableRoles,
-} from "@/types/user.types";
 import BottomNav from "@/components/common/BottomNav1";
+import { cn } from "@/lib/utils";
+import database from "@/data/database.json";
+interface DeliveryPerson {
+  id: string;
+  name: string;
+  email: string;
+  avatar?: string;
+  isActive: boolean;
+  currentLocation?: {
+    lat: number;
+    lng: number;
+    address: string;
+  };
+  stats: {
+    deliveriesToday: number;
+    earningsToday: number;
+    rating: number;
+  };
+}
+
+interface Cafe {
+  id: string;
+  name: string;
+  description: string;
+  image: string;
+  location: string;
+  distance: string;
+  estimatedTime: number;
+  rating: number;
+  isBookmarked: boolean;
+  acceptsCash: boolean;
+  acceptsCard: boolean;
+  minimumOrder: number;
+  cuisine: string[];
+  activeOrders: number;
+}
+
+interface CheapOrder {
+  id: string;
+  orderNo: string;
+  items: number;
+  priceEtb: number;
+  image: string;
+}
+
+function firstName(fullName: string) {
+  return fullName.split(/\s+/)[0] ?? fullName;
+}
+
+function firstInitial(fullName: string) {
+  return (fullName.trim()[0] ?? "U").toUpperCase();
+}
 
 export default function DeliveryDashboard() {
   const navigate = useNavigate();
-
-  // --- AUTH & MULTI-ROLE STORE ---
-  const { user, activeRole, switchRole } = useAuthStore();
-  const availableRoles = getAvailableRoles(user);
-  const hasMultipleRoles = availableRoles.length > 1;
-  const [showRoleMenu, setShowRoleMenu] = useState(false);
-
-  // Derive dynamic user details
-  const firstName = user?.name?.split(" ")[0] || "Guest";
-  const initial = user?.name?.[0] || "U";
-
-  // --- DELIVERY DASHBOARD STORE ---
-  const {
-    restaurantsWithOrders,
-    pocketFriendlyOrders,
-    isLoading,
-    isOnline,
-    fetchDashboardData,
-    toggleAvailability,
-  } = useDeliveryDashboardStore();
+  const [deliveryPerson, setDeliveryPerson] = useState<DeliveryPerson | null>(
+    null,
+  );
+  const [cafes, setCafes] = useState<Cafe[]>([]);
+  const [cheapOrders, setCheapOrders] = useState<CheapOrder[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [locationValue, setLocationValue] = useState("all");
+  const [isLocationOpen, setIsLocationOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   useEffect(() => {
-    fetchDashboardData();
-  }, [fetchDashboardData]);
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 800)); // Simulate network request
 
-  const handleRoleSwitch = (role: any) => {
-    switchRole(role);
-    setShowRoleMenu(false);
+        const data = database.deliveryDashboard;
+        if (data) {
+          if (data.deliveryPerson) setDeliveryPerson(data.deliveryPerson as DeliveryPerson);
+          if (data.cheapOrders) setCheapOrders(data.cheapOrders as CheapOrder[]);
+          if (data.cafes) setCafes(data.cafes as Cafe[]);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const toggleActiveStatus = () => {
+    if (deliveryPerson) {
+      const willBeOnline = !deliveryPerson.isActive;
+      setDeliveryPerson({
+        ...deliveryPerson,
+        isActive: willBeOnline,
+      });
+
+      if (!willBeOnline) {
+        navigate(ROUTES.DELIVERY.OFFLINE);
+      }
+    }
   };
 
-  // --- OFFLINE STATE VIEW ---
-  if (!isLoading && !isOnline) {
-    return (
-      <div className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 flex flex-col items-center justify-center px-6 relative pb-20 font-sans transition-colors">
-        {/* Multi-role Switcher (Top Right, even when offline) */}
-        {hasMultipleRoles && (
-          <div className="absolute top-6 right-5">
-            <button
-              onClick={() => setShowRoleMenu(!showRoleMenu)}
-              className="w-[42px] h-[42px] rounded-full bg-[#F26A1C] flex items-center justify-center text-white font-black text-xl shadow-md border-2 border-white dark:border-gray-900 active:scale-95 transition-transform"
-            >
-              {initial}
-            </button>
-            {showRoleMenu && (
-              <>
-                <div
-                  className="fixed inset-0 z-40"
-                  onClick={() => setShowRoleMenu(false)}
-                />
-                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 py-1.5 z-50">
-                  <div className="px-4 py-2 border-b border-gray-50 dark:border-gray-800/50 mb-1">
-                    <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-                      Switch Profile
-                    </p>
-                  </div>
-                  {availableRoles.map((role) => (
-                    <button
-                      key={role}
-                      onClick={() => handleRoleSwitch(role)}
-                      className="w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                    >
-                      <span
-                        className={
-                          activeRole === role
-                            ? "text-[#F26A1C]"
-                            : "text-gray-500"
-                        }
-                      >
-                        {getRoleIcon(role)}
-                      </span>
-                      <span
-                        className={`font-medium ${activeRole === role ? "text-gray-900 dark:text-white" : "text-gray-600 dark:text-gray-400"}`}
-                      >
-                        {getRoleDisplayName(role)}
-                      </span>
-                      {activeRole === role && (
-                        <Check size={16} className="ml-auto text-[#F26A1C]" />
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-        )}
-
-        {/* Logo Placeholder */}
-        <div className="absolute top-16 flex items-center justify-center gap-2">
-          <div className="flex flex-col items-end">
-            <span className="text-2xl font-black text-gray-900 dark:text-white tracking-tighter leading-none">
-              ASTU
-            </span>
-            <span className="text-2xl font-black text-[#F26A1C] tracking-tighter leading-none">
-              EATS
-            </span>
-          </div>
-          <div className="flex flex-col items-center">
-            <Bike size={32} className="text-[#F26A1C]" strokeWidth={2.5} />
-            <span className="text-[10px] font-bold text-[#F26A1C] italic mt-0.5">
-              Delivery
-            </span>
-          </div>
-        </div>
-
-        <h1 className="text-[28px] font-black text-gray-900 dark:text-white mb-8 text-center mt-20">
-          You're Offline
-        </h1>
-
-        {/* Warning Box */}
-        <div className="flex items-center gap-3 bg-transparent mb-12 max-w-[250px]">
-          <div className="w-10 h-10 rounded-full bg-yellow-400 flex items-center justify-center shrink-0">
-            <AlertCircle size={24} className="text-white" fill="#FACC15" />
-          </div>
-          <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 leading-tight">
-            Go Online To Start Receiving Orders
-          </p>
-        </div>
-
-        {/* Custom Offline Toggle Button */}
-        <button
-          onClick={toggleAvailability}
-          className="relative w-40 h-[52px] bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-700 rounded-full flex items-center px-1.5 shadow-sm active:scale-95 transition-transform"
-        >
-          <div className="w-10 h-10 bg-gray-500 dark:bg-gray-400 rounded-full shadow-sm" />
-          <span className="absolute w-full text-center pr-6 text-gray-600 dark:text-gray-300 font-bold text-[17px]">
-            Offline
-          </span>
-        </button>
-      </div>
+  const toggleBookmark = (cafeId: string) => {
+    setCafes((prev) =>
+      prev.map((cafe) =>
+        cafe.id === cafeId
+          ? { ...cafe, isBookmarked: !cafe.isBookmarked }
+          : cafe,
+      ),
     );
-  }
+  };
 
-  // --- LOADING STATE ---
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 px-5 pt-6 space-y-6">
-        <Skeleton className="h-14 w-48 bg-gray-200 dark:bg-gray-800" />
-        <Skeleton className="h-12 w-full rounded-full bg-gray-200 dark:bg-gray-800" />
-        <Skeleton className="h-40 w-full rounded-3xl bg-gray-200 dark:bg-gray-800" />
-        <Skeleton className="h-64 w-full rounded-3xl bg-gray-200 dark:bg-gray-800" />
+      <div className="flex min-h-screen flex-col bg-white pb-32">
+        <div className="sticky top-0 z-10 bg-white px-4 pb-3 pt-4">
+          <div className="flex items-start justify-between">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-8 w-32" />
+            </div>
+            <Skeleton className="h-11 w-11 shrink-0 rounded-full" />
+          </div>
+          <Skeleton className="mt-4 h-12 w-full rounded-full" />
+          <div className="mt-4 flex gap-2">
+            <Skeleton className="h-10 w-16 rounded-xl" />
+            <Skeleton className="h-10 flex-1 rounded-xl" />
+            <Skeleton className="h-10 w-28 rounded-full" />
+          </div>
+        </div>
+        <div className="flex-1 space-y-4 px-4 py-4">
+          <Skeleton className="h-5 w-40" />
+          <div className="flex gap-3">
+            <Skeleton className="h-44 w-40 shrink-0 rounded-2xl" />
+            <Skeleton className="h-44 w-40 shrink-0 rounded-2xl" />
+          </div>
+          <Skeleton className="h-5 w-64" />
+          <Skeleton className="h-56 w-full rounded-2xl" />
+        </div>
+        <BottomNav />
       </div>
     );
   }
 
-  // --- ONLINE STATE VIEW ---
+  const name = deliveryPerson?.name ?? "";
+  const online = deliveryPerson?.isActive ?? false;
+
+  const filteredCafes =
+    locationValue === "all"
+      ? cafes
+      : cafes.filter((cafe) =>
+        cafe.location.toLowerCase().includes(locationValue.toLowerCase())
+      );
+
   return (
-    <div className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 font-sans pb-28 transition-colors">
-      {/* HEADER */}
-      <header className="px-5 pt-6 pb-2">
-        <div className="flex justify-between items-start mb-4">
+    <div className="flex min-h-screen flex-col bg-[#FDFDFD]">
+      <header className="sticky top-0 z-20 bg-white px-4 pb-3 pt-4 shadow-[0_1px_0_rgba(0,0,0,0.06)]">
+        <div className="flex items-start justify-between gap-3">
           <div>
-            <h1 className="text-[#F26A1C] font-bold text-lg leading-tight">
-              Welcome Back,
+            <p className="text-3xl font-medium text-primary">Welcome Back,</p>
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-[1.75rem]">
+              {firstName(name)}
             </h1>
-            <h2 className="text-gray-900 dark:text-white font-black text-3xl capitalize">
-              {firstName}
-            </h2>
           </div>
-
-          {/* Avatar Profile & Role Switcher */}
-          <div className="relative">
+          <div className="relative shrink-0">
             <button
-              onClick={() => hasMultipleRoles && setShowRoleMenu(!showRoleMenu)}
-              className="w-[42px] h-[42px] rounded-full bg-[#F26A1C] flex items-center justify-center text-white font-black text-xl shadow-md border-2 border-white dark:border-gray-900 active:scale-95 transition-transform"
+              type="button"
+              onClick={() => setShowProfileMenu(!showProfileMenu)}
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-lg font-semibold text-white shadow-sm transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              aria-label="Account menu"
             >
-              {initial}
-            </button>
-
-            {showRoleMenu && hasMultipleRoles && (
-              <>
-                <div
-                  className="fixed inset-0 z-40"
-                  onClick={() => setShowRoleMenu(false)}
+              {deliveryPerson?.avatar ? (
+                <img
+                  src={deliveryPerson.avatar}
+                  alt=""
+                  className="h-full w-full rounded-full object-cover"
                 />
-                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 py-1.5 z-50 overflow-hidden">
-                  <div className="px-4 py-2 border-b border-gray-50 dark:border-gray-800/50 mb-1">
-                    <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-                      Switch Profile
-                    </p>
-                  </div>
-                  {availableRoles.map((role) => (
-                    <button
-                      key={role}
-                      onClick={() => handleRoleSwitch(role)}
-                      className="w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                    >
-                      <span
-                        className={
-                          activeRole === role
-                            ? "text-[#F26A1C]"
-                            : "text-gray-500"
-                        }
-                      >
-                        {getRoleIcon(role)}
-                      </span>
-                      <span
-                        className={`font-medium ${activeRole === role ? "text-gray-900 dark:text-white" : "text-gray-600 dark:text-gray-400"}`}
-                      >
-                        {getRoleDisplayName(role)}
-                      </span>
-                      {activeRole === role && (
-                        <Check size={16} className="ml-auto text-[#F26A1C]" />
-                      )}
-                    </button>
-                  ))}
+              ) : (
+                firstInitial(name)
+              )}
+            </button>
+            {showProfileMenu && (
+              <div className="absolute right-0 mt-2 w-56 rounded-xl border border-gray-100 bg-white py-2 shadow-lg z-[60]">
+                <div className="border-b border-gray-100 px-4 py-3">
+                  <p className="text-sm font-medium text-gray-900">{name}</p>
+                  <p className="text-xs text-gray-500">{deliveryPerson?.email}</p>
                 </div>
-              </>
+                <button
+                  type="button"
+                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm hover:bg-gray-50"
+                >
+                  <User size={16} /> View Profile
+                </button>
+                <button
+                  type="button"
+                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm hover:bg-gray-50"
+                >
+                  <Settings size={16} /> Settings
+                </button>
+                <button
+                  type="button"
+                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50"
+                >
+                  <LogOut size={16} /> Sign Out
+                </button>
+              </div>
             )}
           </div>
         </div>
 
-        {/* SEARCH BAR */}
-        <div className="flex items-center bg-white dark:bg-gray-900 border-[1.5px] border-gray-200 dark:border-gray-800 rounded-full px-4 py-3 shadow-sm mb-5">
-          <Search size={20} className="text-gray-400 shrink-0" />
-          <input
-            type="text"
-            placeholder="Search"
-            className="flex-1 bg-transparent border-none outline-none px-3 text-[15px] font-medium text-gray-900 dark:text-white placeholder:text-gray-400"
+        <div className="relative mt-4">
+          <Search
+            className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400"
+            aria-hidden
           />
-          <SlidersHorizontal size={20} className="text-gray-400 shrink-0" />
+          <Input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search"
+            className="h-12 rounded-full border-gray-200 bg-white pl-12 pr-12 text-base shadow-none"
+          />
+          <button
+            type="button"
+            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-gray-500 hover:bg-gray-100"
+            aria-label="Filters"
+          >
+            <SlidersHorizontal className="h-5 w-5" />
+          </button>
         </div>
 
-        {/* FILTER & ONLINE TOGGLE ROW */}
-        <div className="flex items-center justify-between">
-          <div className="flex gap-2">
-            <button className="bg-[#F26A1C] text-white font-black text-[13px] px-6 py-2 rounded-full shadow-md active:scale-95 transition-transform">
-              ALL
-            </button>
-            <button className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-800 dark:text-gray-200 font-bold text-[13px] px-4 py-2 rounded-full flex items-center gap-1 active:scale-95 transition-transform">
-              Location <ChevronDown size={14} className="stroke-[3]" />
-            </button>
-          </div>
-
-          {/* Custom Online Toggle */}
-          <div
-            className="flex items-center border border-[#F26A1C] rounded-full px-1.5 py-1 cursor-pointer active:scale-95 transition-transform bg-orange-50/50 dark:bg-orange-900/20"
-            onClick={toggleAvailability}
+        <div className="mt-4 flex w-full flex-wrap items-center gap-2 sm:flex-nowrap">
+          <Button
+            type="button"
+            className="h-10 shrink-0 rounded-xl bg-[#F26A1C] px-5 font-bold text-white shadow-md hover:bg-[#F26A1C]/90 focus:ring-2 focus:ring-[#F26A1C] focus:ring-offset-1 transition-all active:scale-95"
           >
-            <span className="text-[#F26A1C] font-bold text-[12px] px-2">
-              Online
-            </span>
-            <div className="w-5 h-5 bg-[#F26A1C] rounded-full shadow-sm" />
+            ALL
+          </Button>
+          {/* Custom Dropdown Container */}
+          <div className="relative">
+            {/* Click-away overlay */}
+            {isLocationOpen && (
+              <div 
+                className="fixed inset-0 z-40" 
+                onClick={() => setIsLocationOpen(false)} 
+              />
+            )}
+            
+            <button
+              onClick={() => setIsLocationOpen(!isLocationOpen)}
+              className="relative z-50 flex h-10 w-[130px] items-center justify-between rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 shadow-sm transition-all hover:border-[#F26A1C]/50 hover:text-[#F26A1C] focus-visible:ring-1 focus-visible:ring-[#F26A1C]"
+            >
+              <span className="truncate">
+                {locationValue === "all" ? "All Locations" : locationValue}
+              </span>
+              <ChevronDown className="size-4 shrink-0 text-[#F26A1C] transition-transform" style={{ transform: isLocationOpen ? "rotate(180deg)" : "rotate(0deg)" }} />
+            </button>
+
+            {/* Dropdown Menu */}
+            {isLocationOpen && (
+              <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-[140px] rounded-xl border border-gray-100 bg-white shadow-xl animate-in fade-in zoom-in-95 duration-150">
+                <div className="flex flex-col p-1.5">
+                  {["All Locations", "Bole Gate", "Gedagate", "Main Gate"].map((loc) => {
+                    const val = loc === "All Locations" ? "all" : loc;
+                    const isSelected = locationValue === val;
+                    return (
+                      <button
+                        key={loc}
+                        onClick={() => {
+                          setLocationValue(val);
+                          setIsLocationOpen(false);
+                        }}
+                        className={cn(
+                          "flex w-full items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                          isSelected
+                            ? "bg-orange-50 text-[#F26A1C]"
+                            : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                        )}
+                      >
+                        {loc}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={online}
+            aria-label={online ? "Online" : "Offline"}
+            onClick={toggleActiveStatus}
+            className={cn(
+              "ml-auto flex shrink-0 items-center gap-1.5 rounded-full border-2 py-1 pl-2.5 pr-1 shadow-sm transition-colors duration-200",
+              online
+                ? "border-primary bg-white"
+                : "border-gray-300 bg-gray-200",
+            )}
+          >
+            <span
+              className={cn(
+                "text-xs font-semibold transition-colors duration-200",
+                online ? "text-gray-900" : "text-gray-600",
+              )}
+            >
+              {online ? "Online" : "Offline"}
+            </span>
+            <span
+              className={cn(
+                "relative h-5 w-9 shrink-0 rounded-full transition-colors duration-200",
+                online ? "bg-primary" : "bg-gray-400",
+              )}
+            >
+              <span
+                className={cn(
+                  "absolute top-0.5 h-4 w-4 rounded-full shadow-sm transition-all duration-200",
+                  online
+                    ? "right-0.5 bg-white"
+                    : "left-0.5 bg-gray-100 ring-1 ring-gray-400/50",
+                )}
+              />
+            </span>
+          </button>
         </div>
       </header>
 
-      <main className="px-5 mt-2">
-        {/* POCKET FRIENDLY ORDERS */}
-        <div className="mb-8">
-          <h3 className="font-bold text-gray-900 dark:text-white text-[15px] mb-8">
-            Pocket Friendly Orders
-          </h3>
-
-          {pocketFriendlyOrders.length === 0 ? (
-            <p className="text-sm text-gray-500 font-medium">
-              No orders available right now.
-            </p>
-          ) : (
-            <div className="flex gap-4 overflow-x-auto pb-4 px-1 -mx-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-              {pocketFriendlyOrders.map((order) => (
-                <div
-                  key={order.id}
-                  className="relative w-[130px] shrink-0 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-[20px] shadow-[0_4px_15px_rgba(0,0,0,0.03)] flex flex-col items-center pt-10 pb-4 px-3 mt-4"
-                >
-                  <img
-                    src={
-                      order.image ||
-                      "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&h=200&fit=crop"
-                    }
-                    alt="Food"
-                    className="absolute -top-6 w-[70px] h-[70px] rounded-full object-cover border-[4px] border-white dark:border-gray-900 shadow-sm"
-                  />
-                  <h4 className="font-black text-gray-900 dark:text-white text-[13px] mb-1 text-center mt-1">
-                    Order {order.orderNumber || `#${order.id.slice(-3)}`}
-                  </h4>
-                  <div className="flex items-center gap-1 mb-0.5">
-                    <Package
-                      size={12}
-                      className="text-[#F26A1C]"
-                      strokeWidth={3}
+      <main className="flex-1 overflow-y-auto px-4 pb-32 pt-5">
+        <section>
+          <h2 className="mb-3 text-base font-semibold text-gray-900">
+            Cheap Orders
+          </h2>
+          <div className="-mx-1 flex gap-3 overflow-x-auto pb-2 pt-10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {cheapOrders.map((order) => (
+              <article
+                key={order.id}
+                className="relative flex min-w-[158px] max-w-[158px] shrink-0 flex-col items-center overflow-visible rounded-2xl bg-white px-3 pb-3 pt-2 shadow-[0_4px_20px_rgba(0,0,0,0.08)] ring-1 ring-gray-100"
+              >
+                <span
+                  className="absolute right-3 top-3 z-[1] h-2 w-2 rounded-sm bg-primary"
+                  aria-hidden
+                />
+                {/* In-flow + negative margin: participates in layout so horizontal scroll does not clip the circle like position:absolute. */}
+                <div className="z-[1] -mt-10 mb-1 flex justify-center">
+                  <div className="h-[5rem] w-[5rem] shrink-0 overflow-hidden rounded-full border-[3px] border-white bg-gray-50 shadow-md ring-1 ring-black/5">
+                    <img
+                      src={order.image}
+                      alt=""
+                      className="h-full w-full object-contain object-center"
                     />
-                    <span className="font-bold text-[#F26A1C] text-[11px]">
-                      {order.items?.length || 0} Items
-                    </span>
                   </div>
-                  <p className="font-black text-[#F26A1C] text-[12px] mb-3">
-                    {order.totalAmount} ETB
-                  </p>
+                </div>
+                <p className="mt-1 text-center text-sm font-semibold text-gray-900">
+                  Order #{order.orderNo}
+                </p>
+                <div className="mt-1 flex items-center justify-center gap-1 text-xs text-gray-600">
+                  <Package className="h-3.5 w-3.5 text-primary" strokeWidth={2} />
+                  <span>{order.items} items</span>
+                </div>
+                <p className="mt-1 text-center text-sm font-bold text-gray-900">
+                  {order.priceEtb} ETB
+                </p>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => navigate(`/delivery/available/${order.id}`)}
+                  className="mt-3 h-9 w-full rounded-full bg-primary text-xs font-semibold text-white hover:bg-primary/90 shadow-md transition-all active:scale-95"
+                >
+                  View Detail
+                </Button>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="mt-8">
+          <h2 className="mb-3 text-base font-semibold text-gray-900">
+            Restaurants With Active Orders
+          </h2>
+          <div className="space-y-5">
+            {filteredCafes.map((cafe) => (
+              <article
+                key={cafe.id}
+                className="overflow-hidden rounded-2xl bg-white shadow-[0_4px_24px_rgba(0,0,0,0.08)] ring-1 ring-gray-100"
+              >
+                <div className="relative h-44 sm:h-48">
+                  <img
+                    src={cafe.image}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
                   <button
-                    onClick={() => navigate(`/delivery/available/${order.id}`)}
-                    className="bg-[#F26A1C] hover:bg-[#e05d15] text-white font-bold text-[10px] w-full py-2 rounded-full shadow-md transition-colors active:scale-95"
+                    type="button"
+                    onClick={() => toggleBookmark(cafe.id)}
+                    className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white shadow-md transition hover:bg-primary/90"
+                    aria-label={
+                      cafe.isBookmarked ? "Remove bookmark" : "Bookmark"
+                    }
                   >
-                    View Detail
+                    <Bookmark
+                      className={cn(
+                        "h-5 w-5",
+                        cafe.isBookmarked ? "fill-white text-white" : "text-white",
+                      )}
+                    />
                   </button>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* RESTAURANTS WITH ACTIVE ORDERS */}
-        <div>
-          <h3 className="font-bold text-gray-900 dark:text-white text-[15px] mb-4">
-            Restaurants With Active Orders
-          </h3>
-          <div className="space-y-5">
-            {restaurantsWithOrders.length === 0 ? (
-              <p className="text-sm text-gray-500 font-medium">
-                No restaurants have active orders.
-              </p>
-            ) : (
-              restaurantsWithOrders.map((cafe) => (
-                <div
-                  key={cafe.id}
-                  className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-[24px] overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.04)]"
-                >
-                  <div className="relative h-[150px] w-full">
-                    <img
-                      src={cafe.image}
-                      alt={cafe.name}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black/10" />
-                    <div className="absolute top-0 right-4 bg-[#F26A1C] w-10 h-12 rounded-b-[16px] flex items-center justify-center shadow-lg">
-                      <Bookmark size={20} fill="white" className="text-white" />
+                <div className="flex items-center gap-3 p-4">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-lg font-bold text-gray-900">
+                      {cafe.name}
+                    </h3>
+                    <div className="mt-2 flex items-center gap-1.5 text-sm text-gray-600">
+                      <Package
+                        className="h-4 w-4 shrink-0 text-primary"
+                        strokeWidth={2}
+                      />
+                      <span>{cafe.activeOrders} orders</span>
+                    </div>
+                    <div className="mt-1.5 flex items-center gap-1.5 text-sm text-gray-600">
+                      <MapPin
+                        className="h-4 w-4 shrink-0 text-red-500"
+                        strokeWidth={2}
+                      />
+                      <span>
+                        {cafe.location} · {cafe.distance}
+                      </span>
                     </div>
                   </div>
-                  <div className="p-4 flex items-center justify-between">
-                    <div>
-                      <h4 className="font-black text-gray-900 dark:text-white text-[17px] mb-1">
-                        {cafe.name}
-                      </h4>
-                      <div className="flex items-center gap-1.5 mb-1 text-gray-600 dark:text-gray-400">
-                        <FileText
-                          size={13}
-                          className="text-[#F26A1C]"
-                          strokeWidth={2.5}
-                        />
-                        <span className="font-bold text-[12px]">
-                          {cafe.orderCount} Orders
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1 text-gray-500">
-                        <MapPin
-                          size={13}
-                          className="text-[#F26A1C]"
-                          strokeWidth={2.5}
-                        />
-                        <span className="font-semibold text-[11px]">
-                          {cafe.location} , {cafe.distance}
-                        </span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() =>
-                        navigate(`/delivery/available?cafe=${cafe.id}`)
-                      }
-                      className="bg-[#F26A1C] hover:bg-[#e05d15] text-white font-bold text-[13px] px-5 py-2.5 rounded-[14px] shadow-lg shadow-orange-500/20 active:scale-95 transition-all"
-                    >
-                      View Orders
-                    </button>
-                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => navigate(ROUTES.DELIVERY.AVAILABLE.LIST)}
+                    className="mt-3 h-9 w-25 rounded-full bg-primary text-xs font-semibold text-white hover:bg-primary/90"
+                  >
+                    View orders
+                  </Button>
                 </div>
-              ))
-            )}
+              </article>
+            ))}
           </div>
-        </div>
+        </section>
       </main>
 
-      <BottomNav activeTab="home" />
+      <BottomNav />
     </div>
   );
 }

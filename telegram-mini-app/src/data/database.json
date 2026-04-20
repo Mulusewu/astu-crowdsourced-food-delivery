@@ -9,6 +9,104 @@
     "totalCategories": 15,
     "lastUpdated": "2025-01-15T00:00:00Z"
   },
+  "deliveryDashboard": {
+    "deliveryPerson": {
+      "id": "1",
+      "name": "Nati Hailu",
+      "email": "nati@example.com",
+      "isActive": true,
+      "currentLocation": {
+        "lat": 9.0222,
+        "lng": 38.7468,
+        "address": "Bole, Addis Ababa"
+      },
+      "stats": {
+        "deliveriesToday": 8,
+        "earningsToday": 1200,
+        "rating": 4.8
+      }
+    },
+    "cheapOrders": [
+      {
+        "id": "c1",
+        "orderNo": "2041",
+        "items": 2,
+        "priceEtb": 120,
+        "image": "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=200&h=200&fit=crop"
+      },
+      {
+        "id": "c2",
+        "orderNo": "2042",
+        "items": 3,
+        "priceEtb": 95,
+        "image": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&h=200&fit=crop"
+      },
+      {
+        "id": "c3",
+        "orderNo": "2043",
+        "items": 1,
+        "priceEtb": 150,
+        "image": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=200&h=200&fit=crop"
+      },
+      {
+        "id": "c4",
+        "orderNo": "2044",
+        "items": 4,
+        "priceEtb": 210,
+        "image": "https://images.unsplash.com/photo-1512058564366-18510be2db19?w=200&h=200&fit=crop"
+      }
+    ],
+    "cafes": [
+      {
+        "id": "1",
+        "name": "Helen Cafe",
+        "description": "Coffee • Breakfast • Local favorites",
+        "image": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800",
+        "location": "Bole Atlas",
+        "distance": "0.8 km",
+        "estimatedTime": 15,
+        "rating": 4.5,
+        "isBookmarked": true,
+        "acceptsCash": true,
+        "acceptsCard": true,
+        "minimumOrder": 50,
+        "cuisine": ["Coffee", "Breakfast"],
+        "activeOrders": 3
+      },
+      {
+        "id": "2",
+        "name": "Yod Abyssinia",
+        "description": "Traditional Ethiopian • Live music",
+        "image": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800",
+        "location": "Bole Medhanialem",
+        "distance": "1.2 km",
+        "estimatedTime": 20,
+        "rating": 4.7,
+        "isBookmarked": false,
+        "acceptsCash": true,
+        "acceptsCard": false,
+        "minimumOrder": 100,
+        "cuisine": ["Ethiopian"],
+        "activeOrders": 5
+      },
+      {
+        "id": "3",
+        "name": "Kaldi's Coffee",
+        "description": "Coffee • Pastries",
+        "image": "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800",
+        "location": "Wavel Street",
+        "distance": "1.5 km",
+        "estimatedTime": 12,
+        "rating": 4.9,
+        "isBookmarked": true,
+        "acceptsCash": true,
+        "acceptsCard": true,
+        "minimumOrder": 30,
+        "cuisine": ["Coffee"],
+        "activeOrders": 2
+      }
+    ]
+  },
   "users": {
     "customers": [
       {

@@ -3,11 +3,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
-
-import { BrandCard } from "@/components/brand/BrandCard";
 import { useAuthStore } from "@/store/auth/authStore";
 
-// Schema updated to match the specific error cases in the design
 const signupSchema = z
   .object({
     name: z.string().min(2, "Name Is Too Short!").max(50, "Name Is Too Long!"),
@@ -52,137 +49,160 @@ export default function SignupForm() {
         password: data.password,
         role: "customer",
       });
-      // Redirect is handled by authStore after successful signup
     } catch (err: any) {
-      // Simulate the "User Already Exists" error from the design
       setApiError(err.message || "User Already Exists With This Email!");
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 font-sans flex flex-col items-center pt-8 px-6">
-      <div className="w-full max-w-md">
-        {/* TABS */}
-        {/* <div className="flex w-full mb-10">
-          <button className="flex-1 pb-3 text-center border-b-[3px] border-[#F26A1C] font-bold text-gray-900 dark:text-white text-[15px]">
-            Sign Up
-          </button>
-          <button 
-            type="button"
-            onClick={() => navigate("/auth?tab=login")} // Assuming you route based on query or setup
-            className="flex-1 pb-3 text-center border-b-[3px] border-transparent font-bold text-gray-900 dark:text-white text-[15px]"
-          >
-            Login
-          </button>
-        </div> */}
+    <div className="min-h-screen bg-white font-sans flex flex-col items-center pt-16">
+      <style>{`
+        @keyframes ride {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-1.5px); }
+        }
+        @keyframes dash {
+          0% { stroke-dashoffset: 20; opacity: 0.4; }
+          50% { opacity: 1; }
+          100% { stroke-dashoffset: 0; opacity: 0.4; }
+        }
+        .scooter-ride { animation: ride 0.25s ease-in-out infinite; }
+        .motion-line { 
+          stroke-dasharray: 10 5; 
+          animation: dash 0.4s linear infinite; 
+        }
+      `}</style>
 
-        {/* BRAND LOGO */}
-        <div className="flex justify-center mb-10">
-          <BrandCard />
+      <div className="w-full max-w-[340px] px-4 flex flex-col items-center">
+        {/* LOGO SECTION */}
+        <div className="relative flex items-center justify-center w-full mb-12 mt-2 pr-6">
+          <div className="flex flex-col items-end mr-2">
+            <span className="text-[44px] font-black text-black leading-[0.8] tracking-tight drop-shadow-sm">
+              ASTU
+            </span>
+            <span className="text-[52px] font-black text-[#F26A1C] leading-[0.8] tracking-tight drop-shadow-md">
+              EATS
+            </span>
+          </div>
+          <div className="flex flex-col items-center -mt-10 -mb-2">
+            <div className="flex flex-col items-center">
+              <svg
+                width="110"
+                height="80"
+                viewBox="0 0 120 100"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="text-[#F26A1C] scooter-ride"
+              >
+                <path d="M5 45H22" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="motion-line" />
+                <path d="M2 55H25" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="motion-line" style={{ animationDelay: '0.1s' }} />
+                <path d="M8 65H18" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="motion-line" style={{ animationDelay: '0.2s' }} />
+
+                <path d="M95 75V45L88 40H75L68 55H35V65C35 70 40 75 45 75H95Z" fill="currentColor" />
+                <path d="M95 45L105 45L108 40" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+                <path d="M102 40H112" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+                
+                <circle cx="65" cy="22" r="7" fill="currentColor" />
+                <path d="M58 29H72L75 45L68 60H55L52 45L58 29Z" fill="currentColor" />
+                <path d="M72 40L88 43" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" />
+
+                <rect x="28" y="35" width="22" height="22" rx="2" fill="currentColor" />
+                
+                <circle cx="42" cy="80" r="10" stroke="currentColor" strokeWidth="6" />
+                <circle cx="95" cy="80" r="10" stroke="currentColor" strokeWidth="6" />
+                <circle cx="42" cy="80" r="2" fill="white" />
+                <circle cx="95" cy="80" r="2" fill="white" />
+              </svg>
+              <span className="text-[#F26A1C] text-[24px] font-black italic tracking-tight -mt-1">
+                Delivery
+              </span>
+            </div>
+          </div>
         </div>
 
-        {/* FORM */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 w-full">
-          {/* Name Field */}
-          <div>
-            <label className="text-[13px] font-bold text-gray-900 dark:text-white mb-2 block">
-              Name
-            </label>
+        {/* AUTH FORM */}
+        <form onSubmit={handleSubmit(onSubmit)} className="w-full space-y-4">
+          {/* Name */}
+          <div className="space-y-1">
+            <label className="text-[17px] font-bold text-gray-900 ml-1">Name</label>
             <input
               {...register("name")}
               placeholder="John Doe"
-              className={`w-full h-12 border ${errors.name ? "border-red-500" : "border-gray-200 dark:border-gray-800"} rounded-[14px] px-4 text-[13px] font-medium bg-transparent text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-gray-600 focus:border-[#F26A1C] focus:outline-none transition-colors`}
+              className={`w-full h-13 border ${errors.name ? "border-red-500" : "border-gray-200"} rounded-[10px] px-5 text-[15px] font-medium text-gray-900 placeholder:text-gray-300 focus:border-[#F26A1C] focus:outline-none transition-all`}
             />
             {errors.name && (
-              <p className="text-[10px] text-red-500 font-bold mt-1.5">
-                {errors.name.message}
-              </p>
+              <p className="text-xs text-red-500 font-semibold ml-1">{errors.name.message}</p>
             )}
           </div>
 
-          {/* Email Field */}
-          <div>
-            <label className="text-[13px] font-bold text-gray-900 dark:text-white mb-2 block">
-              Email Address
-            </label>
+          {/* Email */}
+          <div className="space-y-1">
+            <label className="text-[17px] font-bold text-gray-900 ml-1">Email Address</label>
             <input
               type="email"
               {...register("email")}
               placeholder="Johndoe@Gmail.Com"
-              className={`w-full h-12 border ${errors.email || apiError ? "border-red-500" : "border-gray-200 dark:border-gray-800"} rounded-[14px] px-4 text-[13px] font-medium bg-transparent text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-gray-600 focus:border-[#F26A1C] focus:outline-none transition-colors`}
+              className={`w-full h-13 border ${errors.email || apiError ? "border-red-500" : "border-gray-200"} rounded-[10px] px-5 text-[15px] font-medium text-gray-900 placeholder:text-gray-300 focus:border-[#F26A1C] focus:outline-none transition-all`}
             />
-            {errors.email && (
-              <p className="text-[10px] text-red-500 font-bold mt-1.5">
-                {errors.email.message}
-              </p>
-            )}
-            {apiError && !errors.email && (
-              <p className="text-[10px] text-red-500 font-bold mt-1.5">
-                {apiError}
-              </p>
-            )}
+            {errors.email ? (
+              <p className="text-xs text-red-500 font-semibold ml-1">{errors.email.message}</p>
+            ) : apiError ? (
+              <p className="text-xs text-red-500 font-semibold ml-1">{apiError}</p>
+            ) : null}
           </div>
 
-          {/* Password Field */}
-          <div>
-            <label className="text-[13px] font-bold text-gray-900 dark:text-white mb-2 block">
-              Password
-            </label>
+          {/* Password */}
+          <div className="space-y-1">
+            <label className="text-[17px] font-bold text-gray-900 ml-1">Password</label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
                 {...register("password")}
                 placeholder="***********"
-                className={`w-full h-12 border ${errors.password ? "border-red-500" : "border-gray-200 dark:border-gray-800"} rounded-[14px] px-4 pr-10 text-[13px] font-medium bg-transparent text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-gray-600 focus:border-[#F26A1C] focus:outline-none transition-colors`}
+                className={`w-full h-13 border ${errors.password ? "border-red-500" : "border-gray-200"} rounded-[10px] px-5 text-[15px] font-medium text-gray-900 placeholder:text-gray-300 focus:border-[#F26A1C] focus:outline-none transition-all`}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500 transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300"
               >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
             {errors.password && (
-              <p className="text-[10px] text-red-500 font-bold mt-1.5">
-                {errors.password.message}
-              </p>
+              <p className="text-xs text-red-500 font-semibold ml-1">{errors.password.message}</p>
             )}
           </div>
 
-          {/* Confirm Password Field */}
-          <div>
-            <label className="text-[13px] font-bold text-gray-900 dark:text-white mb-2 block">
-              Confirm Password
-            </label>
+          {/* Confirm Password */}
+          <div className="space-y-1">
+            <label className="text-[17px] font-bold text-gray-900 ml-1">Confirm Password</label>
             <div className="relative">
               <input
                 type={showConfirmPassword ? "text" : "password"}
                 {...register("confirmPassword")}
                 placeholder="***********"
-                className={`w-full h-12 border ${errors.confirmPassword ? "border-red-500" : "border-gray-200 dark:border-gray-800"} rounded-[14px] px-4 pr-10 text-[13px] font-medium bg-transparent text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-gray-600 focus:border-[#F26A1C] focus:outline-none transition-colors`}
+                className={`w-full h-13 border ${errors.confirmPassword ? "border-red-500" : "border-gray-200"} rounded-[10px] px-5 text-[15px] font-medium text-gray-900 placeholder:text-gray-300 focus:border-[#F26A1C] focus:outline-none transition-all`}
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500 transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300"
               >
-                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
             {errors.confirmPassword && (
-              <p className="text-[10px] text-red-500 font-bold mt-1.5">
-                {errors.confirmPassword.message}
-              </p>
+              <p className="text-xs text-red-500 font-semibold ml-1">{errors.confirmPassword.message}</p>
             )}
           </div>
 
-          {/* Centered Pill Submit Button */}
-          <div className="pt-4 flex justify-center">
+          {/* Submit Button */}
+          <div className="pt-6 flex justify-center">
             <button
               type="submit"
               disabled={isLoading}
-              className="bg-[#F26A1C] hover:bg-[#e05d15] text-white font-bold text-[15px] px-12 py-3.5 rounded-full shadow-lg shadow-orange-500/20 active:scale-95 transition-all disabled:opacity-70 min-w-40"
+              className="bg-[#F26A1C] hover:bg-[#e05d15] text-white font-black text-[22px] px-16 py-3.5 rounded-full shadow-lg shadow-orange-500/20 active:scale-95 transition-all disabled:opacity-70 min-w-[200px]"
             >
               {isLoading ? "Wait..." : "Sign Up"}
             </button>
@@ -192,3 +212,4 @@ export default function SignupForm() {
     </div>
   );
 }
+
