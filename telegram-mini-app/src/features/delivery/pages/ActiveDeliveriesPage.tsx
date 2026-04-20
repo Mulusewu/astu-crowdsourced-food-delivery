@@ -13,26 +13,14 @@ const formatDate = (dateString: string) => {
   });
 };
 
+import { getActiveOrders, type ActiveOrder } from "../utils/orderMapper";
+
 export default function ActiveDeliveriesPage() {
   const navigate = useNavigate();
 
-  // Mock data representing the active orders exactly as the design
-  const activeOrders = [
-    {
-      id: "1",
-      orderNo: "123",
-      date: "2026-06-03T10:00:00Z",
-      timeRemaining: "30:00",
-      status: "On Transit",
-      items: [
-        { name: "Beyayenet", quantity: "2 Pcs", price: 100 },
-        { name: "Pasta Besego", quantity: "1 Pcs", price: 90 },
-        { name: "Pasta Besego", quantity: "1 Pcs", price: 110 },
-      ],
-      phone: "0934768909",
-      total: 300,
-    },
-  ];
+  // Fetch active orders from the centralized database
+  const activeOrders: ActiveOrder[] = getActiveOrders();
+
 
   return (
     <div className="flex min-h-screen flex-col bg-[#FDFDFD] font-sans pb-24 text-gray-900">
