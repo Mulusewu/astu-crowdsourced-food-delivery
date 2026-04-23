@@ -29,7 +29,7 @@ function firstInitial(fullName: string) {
 
 export default function DeliveryDashboard() {
   const navigate = useNavigate();
-  
+
   // Zustand Store
   const {
     deliveryPerson,
