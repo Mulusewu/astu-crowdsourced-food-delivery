@@ -67,15 +67,6 @@ export const themeColors = {
   },
 };
 
-// Helper to detect system preference
-const getSystemTheme = (): ThemeMode => {
-  if (typeof window !== "undefined" && window.matchMedia) {
-    return window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light";
-  }
-  return "light";
-};
 
 export const useThemeStore = create<ThemeState>()(
   persist(
@@ -85,23 +76,16 @@ export const useThemeStore = create<ThemeState>()(
       primaryColor: "#F26A1C",
       isInitialized: false,
 
-      setMode: (mode) => {
-        set({ mode });
-        // Apply theme to document
+      setMode: (_mode) => {
+        // Force light mode
+        set({ mode: "light" });
         if (typeof document !== "undefined") {
-          if (mode === "dark") {
-            document.documentElement.classList.add("dark");
-          } else {
-            document.documentElement.classList.remove("dark");
-          }
+          document.documentElement.classList.remove("dark");
         }
       },
 
-      // Fixed: Renamed to match component expectations
       toggleTheme: () => {
-        const currentMode = get().mode;
-        const newMode = currentMode === "light" ? "dark" : "light";
-        get().setMode(newMode);
+        // No-op to disable theme switching
       },
 
       setPrimaryColor: (color) => {
@@ -115,14 +99,8 @@ export const useThemeStore = create<ThemeState>()(
       initializeTheme: () => {
         if (get().isInitialized) return;
 
-        // Check if mode is already set (from persistence)
-        const currentMode = get().mode;
-        if (!currentMode) {
-          // Use system preference as fallback
-          get().setMode(getSystemTheme());
-        } else {
-          get().setMode(currentMode);
-        }
+        // Force light mode on initialization
+        get().setMode("light");
 
         // Set primary color CSS variable
         const primaryColor = get().primaryColor;
@@ -134,10 +112,8 @@ export const useThemeStore = create<ThemeState>()(
       },
 
       getCurrentTheme: () => {
-        const mode = get().mode;
-        const colors = themeColors[mode];
         return {
-          ...colors,
+          ...themeColors.light,
           primary: get().primaryColor,
         };
       },
@@ -145,7 +121,6 @@ export const useThemeStore = create<ThemeState>()(
     {
       name: "theme-storage",
       partialize: (state) => ({
-        mode: state.mode,
         primaryColor: state.primaryColor,
       }),
     },

@@ -112,7 +112,7 @@ export default function AvailableDeliveriesPage() {
           </button>
 
           <div className="relative">
-            <button 
+            <button
               onClick={() => setIsFilterOpen(!isFilterOpen)}
               className="flex items-center justify-between gap-2 bg-white border border-gray-300 text-black font-semibold text-[15px] px-4 h-[44px] rounded-[14px] shadow-sm"
             >
@@ -122,9 +122,9 @@ export default function AvailableDeliveriesPage() {
 
             {isFilterOpen && (
               <>
-                <div 
-                  className="fixed inset-0 z-40" 
-                  onClick={() => setIsFilterOpen(false)} 
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setIsFilterOpen(false)}
                 />
                 <div className="absolute top-[calc(100%+8px)] left-0 z-50 w-[190px] rounded-xl border border-gray-100 bg-white shadow-xl animate-in fade-in zoom-in-95 duration-150">
                   <div className="flex flex-col p-1.5">
@@ -135,11 +135,10 @@ export default function AvailableDeliveriesPage() {
                           setSecondaryFilter(option.value);
                           setIsFilterOpen(false);
                         }}
-                        className={`flex w-full text-left items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                          secondaryFilter === option.value
-                            ? "bg-orange-50 text-[#F26A1C]"
-                            : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                        }`}
+                        className={`flex w-full text-left items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors ${secondaryFilter === option.value
+                          ? "bg-orange-50 text-[#F26A1C]"
+                          : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                          }`}
                       >
                         {option.label}
                       </button>
@@ -180,7 +179,7 @@ export default function AvailableDeliveriesPage() {
                   </div>
 
                   {/* Bookmark Icon */}
-                  <button 
+                  <button
                     onClick={() => toggleBookmark(order.id)}
                     className="absolute top-4 right-4 text-[#F26A1C] transition-transform active:scale-95"
                   >

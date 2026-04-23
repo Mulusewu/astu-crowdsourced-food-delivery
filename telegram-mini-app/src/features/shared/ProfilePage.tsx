@@ -5,13 +5,10 @@ import {
   Camera,
   Mail,
   Phone,
-  Sun,
-  Moon,
   ClipboardList,
   ArrowLeft,
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth/authStore";
-import { useThemeStore } from "@/store/ui/themeStore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 // Import our new dynamic components
@@ -21,7 +18,6 @@ import RoleDropdown from "@/components/profile/RoleDropdown";
 export default function SharedProfilePage() {
   const navigate = useNavigate();
   const { user, activeRole, logout } = useAuthStore();
-  const { mode, toggleTheme } = useThemeStore();
 
   // Dynamic back routing based on current role
   const handleBack = () => {
@@ -68,27 +64,6 @@ export default function SharedProfilePage() {
       {/* Settings List */}
       <div className="mx-5 mt-6 bg-white dark:bg-gray-900 rounded-[24px] shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:border dark:border-gray-800 p-2">
         {/* ... (Your existing Mail & Phone rows) ... */}
-
-        <div
-          className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800 cursor-pointer"
-          onClick={toggleTheme}
-        >
-          <div className="flex items-center gap-3">
-            {mode === "dark" ? (
-              <Moon size={20} className="text-gray-500" />
-            ) : (
-              <Sun size={20} className="text-gray-500" />
-            )}
-            <span className="text-[13px] font-medium text-gray-600 dark:text-gray-300">
-              Theme
-            </span>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-[13px] font-medium text-[#F26A1C] capitalize">
-              {mode}
-            </span>
-          </div>
-        </div>
 
         <div
           className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800 cursor-pointer"

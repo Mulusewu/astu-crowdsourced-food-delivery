@@ -5,12 +5,9 @@ import {
   Camera,
   Mail,
   Phone,
-  Sun,
-  Moon,
   ClipboardList,
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth/authStore";
-import { useThemeStore } from "@/store/ui/themeStore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import BottomNav from "@/components/common/BottomNav1";
 import { Header } from "@/components/profile/ProfileShared";
@@ -18,7 +15,6 @@ import { Header } from "@/components/profile/ProfileShared";
 export default function ProfileMain() {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
-  const { mode, toggleTheme } = useThemeStore();
 
   return (
     <div className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 pb-28 font-sans flex flex-col">
@@ -76,27 +72,6 @@ export default function ProfileMain() {
           <ChevronRight size={18} className="text-gray-400" />
         </div>
 
-        <div
-          className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800 cursor-pointer active:bg-gray-50 dark:active:bg-gray-800/50 transition-colors"
-          onClick={toggleTheme}
-        >
-          <div className="flex items-center gap-3">
-            {mode === "dark" ? (
-              <Moon size={20} className="text-gray-500" strokeWidth={1.5} />
-            ) : (
-              <Sun size={20} className="text-gray-500" strokeWidth={1.5} />
-            )}
-            <span className="text-[13px] font-medium text-gray-600 dark:text-gray-300">
-              Theme
-            </span>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-[13px] font-medium text-[#F26A1C] capitalize">
-              {mode}
-            </span>
-            <ChevronRight size={18} className="text-[#F26A1C]" />
-          </div>
-        </div>
 
         <div
           className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800 cursor-pointer active:bg-gray-50 dark:active:bg-gray-800/50 transition-colors"

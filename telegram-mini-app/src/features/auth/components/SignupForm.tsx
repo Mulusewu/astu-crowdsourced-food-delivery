@@ -76,8 +76,8 @@ export default function SignupForm() {
       <div className="w-full max-w-[340px] px-4 flex flex-col items-center">
         {/* LOGO SECTION */}
         <div className="relative flex items-center justify-center w-full mb-12 mt-2 pr-6">
-          <div className="flex flex-col items-end mr-2">
-            <span className="text-[44px] font-black text-black leading-[0.8] tracking-tight drop-shadow-sm">
+          <div className="flex flex-col items-start mr-2">
+            <span className="text-[44px] font-black text-black leading-[0.8] tracking-tight drop-shadow-md">
               ASTU
             </span>
             <span className="text-[52px] font-black text-[#F26A1C] leading-[0.8] tracking-tight drop-shadow-md">

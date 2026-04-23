@@ -17,49 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import BottomNav from "@/components/common/BottomNav1";
 import { cn } from "@/lib/utils";
-import database from "@/data/database.json";
-interface DeliveryPerson {
-  id: string;
-  name: string;
-  email: string;
-  avatar?: string;
-  isActive: boolean;
-  currentLocation?: {
-    lat: number;
-    lng: number;
-    address: string;
-  };
-  stats: {
-    deliveriesToday: number;
-    earningsToday: number;
-    rating: number;
-  };
-}
-
-interface Cafe {
-  id: string;
-  name: string;
-  description: string;
-  image: string;
-  location: string;
-  distance: string;
-  estimatedTime: number;
-  rating: number;
-  isBookmarked: boolean;
-  acceptsCash: boolean;
-  acceptsCard: boolean;
-  minimumOrder: number;
-  cuisine: string[];
-  activeOrders: number;
-}
-
-interface CheapOrder {
-  id: string;
-  orderNo: string;
-  items: number;
-  priceEtb: number;
-  image: string;
-}
+import { useDeliveryDashboardStore } from "@/store/deliveryDashboardStore";
 
 function firstName(fullName: string) {
   return fullName.split(/\s+/)[0] ?? fullName;
@@ -71,61 +29,30 @@ function firstInitial(fullName: string) {
 
 export default function DeliveryDashboard() {
   const navigate = useNavigate();
-  const [deliveryPerson, setDeliveryPerson] = useState<DeliveryPerson | null>(
-    null,
-  );
-  const [cafes, setCafes] = useState<Cafe[]>([]);
-  const [cheapOrders, setCheapOrders] = useState<CheapOrder[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  
+  // Zustand Store
+  const {
+    deliveryPerson,
+    cafes,
+    cheapOrders,
+    isLoading,
+    fetchDashboardData,
+    toggleActiveStatus,
+    toggleBookmark,
+  } = useDeliveryDashboardStore();
+
+  // Local UI-only states
   const [locationValue, setLocationValue] = useState("all");
   const [isLocationOpen, setIsLocationOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 800)); // Simulate network request
+    fetchDashboardData();
+  }, [fetchDashboardData]);
 
-        const data = database.deliveryDashboard;
-        if (data) {
-          if (data.deliveryPerson) setDeliveryPerson(data.deliveryPerson as DeliveryPerson);
-          if (data.cheapOrders) setCheapOrders(data.cheapOrders as CheapOrder[]);
-          if (data.cafes) setCafes(data.cafes as Cafe[]);
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  const toggleActiveStatus = () => {
-    if (deliveryPerson) {
-      const willBeOnline = !deliveryPerson.isActive;
-      setDeliveryPerson({
-        ...deliveryPerson,
-        isActive: willBeOnline,
-      });
-
-      if (!willBeOnline) {
-        navigate(ROUTES.DELIVERY.OFFLINE);
-      }
-    }
-  };
-
-  const toggleBookmark = (cafeId: string) => {
-    setCafes((prev) =>
-      prev.map((cafe) =>
-        cafe.id === cafeId
-          ? { ...cafe, isBookmarked: !cafe.isBookmarked }
-          : cafe,
-      ),
-    );
+  const handleToggleActive = () => {
+    toggleActiveStatus((path) => navigate(path));
   };
 
   if (isLoading) {
@@ -257,12 +184,12 @@ export default function DeliveryDashboard() {
           <div className="relative">
             {/* Click-away overlay */}
             {isLocationOpen && (
-              <div 
-                className="fixed inset-0 z-40" 
-                onClick={() => setIsLocationOpen(false)} 
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setIsLocationOpen(false)}
               />
             )}
-            
+
             <button
               onClick={() => setIsLocationOpen(!isLocationOpen)}
               className="relative z-50 flex h-10 w-[130px] items-center justify-between rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 shadow-sm transition-all hover:border-[#F26A1C]/50 hover:text-[#F26A1C] focus-visible:ring-1 focus-visible:ring-[#F26A1C]"
@@ -307,7 +234,7 @@ export default function DeliveryDashboard() {
             role="switch"
             aria-checked={online}
             aria-label={online ? "Online" : "Offline"}
-            onClick={toggleActiveStatus}
+            onClick={handleToggleActive}
             className={cn(
               "ml-auto flex shrink-0 items-center gap-1.5 rounded-full border-2 py-1 pl-2.5 pr-1 shadow-sm transition-colors duration-200",
               online

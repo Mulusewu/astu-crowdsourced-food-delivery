@@ -1,45 +1,50 @@
-// src/store/delivery/deliveryStore.ts
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import db from "@/data/database.json";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-interface RestaurantWithOrders {
+export interface DeliveryPerson {
   id: string;
   name: string;
-  image: string;
-  orderCount: number;
-  location: string;
-  distance: string;
-}
-
-interface PocketFriendlyOrder {
-  id: string;
-  orderNumber: string;
-  totalAmount: number;
-  distance: string;
-  items: Array<{
-    id: string;
-    name: string;
-    quantity: number;
-    image?: string;
-  }>;
-  image?: string; // Main food image for the card
-}
-
-interface DeliveryPerson {
-  id: string;
-  name: string;
+  email: string;
   avatar?: string;
-  isOnline: boolean;
   isActive: boolean;
-  status: string;
-  stats?: {
-    todayDeliveries: number;
-    todayEarnings: number;
+  currentLocation?: {
+    lat: number;
+    lng: number;
+    address: string;
+  };
+  stats: {
+    deliveriesToday: number;
+    earningsToday: number;
     rating: number;
   };
+}
+
+export interface Cafe {
+  id: string;
+  name: string;
+  description: string;
+  image: string;
+  location: string;
+  distance: string;
+  estimatedTime: number;
+  rating: number;
+  isBookmarked: boolean;
+  acceptsCash: boolean;
+  acceptsCard: boolean;
+  minimumOrder: number;
+  cuisine: string[];
+  activeOrders: number;
+}
+
+export interface CheapOrder {
+  id: string;
+  orderNo: string;
+  items: number;
+  priceEtb: number;
+  image: string;
 }
 
 type OrderStatus =
@@ -55,11 +60,10 @@ type CustomerActivity = "idle" | "viewing" | "paying";
 
 interface DeliveryDashboardState {
   deliveryPerson: DeliveryPerson | null;
-  restaurantsWithOrders: RestaurantWithOrders[];
-  pocketFriendlyOrders: PocketFriendlyOrder[];
+  cafes: Cafe[];
+  cheapOrders: CheapOrder[];
   isLoading: boolean;
-  isOnline: boolean;
-
+  
   // Payment-waiting state
   orderStatus: OrderStatus;
   paymentTimer: number; // seconds
@@ -67,7 +71,8 @@ interface DeliveryDashboardState {
 
   // Actions
   fetchDashboardData: () => Promise<void>;
-  toggleAvailability: () => void;
+  toggleActiveStatus: (navigate?: (path: string) => void) => void;
+  toggleBookmark: (cafeId: string) => void;
   setOrderStatus: (status: OrderStatus) => void;
   decreasePaymentTimer: () => void;
   resetPaymentTimer: (seconds?: number) => void;
@@ -78,95 +83,60 @@ export const useDeliveryDashboardStore = create<DeliveryDashboardState>()(
   persist(
     (set, get) => ({
       deliveryPerson: null,
-      restaurantsWithOrders: [],
-      pocketFriendlyOrders: [],
+      cafes: [],
+      cheapOrders: [],
       isLoading: true,
-      isOnline: true,
 
       // Payment-waiting defaults
       orderStatus: "pending",
-      paymentTimer: 300, // 5 minutes default
+      paymentTimer: 300, 
       customerActivity: "idle",
 
       fetchDashboardData: async () => {
         set({ isLoading: true });
 
         try {
-          await delay(650);
+          await delay(800);
 
-          // Delivery Person
-          const personData = db.users.delivery?.[0];
-          const deliveryPerson: DeliveryPerson = personData
-            ? {
-              id: personData.id,
-              name: personData.name,
-              avatar: personData.avatar,
-              isOnline: personData.isActive ?? true,
-              isActive: personData.isActive ?? true,
-              status: personData.status || "available",
-              stats: personData.stats,
-            }
-            : {
-              id: "del_001",
-              name: "Biruk Wondimu",
-              avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Biruk",
-              isOnline: true,
-              isActive: true,
-              status: "available",
-            };
-
-          // Restaurants with active orders
-          let restaurantsWithOrders =
-            (db.deliveryDashboard as any)?.restaurantsWithOrders;
-
-          if (!restaurantsWithOrders || restaurantsWithOrders.length === 0) {
-            restaurantsWithOrders =
-              db.restaurants
-                ?.filter((r: any) => r.orderCount && r.orderCount > 0)
-                .map((r: any) => ({
-                  id: r.id,
-                  name: r.name,
-                  image: r.image || r.coverImage,
-                  orderCount: r.orderCount || Math.floor(Math.random() * 8) + 2,
-                  location: r.location?.address || "Bole",
-                  distance: `${(Math.random() * 3 + 0.5).toFixed(1)} km`,
-                })) || [];
+          const data = db.deliveryDashboard;
+          if (data) {
+            set({
+              deliveryPerson: data.deliveryPerson as DeliveryPerson,
+              cheapOrders: data.cheapOrders as CheapOrder[],
+              cafes: data.cafes as Cafe[],
+              isLoading: false,
+            });
           }
-
-          // Pocket Friendly Orders - Quick horizontal orders (from available orders)
-          const pocketFriendlyOrders: PocketFriendlyOrder[] =
-            db.orders?.available
-              ?.slice(0, 6) // Take first 6 for horizontal scroll
-              .map((order: any) => ({
-                id: order.id,
-                orderNumber: order.orderNumber,
-                totalAmount: order.totalAmount,
-                distance: order.distance,
-                items: order.items,
-                image: order.items[0]?.image || order.cafeImage,
-              })) || [];
-
-          set({
-            deliveryPerson,
-            restaurantsWithOrders,
-            pocketFriendlyOrders, // ← Added
-            isLoading: false,
-            isOnline: deliveryPerson.isOnline,
-          });
         } catch (error) {
           console.error("Failed to fetch dashboard data:", error);
           set({ isLoading: false });
         }
       },
 
-      toggleAvailability: () => {
-        const currentOnline = get().isOnline;
+      toggleActiveStatus: (navigate) => {
+        const { deliveryPerson } = get();
+        if (deliveryPerson) {
+          const willBeOnline = !deliveryPerson.isActive;
+          set({
+            deliveryPerson: {
+              ...deliveryPerson,
+              isActive: willBeOnline,
+            },
+          });
 
+          if (!willBeOnline && navigate) {
+            navigate("/delivery/offline");
+          }
+        }
+      },
+
+      toggleBookmark: (cafeId: string) => {
         set((state) => ({
-          isOnline: !currentOnline,
-          deliveryPerson: state.deliveryPerson
-            ? { ...state.deliveryPerson, isOnline: !currentOnline }
-            : null,
+          cafes: state.cafes.map((cafe) =>
+            cafe.id === cafeId
+              ? { ...cafe, isBookmarked: !cafe.isBookmarked }
+              : cafe
+          ),
         }));
       },
 
@@ -185,7 +155,8 @@ export const useDeliveryDashboardStore = create<DeliveryDashboardState>()(
     {
       name: "delivery-dashboard-storage",
       partialize: (state) => ({
-        isOnline: state.isOnline,
+        deliveryPerson: state.deliveryPerson,
+        cafes: state.cafes,
         orderStatus: state.orderStatus,
         paymentTimer: state.paymentTimer,
         customerActivity: state.customerActivity,
