@@ -1,65 +1,11 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, MapPin, Trash2 } from "lucide-react";
 import BottomNav from "@/components/common/BottomNav1";
+import { useSavedItemsStore, type SavedItem } from "@/store/savedItemsStore";
 
 // ─── constants ────────────────────────────────────────────────────────────────
 const ORANGE = "#F27420";
 const ORANGE_SOFT = "#FFF0E6";
-
-// ─── types ────────────────────────────────────────────────────────────────────
-interface SavedItem {
-  id: string;
-  name: string;
-  location: string;
-  image: string;
-}
-
-// ─── mock data ────────────────────────────────────────────────────────────────
-const INITIAL_SAVED_ITEMS: SavedItem[] = [
-  {
-    id: "1",
-    name: "Helen Cafe",
-    location: "Bole Gate",
-    image:
-      "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=200&h=200&fit=crop",
-  },
-  {
-    id: "2",
-    name: "Yesome Special",
-    location: "Helen Cafe",
-    image:
-      "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&h=200&fit=crop",
-  },
-  {
-    id: "3",
-    name: "Bole Mami",
-    location: "Bole Gate",
-    image:
-      "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=200&h=200&fit=crop",
-  },
-  {
-    id: "4",
-    name: "Barch Food Zone",
-    location: "Bole Gate",
-    image:
-      "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=200&h=200&fit=crop",
-  },
-  {
-    id: "5",
-    name: "Pasta Besego",
-    location: "Bole Mami",
-    image:
-      "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=200&h=200&fit=crop",
-  },
-  {
-    id: "6",
-    name: "Helen Cafe",
-    location: "Bole Gate",
-    image:
-      "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=200&h=200&fit=crop",
-  },
-];
 
 // ─── SavedItemCard ────────────────────────────────────────────────────────────
 function SavedItemCard({
@@ -131,11 +77,7 @@ function Separator() {
 // ─── SavedItemsPage ───────────────────────────────────────────────────────────
 export default function SavedItemsPage() {
   const navigate = useNavigate();
-  const [items, setItems] = useState<SavedItem[]>(INITIAL_SAVED_ITEMS);
-
-  const handleDelete = (id: string) => {
-    setItems((prev) => prev.filter((item) => item.id !== id));
-  };
+  const { items, removeItem } = useSavedItemsStore();
 
   return (
     <div className="flex min-h-screen flex-col bg-white">
@@ -183,7 +125,7 @@ export default function SavedItemsPage() {
           ) : (
             items.map((item, index) => (
               <div key={item.id}>
-                <SavedItemCard item={item} onDelete={handleDelete} />
+                <SavedItemCard item={item} onDelete={removeItem} />
                 {index < items.length - 1 && <Separator />}
               </div>
             ))
@@ -195,3 +137,4 @@ export default function SavedItemsPage() {
     </div>
   );
 }
+

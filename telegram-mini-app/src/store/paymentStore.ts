@@ -1,0 +1,52 @@
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+
+export interface PaymentMethod {
+  id: string;
+  type: string;
+  accountInfo: string;
+  isSelected: boolean;
+}
+
+interface PaymentStore {
+  paymentMethods: PaymentMethod[];
+  setSelectedPayment: (id: string) => void;
+  addPaymentMethod: (method: Omit<PaymentMethod, "isSelected">) => void;
+}
+
+const INITIAL_PAYMENT_METHODS: PaymentMethod[] = [
+  {
+    id: "1",
+    type: "CBE Birr",
+    accountInfo: "+251912345678",
+    isSelected: true,
+  },
+  {
+    id: "2",
+    type: "Amole",
+    accountInfo: "1000123456789",
+    isSelected: false,
+  },
+];
+
+export const usePaymentStore = create<PaymentStore>()(
+  persist(
+    (set) => ({
+      paymentMethods: INITIAL_PAYMENT_METHODS,
+      setSelectedPayment: (id) =>
+        set((state) => ({
+          paymentMethods: state.paymentMethods.map((method) => ({
+            ...method,
+            isSelected: method.id === id,
+          })),
+        })),
+      addPaymentMethod: (method) =>
+        set((state) => ({
+          paymentMethods: [...state.paymentMethods, { ...method, isSelected: false }],
+        })),
+    }),
+    {
+      name: "payment-storage",
+    }
+  )
+);

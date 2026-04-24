@@ -1,16 +1,17 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/routes/routePaths";
 
 const ChevronRight = () => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    width="20" 
-    height="20" 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="#9CA3AF" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="#9CA3AF"
+    strokeWidth="2"
+    strokeLinecap="round"
     strokeLinejoin="round"
   >
     <polyline points="9 18 15 12 9 6"></polyline>
@@ -27,26 +28,26 @@ const PaymentInformationPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white flex flex-col px-6">
-      
+
       {/* Header */}
       <div className="mt-14 mb-12 flex items-center">
-        <button 
+        <button
           onClick={handleBack}
           className="w-[45px] h-[45px] flex items-center justify-center rounded-xl bg-orange-100 border border-orange-200 text-orange-500 hover:bg-orange-200 transition-colors flex-shrink-0"
           aria-label="Go Back"
         >
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            width="24" 
-            height="24" 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="currentColor" 
-            strokeWidth="2.5" 
-            strokeLinecap="round" 
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
             strokeLinejoin="round"
           >
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
+            <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
         </button>
         <h1 className="flex-1 text-center text-[22px] font-bold text-black pr-10 tracking-tight">
@@ -56,9 +57,9 @@ const PaymentInformationPage: React.FC = () => {
 
       {/* Payment Methods List */}
       <div className="flex flex-col gap-8">
-        
+
         {/* Telebirr Option */}
-        <div 
+        <div
           className="flex items-center cursor-pointer"
           onClick={() => setSelectedMethod("telebirr")}
         >
@@ -70,7 +71,7 @@ const PaymentInformationPage: React.FC = () => {
               )}
             </div>
           </div>
-          
+
           {/* Logo (Placeholder representation) */}
           <div className="flex items-center justify-center mr-auto">
             {/* Replace with actual image: <img src="/telebirr.png" alt="Telebirr" className="h-8 object-contain" /> */}
@@ -90,7 +91,7 @@ const PaymentInformationPage: React.FC = () => {
         </div>
 
         {/* CBE Option */}
-        <div 
+        <div
           className="flex items-center cursor-pointer pt-2"
           onClick={() => setSelectedMethod("cbe")}
         >
@@ -102,7 +103,7 @@ const PaymentInformationPage: React.FC = () => {
               )}
             </div>
           </div>
-          
+
           {/* Logo (Placeholder representation) */}
           <div className="flex items-center justify-center mr-auto">
             {/* Replace with actual image: <img src="/cbe.png" alt="CBE" className="h-10 object-contain" /> */}
@@ -125,7 +126,10 @@ const PaymentInformationPage: React.FC = () => {
         </div>
 
         {/* Add Payment Method */}
-        <div className="flex items-center cursor-pointer mt-6">
+        <div
+          className="flex items-center cursor-pointer mt-6"
+          onClick={() => navigate(ROUTES.DELIVERY.PAYMENT_ADD)}
+        >
           <span className="text-gray-500 text-[16px] mr-auto pl-10 font-medium">
             Add Payment Method
           </span>

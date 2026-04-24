@@ -76,7 +76,7 @@ interface OrderStore {
   orders: Order[];
   filteredOrders: Order[];
   activeOrders: Order[];
-  orderHistory: Order[];
+  orderHistory: any[]; // Changed from Order[] to handle mapped items
   currentOrder: Order | null;
   isLoading: boolean;
   isLoadingMore: boolean;
@@ -110,6 +110,7 @@ interface OrderStore {
     status: Order["status"],
   ) => Promise<void>;
   cancelOrder: (orderId: string, reason: string) => Promise<void>;
+  submitOrderIssue: (orderId: string, details: { type: string; description: string }) => Promise<void>;
 
   // Helpers
   clearError: () => void;
@@ -245,22 +246,25 @@ export const useOrderStore = create<OrderStore>()(
         try {
           await delay(600);
 
-          const historyOrders = db.orders.history as Order[];
+          const historyOrders = db.orders.history;
 
-          const normalizedOrders = historyOrders.map((order) => ({
-            ...order,
-            isBookmarked: order.isBookmarked ?? false,
-            priority: order.priority ?? false,
-            distance: order.distance ?? "1.0 km",
-            customer: order.customer ?? {
-              id: "unknown",
-              name: "Unknown",
-              address: "Unknown",
-            },
+          const mappedOrders = historyOrders.map((order: any) => ({
+            id: order.id,
+            restaurantName: order.cafeName || "Unknown Cafe",
+            orderNumber: order.orderNumber?.replace("ORD-", "") || "000",
+            foodImage:
+              order.items && order.items.length > 0 && order.items[0].image
+                ? order.items[0].image
+                : "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&h=200&fit=crop",
+            foodName: order.items && order.items.length > 0 ? order.items[0].name : "Order",
+            quantity: order.items && order.items.length > 0 ? order.items[0].quantity : 1,
+            priceEtb: order.totalAmount,
+            rating: order.rating || null,
+            status: order.status === "cancelled" ? "cancelled" : "delivered",
           }));
 
           set({
-            orderHistory: normalizedOrders,
+            orderHistory: mappedOrders,
             isLoading: false,
           });
         } catch (error) {
@@ -512,6 +516,36 @@ export const useOrderStore = create<OrderStore>()(
           set({
             error:
               error instanceof Error ? error.message : "Failed to cancel order",
+            isLoading: false,
+          });
+        }
+      },
+
+      // Submit order issue
+      submitOrderIssue: async (orderId, details) => {
+        set({ isLoading: true, error: null });
+        try {
+          await delay(800);
+
+          set((state) => {
+            const updatedActive = state.activeOrders.map((o) =>
+              o.id === orderId ? { ...o, hasIssue: true, issueDetails: details } : o
+            );
+
+            const updatedCurrent =
+              state.currentOrder?.id === orderId
+                ? { ...state.currentOrder, hasIssue: true, issueDetails: details }
+                : state.currentOrder;
+
+            return {
+              activeOrders: updatedActive,
+              currentOrder: updatedCurrent,
+              isLoading: false,
+            };
+          });
+        } catch (error) {
+          set({
+            error: error instanceof Error ? error.message : "Failed to submit issue",
             isLoading: false,
           });
         }

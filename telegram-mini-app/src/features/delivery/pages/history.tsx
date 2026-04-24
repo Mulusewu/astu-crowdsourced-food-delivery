@@ -1,7 +1,9 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Star } from "lucide-react";
+import { ArrowLeft, Star, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import BottomNav from "@/components/common/BottomNav1";
+import { useOrderStore } from "@/store/orders/orderStore";
 
 // ─── constants ────────────────────────────────────────────────────────────────
 const ORANGE = "#F27420";
@@ -18,26 +20,9 @@ interface OrderHistoryItem {
     foodName: string;
     quantity: number;
     priceEtb: number;
-    rating: number | null; // null = no rating (e.g. cancelled)
+    rating: number | null;
     status: OrderStatus;
 }
-
-import database from "@/data/database.json";
-
-const HISTORY_ITEMS: OrderHistoryItem[] = database.orders.history.map((order: any) => ({
-    id: order.id,
-    restaurantName: order.cafeName || "Unknown Cafe",
-    orderNumber: order.orderNumber?.replace("ORD-", "") || "000",
-    foodImage:
-        order.items && order.items.length > 0 && order.items[0].image
-            ? order.items[0].image
-            : "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&h=200&fit=crop",
-    foodName: order.items && order.items.length > 0 ? order.items[0].name : "Order",
-    quantity: order.items && order.items.length > 0 ? order.items[0].quantity : 1,
-    priceEtb: order.totalAmount,
-    rating: order.rating || null,
-    status: order.status === "cancelled" ? "cancelled" : "delivered",
-}));
 
 // ─── StarRating ───────────────────────────────────────────────────────────────
 function StarRating({ rating, max = 5 }: { rating: number; max?: number }) {
@@ -134,6 +119,11 @@ function OrderCard({ item }: { item: OrderHistoryItem }) {
 // ─── HistoryPage (default export) ─────────────────────────────────────────────
 export default function HistoryPage() {
     const navigate = useNavigate();
+    const { orderHistory, fetchOrderHistory, isLoading } = useOrderStore();
+
+    useEffect(() => {
+        fetchOrderHistory();
+    }, [fetchOrderHistory]);
 
     return (
         <div className="flex min-h-screen flex-col bg-white">
@@ -163,20 +153,30 @@ export default function HistoryPage() {
             {/* ── Order list ── */}
             <main className="flex-1 overflow-y-auto px-4 py-5 pb-32">
                 <div className="mx-auto w-full max-w-lg">
-                    {HISTORY_ITEMS.map((item, index) => (
-                        <div key={item.id}>
-                            <OrderCard item={item} />
-                            {/* Separator — visually independent, equal spacing above and below */}
-                            {index < HISTORY_ITEMS.length - 1 && (
-                                <div className="flex items-center py-3" aria-hidden>
-                                    <div
-                                        className="h-[2px] w-full rounded-full"
-                                        style={{ backgroundColor: ORANGE }}
-                                    />
-                                </div>
-                            )}
+                    {isLoading ? (
+                        <div className="flex h-[50vh] items-center justify-center">
+                            <Loader2 className="h-8 w-8 animate-spin text-[#F27420]" />
                         </div>
-                    ))}
+                    ) : orderHistory.length === 0 ? (
+                        <div className="flex h-[50vh] flex-col items-center justify-center text-center">
+                            <p className="text-gray-500">No order history found.</p>
+                        </div>
+                    ) : (
+                        orderHistory.map((item, index) => (
+                            <div key={item.id}>
+                                <OrderCard item={item} />
+                                {/* Separator — visually independent, equal spacing above and below */}
+                                {index < orderHistory.length - 1 && (
+                                    <div className="flex items-center py-3" aria-hidden>
+                                        <div
+                                            className="h-[2px] w-full rounded-full"
+                                            style={{ backgroundColor: ORANGE }}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        ))
+                    )}
                 </div>
             </main>
 
@@ -184,3 +184,4 @@ export default function HistoryPage() {
         </div>
     );
 }
+

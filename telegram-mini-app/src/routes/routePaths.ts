@@ -232,6 +232,7 @@ export const ROUTES = {
     SUPPORT: "/delivery/support",
     PASSWORD: "/delivery/profile/password",
     PAYMENT: "/delivery/profile/payment",
+    PAYMENT_ADD: "/delivery/profile/payment/add",
   },
 
   // ==================== SHARED ROUTES ====================

@@ -1,6 +1,7 @@
-import React, { useState } from "react";
-import { ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useOrderStore } from "@/store/orders/orderStore";
 
 const ISSUES_LIST = [
   "Restaurant Refused The Order",
@@ -10,14 +11,30 @@ const ISSUES_LIST = [
 ];
 
 export default function ReportIssuePage() {
+  const { deliveryId } = useParams<{ deliveryId: string }>();
   const navigate = useNavigate();
+  const { activeOrders, currentOrder, fetchOrderById, submitOrderIssue, isLoading } = useOrderStore();
+  
   const [selectedIssue, setSelectedIssue] = useState<string>(ISSUES_LIST[0]);
   const [description, setDescription] = useState("");
 
-  const handleSubmit = () => {
-    // Handle the submission here
-    console.log("Issue:", selectedIssue);
-    console.log("Description:", description);
+  // Find the specific order from the list or fetch it if not present
+  const order = activeOrders.find(o => o.id === deliveryId) || currentOrder;
+
+  useEffect(() => {
+    if (deliveryId && (!order || order.id !== deliveryId)) {
+      fetchOrderById(deliveryId);
+    }
+  }, [deliveryId, order, fetchOrderById]);
+
+  const handleSubmit = async () => {
+    if (!deliveryId) return;
+    
+    await submitOrderIssue(deliveryId, {
+      type: selectedIssue,
+      description: description
+    });
+    
     navigate(-1); // Navigate back after submission
   };
 
@@ -53,9 +70,8 @@ export default function ReportIssuePage() {
                 className="flex items-center gap-3 w-full text-left focus:outline-none transition-opacity active:opacity-70"
               >
                 <div
-                  className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border-[2px] transition-colors ${
-                    isSelected ? "border-[#F26A1C]" : "border-[#F26A1C]"
-                  }`}
+                  className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border-[2px] transition-colors ${isSelected ? "border-[#F26A1C]" : "border-[#F26A1C]"
+                    }`}
                 >
                   {isSelected && (
                     <div className="h-[12px] w-[12px] rounded-full bg-[#F26A1C]" />
@@ -72,11 +88,11 @@ export default function ReportIssuePage() {
         {/* Text Area Section */}
         <div className="mt-10">
           <h2 className="text-[16px] font-black text-black mb-[10px] tracking-tight">
-            Reporting For Order #123
+            Reporting For Order #{order?.orderNumber?.replace("ORD-", "") || "..."}
           </h2>
           <textarea
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
             placeholder="Describe The Problem Here.."
             className="h-[220px] w-full resize-none rounded-[16px] border border-gray-300 bg-white p-4 text-[15px] text-gray-800 placeholder-gray-400 outline-none transition-colors focus:border-[#F26A1C] focus:ring-1 focus:ring-[#F26A1C] shadow-sm"
           />
@@ -86,13 +102,19 @@ export default function ReportIssuePage() {
         <div className="mt-12 flex justify-center pb-6">
           <button
             onClick={handleSubmit}
+            disabled={isLoading}
             type="button"
-            className="flex w-[220px] items-center justify-center rounded-full bg-[#F26A1C] px-8 py-[12px] text-[20px] font-medium text-white transition hover:bg-[#F26A1C]/90 active:scale-95 shadow-md"
+            className="flex min-w-[220px] items-center justify-center rounded-full bg-[#F26A1C] px-8 py-[12px] text-[20px] font-medium text-white transition hover:bg-[#F26A1C]/90 active:scale-95 shadow-md disabled:opacity-70"
           >
-            Submit
+            {isLoading ? (
+              <Loader2 className="h-6 w-6 animate-spin text-white" />
+            ) : (
+              "Submit"
+            )}
           </button>
         </div>
       </main>
     </div>
   );
 }
+

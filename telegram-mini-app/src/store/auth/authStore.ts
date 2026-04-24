@@ -17,6 +17,7 @@ interface AuthState {
   signin: (data: any) => Promise<void>;
   switchRole: (newRole: UserRole) => void;
   logout: () => void;
+  updatePassword: (oldPassword: string, newPassword: string) => Promise<void>;
   clearError: () => void;
 }
 
@@ -204,6 +205,18 @@ export const useAuthStore = create<AuthState>()(
           token: null,
           error: null,
         });
+      },
+
+      updatePassword: async (oldPassword, newPassword) => {
+        set({ isLoading: true, error: null });
+        try {
+          await new Promise((resolve) => setTimeout(resolve, 800));
+          console.log("Mock Password Update:", { oldPassword, newPassword });
+          set({ isLoading: false });
+        } catch (error) {
+          set({ isLoading: false, error: "Failed to update password" });
+          throw error;
+        }
       },
 
       clearError: () => set({ error: null }),

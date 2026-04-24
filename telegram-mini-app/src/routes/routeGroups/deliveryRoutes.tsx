@@ -2,7 +2,6 @@ import { lazy } from "react";
 import type { RouteGroup } from "../types/routes.types";
 import { ROUTES } from "../routePaths";
 // Import UserRole as a type only, and UserRoles for constants
-import type { UserRole } from "@/types/user.types";
 import { UserRoles } from "@/types/user.types";
 
 // ================= DASHBOARD =================
@@ -138,6 +137,10 @@ const ReportIssuePage = lazy(
   () => import("../../features/delivery/pages/ReportIssuePage"),
 );
 
+const AddPaymentPage = lazy(
+  () => import("../../features/delivery/pages/addPayment"),
+);
+
 export const deliveryRoutes: RouteGroup[] = [
   // ================= DASHBOARD =================
   {
@@ -165,6 +168,11 @@ export const deliveryRoutes: RouteGroup[] = [
     path: ROUTES.DELIVERY.SAVED,
     element: <SavedItemsPage />,
     roles: [UserRoles.DELIVERY], // Use UserRoles.DELIVERY instead of UserRole.DELIVERY
+  },
+  {
+    path: ROUTES.DELIVERY.PAYMENT_ADD,
+    element: <AddPaymentPage />,
+    roles: [UserRoles.DELIVERY],
   },
 
   // ================= STATUS =================

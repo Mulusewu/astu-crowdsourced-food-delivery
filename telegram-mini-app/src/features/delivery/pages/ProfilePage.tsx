@@ -47,7 +47,7 @@ export default function ProfileMain() {
           </button>
         </div>
         <h2 className="text-[22px] font-black text-gray-900 dark:text-white mt-4">
-          {user?.name || "Natnael Abebe"}
+          {user?.name || "User"}
         </h2>
       </div>
 
@@ -56,7 +56,7 @@ export default function ProfileMain() {
           <div className="flex items-center gap-3">
             <Mail size={20} className="text-gray-500" strokeWidth={1.5} />
             <span className="text-[13px] font-medium text-gray-600 dark:text-gray-300">
-              Johndoe@Gmail.Com
+              {user?.email || "No email provided"}
             </span>
           </div>
           <ChevronRight size={18} className="text-gray-400" />
@@ -66,7 +66,7 @@ export default function ProfileMain() {
           <div className="flex items-center gap-3">
             <Phone size={20} className="text-gray-500" strokeWidth={1.5} />
             <span className="text-[13px] font-medium text-gray-600 dark:text-gray-300">
-              0949486753
+              {user?.phone || "No phone provided"}
             </span>
           </div>
           <ChevronRight size={18} className="text-gray-400" />
