@@ -9,6 +9,7 @@
     "totalCategories": 15,
     "lastUpdated": "2025-01-15T00:00:00Z"
   },
+
   "deliveryDashboard": {
     "deliveryPerson": {
       "id": "1",
@@ -107,6 +108,7 @@
       }
     ]
   },
+
   "users": {
     "customers": [
       {
@@ -190,9 +192,20 @@
           "totalOrders": 24,
           "totalSpent": 18500,
           "averageRating": 4.7,
-          "favoriteRestaurants": ["rest_001", "rest_003", "rest_005", "rest_008"],
+          "favoriteRestaurants": [
+            "rest_001",
+            "rest_003",
+            "rest_005",
+            "rest_008"
+          ],
           "favoriteFoods": ["prod_001", "prod_101", "prod_201", "prod_301"],
-          "recentSearches": ["coffee", "ethiopian food", "pizza", "burger", "pasta"]
+          "recentSearches": [
+            "coffee",
+            "ethiopian food",
+            "pizza",
+            "burger",
+            "pasta"
+          ]
         }
       },
       {
@@ -678,6 +691,329 @@
       },
       "popularityScore": 98,
       "isFeatured": true
+    },
+    {
+      "id": "rest_004",
+      "name": "Helen",
+      "description": "ባህላዊ ምግብ | Traditional Ethiopian • Cultural food",
+      "shortDescription": "Authentic traditional dishes",
+      "cuisine": ["Traditional", "Ethiopian"],
+      "image": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500",
+      "coverImage": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200",
+      "logo": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=200",
+      "rating": 4.2,
+      "totalReviews": 150,
+      "priceLevel": "$$",
+      "deliveryTime": "15-25 min",
+      "deliveryFee": 25,
+      "minimumOrder": 80,
+      "freeDeliveryThreshold": 250,
+      "isOpen": true,
+      "location": {
+        "address": "Bole Gate",
+        "city": "Addis Ababa",
+        "area": "Bole",
+        "landmark": "Near Bole Gate",
+        "latitude": 9.0222,
+        "longitude": 38.7468
+      },
+      "contact": {
+        "phone": "+251911234568",
+        "email": "info@helen.com"
+      },
+      "hours": {
+        "monday": "11:00-22:00",
+        "tuesday": "11:00-22:00",
+        "wednesday": "11:00-22:00",
+        "thursday": "11:00-22:00",
+        "friday": "11:00-23:00",
+        "saturday": "11:00-23:00",
+        "sunday": "11:00-21:00"
+      },
+      "features": {
+        "acceptsCash": true,
+        "acceptsCard": true,
+        "acceptsTelegramStars": false,
+        "hasDelivery": true,
+        "hasPickup": true,
+        "hasDineIn": true,
+        "isVegetarianFriendly": true
+      },
+      "categories": [
+        {
+          "id": "cat_010",
+          "name": "Traditional",
+          "icon": "🍽️",
+          "order": 1,
+          "description": "Authentic Ethiopian dishes"
+        }
+      ],
+      "offers": [],
+      "deliveryZones": ["Bole"],
+      "estimatedDeliveryTime": {
+        "min": 15,
+        "max": 25
+      },
+      "popularityScore": 85,
+      "isFeatured": false
+    },
+    {
+      "id": "rest_005",
+      "name": "Mami",
+      "description": "ፋስት ፉድ | Fast Food • Burgers • Pizza",
+      "shortDescription": "Quick and tasty fast food",
+      "cuisine": ["Fast Food", "Burgers", "Pizza"],
+      "image": "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=500",
+      "coverImage": "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=1200",
+      "logo": "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=200",
+      "rating": 3.8,
+      "totalReviews": 120,
+      "priceLevel": "$",
+      "deliveryTime": "15-25 min",
+      "deliveryFee": 20,
+      "minimumOrder": 50,
+      "freeDeliveryThreshold": 150,
+      "isOpen": true,
+      "location": {
+        "address": "Geda Gate",
+        "city": "Addis Ababa",
+        "area": "Geda",
+        "landmark": "Near Geda Gate",
+        "latitude": 9.0147,
+        "longitude": 38.7543
+      },
+      "contact": {
+        "phone": "+251911234569",
+        "email": "info@mami.com"
+      },
+      "hours": {
+        "monday": "10:00-22:00",
+        "tuesday": "10:00-22:00",
+        "wednesday": "10:00-22:00",
+        "thursday": "10:00-22:00",
+        "friday": "10:00-23:00",
+        "saturday": "10:00-23:00",
+        "sunday": "10:00-21:00"
+      },
+      "features": {
+        "acceptsCash": true,
+        "acceptsCard": true,
+        "acceptsTelegramStars": false,
+        "hasDelivery": true,
+        "hasPickup": true,
+        "hasDineIn": true
+      },
+      "categories": [
+        {
+          "id": "cat_011",
+          "name": "Fast Food",
+          "icon": "🍔",
+          "order": 1,
+          "description": "Burgers and fries"
+        }
+      ],
+      "offers": [],
+      "deliveryZones": ["Geda"],
+      "estimatedDeliveryTime": {
+        "min": 15,
+        "max": 25
+      },
+      "popularityScore": 70,
+      "isFeatured": false
+    },
+    {
+      "id": "rest_006",
+      "name": "Etu",
+      "description": "ቡና ቤት | Coffee Shop • Specialty coffee",
+      "shortDescription": "Premium coffee experience",
+      "cuisine": ["Coffee"],
+      "image": "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=500",
+      "coverImage": "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=1200",
+      "logo": "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=200",
+      "rating": 4.2,
+      "totalReviews": 200,
+      "priceLevel": "$$",
+      "deliveryTime": "10-20 min",
+      "deliveryFee": 15,
+      "minimumOrder": 40,
+      "freeDeliveryThreshold": 120,
+      "isOpen": true,
+      "location": {
+        "address": "Geda Gate",
+        "city": "Addis Ababa",
+        "area": "Geda",
+        "landmark": "Near Geda Gate",
+        "latitude": 9.0147,
+        "longitude": 38.7543
+      },
+      "contact": {
+        "phone": "+251911234570",
+        "email": "info@etu.com"
+      },
+      "hours": {
+        "monday": "07:00-21:00",
+        "tuesday": "07:00-21:00",
+        "wednesday": "07:00-21:00",
+        "thursday": "07:00-21:00",
+        "friday": "07:00-22:00",
+        "saturday": "08:00-22:00",
+        "sunday": "08:00-20:00"
+      },
+      "features": {
+        "acceptsCash": true,
+        "acceptsCard": true,
+        "acceptsTelegramStars": true,
+        "hasDelivery": true,
+        "hasPickup": true,
+        "hasDineIn": true,
+        "hasWiFi": true
+      },
+      "categories": [
+        {
+          "id": "cat_012",
+          "name": "Coffee",
+          "icon": "☕",
+          "order": 1,
+          "description": "Specialty coffees"
+        }
+      ],
+      "offers": [],
+      "deliveryZones": ["Geda"],
+      "estimatedDeliveryTime": {
+        "min": 10,
+        "max": 20
+      },
+      "popularityScore": 80,
+      "isFeatured": false
+    },
+    {
+      "id": "rest_007",
+      "name": "Barch",
+      "description": "ፋስት ፉድ | Fast Food • Local favorites",
+      "shortDescription": "Delicious fast food options",
+      "cuisine": ["Fast Food"],
+      "image": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500",
+      "coverImage": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200",
+      "logo": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=200",
+      "rating": 3.9,
+      "totalReviews": 180,
+      "priceLevel": "$",
+      "deliveryTime": "20-30 min",
+      "deliveryFee": 25,
+      "minimumOrder": 60,
+      "freeDeliveryThreshold": 180,
+      "isOpen": true,
+      "location": {
+        "address": "Bole Gate",
+        "city": "Addis Ababa",
+        "area": "Bole",
+        "landmark": "Near Bole Gate",
+        "latitude": 9.0222,
+        "longitude": 38.7468
+      },
+      "contact": {
+        "phone": "+251911234571",
+        "email": "info@barch.com"
+      },
+      "hours": {
+        "monday": "10:00-22:00",
+        "tuesday": "10:00-22:00",
+        "wednesday": "10:00-22:00",
+        "thursday": "10:00-22:00",
+        "friday": "10:00-23:00",
+        "saturday": "10:00-23:00",
+        "sunday": "10:00-21:00"
+      },
+      "features": {
+        "acceptsCash": true,
+        "acceptsCard": true,
+        "acceptsTelegramStars": false,
+        "hasDelivery": true,
+        "hasPickup": true,
+        "hasDineIn": true
+      },
+      "categories": [
+        {
+          "id": "cat_013",
+          "name": "Fast Food",
+          "icon": "🍟",
+          "order": 1,
+          "description": "Fried foods and snacks"
+        }
+      ],
+      "offers": [],
+      "deliveryZones": ["Bole"],
+      "estimatedDeliveryTime": {
+        "min": 20,
+        "max": 30
+      },
+      "popularityScore": 75,
+      "isFeatured": false
+    },
+    {
+      "id": "rest_008",
+      "name": "Mesi",
+      "description": "ባህላዊ ምግብ | Traditional Ethiopian • Campus favorite",
+      "shortDescription": "Traditional food for students",
+      "cuisine": ["Traditional", "Ethiopian"],
+      "image": "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=500",
+      "coverImage": "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=1200",
+      "logo": "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=200",
+      "rating": 4.2,
+      "totalReviews": 220,
+      "priceLevel": "$",
+      "deliveryTime": "5-15 min",
+      "deliveryFee": 10,
+      "minimumOrder": 70,
+      "freeDeliveryThreshold": 150,
+      "isOpen": true,
+      "location": {
+        "address": "In-Campus",
+        "city": "Addis Ababa",
+        "area": "ASTU Campus",
+        "landmark": "Inside campus",
+        "latitude": 9.03,
+        "longitude": 38.75
+      },
+      "contact": {
+        "phone": "+251911234572",
+        "email": "info@mesi.com"
+      },
+      "hours": {
+        "monday": "08:00-20:00",
+        "tuesday": "08:00-20:00",
+        "wednesday": "08:00-20:00",
+        "thursday": "08:00-20:00",
+        "friday": "08:00-21:00",
+        "saturday": "09:00-21:00",
+        "sunday": "10:00-18:00"
+      },
+      "features": {
+        "acceptsCash": true,
+        "acceptsCard": false,
+        "acceptsTelegramStars": false,
+        "hasDelivery": true,
+        "hasPickup": true,
+        "hasDineIn": true,
+        "isVegetarianFriendly": true
+      },
+      "categories": [
+        {
+          "id": "cat_014",
+          "name": "Traditional",
+          "icon": "🍛",
+          "order": 1,
+          "description": "Campus traditional meals"
+        }
+      ],
+      "offers": [],
+      "deliveryZones": ["ASTU Campus"],
+      "estimatedDeliveryTime": {
+        "min": 5,
+        "max": 15
+      },
+      "popularityScore": 90,
+      "isFeatured": false
     }
   ],
   "menu": {
@@ -816,8 +1152,106 @@
         "totalReviews": 189,
         "ordersCount": 567
       }
+    ],
+    "rest_004": [
+      {
+        "id": "prod_301",
+        "name": "Beyaynet",
+        "description": "Spicy lentil stew served with injera",
+        "price": 120,
+        "category": "cat_010",
+        "image": "https://images.unsplash.com/photo-1604328909899-7e7b3a2d9a5d?w=200",
+        "isAvailable": true,
+        "isPopular": true,
+        "isVegetarian": true,
+        "preparationTime": 15,
+        "calories": 400,
+        "rating": 4.1,
+        "totalReviews": 89,
+        "ordersCount": 156
+      }
+    ],
+    "rest_005": [],
+    "rest_006": [],
+    "rest_007": [
+      {
+        "id": "prod_302",
+        "name": "Soya",
+        "description": "Fried soy pieces with spices",
+        "price": 100,
+        "category": "cat_013",
+        "image": "https://images.unsplash.com/photo-1541544741938-0af808871cc0?w=200",
+        "isAvailable": true,
+        "isPopular": true,
+        "isVegetarian": true,
+        "preparationTime": 10,
+        "calories": 250,
+        "rating": 3.8,
+        "totalReviews": 67,
+        "ordersCount": 123
+      }
+    ],
+    "rest_008": [
+      {
+        "id": "prod_303",
+        "name": "Tegabino",
+        "description": "Cabbage and carrot salad",
+        "price": 100,
+        "category": "cat_014",
+        "image": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=200",
+        "isAvailable": true,
+        "isPopular": true,
+        "isVegetarian": true,
+        "isVegan": true,
+        "preparationTime": 5,
+        "calories": 150,
+        "rating": 4.2,
+        "totalReviews": 45,
+        "ordersCount": 89
+      },
+      {
+        "id": "prod_304",
+        "name": "Pasta Besiga",
+        "description": "Pasta with meat sauce",
+        "price": 110,
+        "category": "cat_014",
+        "image": "https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=200",
+        "isAvailable": true,
+        "isPopular": true,
+        "preparationTime": 12,
+        "calories": 350,
+        "rating": 4.3,
+        "totalReviews": 78,
+        "ordersCount": 145
+      }
     ]
   },
+  "popularFoods": [
+    {
+      "id": "prod_302",
+      "restaurantId": "rest_007",
+      "restaurant": "Barch's",
+      "location": "Bole Gate"
+    },
+    {
+      "id": "prod_301",
+      "restaurantId": "rest_004",
+      "restaurant": "Helen's",
+      "location": "Bole Gate"
+    },
+    {
+      "id": "prod_303",
+      "restaurantId": "rest_008",
+      "restaurant": "Mesi's",
+      "location": "Bole Gate"
+    },
+    {
+      "id": "prod_304",
+      "restaurantId": "rest_008",
+      "restaurant": "Mesi's",
+      "location": "Bole Gate"
+    }
+  ],
   "orders": {
     "available": [
       {
@@ -1075,7 +1509,12 @@
   },
   "popularItems": {
     "trending": [
-      { "id": "prod_001", "name": "Ethiopian Macchiato", "orders": 345, "trend": "+15%" },
+      {
+        "id": "prod_001",
+        "name": "Ethiopian Macchiato",
+        "orders": 345,
+        "trend": "+15%"
+      },
       { "id": "prod_101", "name": "Doro Wat", "orders": 567, "trend": "+22%" },
       { "id": "prod_201", "name": "Espresso", "orders": 890, "trend": "+8%" },
       { "id": "prod_301", "name": "Beyaynet", "orders": 678, "trend": "+18%" }

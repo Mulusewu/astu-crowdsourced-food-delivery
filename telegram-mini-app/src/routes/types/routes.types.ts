@@ -1,6 +1,6 @@
 import type { RouteObject } from "react-router-dom";
 import type { ReactNode } from "react";
-import { UserRole } from "@/types/user.types";
+import { type UserRole } from "@/types/user.types";
 
 export type RouteConfig = RouteObject & {
   title?: string;

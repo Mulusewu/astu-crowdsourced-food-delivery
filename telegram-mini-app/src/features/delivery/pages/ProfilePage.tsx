@@ -10,7 +10,7 @@ import {
 import { useAuthStore } from "@/store/auth/authStore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import BottomNav from "@/components/common/BottomNav1";
-import { Header } from "@/components/profile/ProfileShared";
+import { Header } from "@/features/shared/components/ProfileShared";
 
 export default function ProfileMain() {
   const navigate = useNavigate();

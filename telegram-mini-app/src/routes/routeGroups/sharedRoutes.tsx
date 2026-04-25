@@ -1,9 +1,10 @@
-// import { lazy } from "react";
-// import { RouteGroup } from "../types/routes.types";
-// import { ROUTES } from "../routePaths";
-// import { UserRole } from "@/types/user.types";
+import { lazy } from "react";
+import { type RouteGroup } from "../types/routes.types";
+import { ROUTES } from "../routePaths";
+import { UserRoles, type UserRole } from "@/types/user.types";
+import SharedProfilePage from "@/features/shared/pages/ProfilePage";
 
-// // Order Shared
+// Order Shared
 // const OrderDetailsSharedPage = lazy(
 //   () => import("@/features/shared/pages/OrderDetailsPage"),
 // );
@@ -17,7 +18,11 @@
 //   () => import("@/features/shared/pages/OrderReceiptPage"),
 // );
 
-// // Payment Shared
+const sharedProfilePage = lazy(
+  () => import("@/features/shared/pages/ProfilePage"),
+);
+
+// Payment Shared
 // const ProcessPaymentPage = lazy(
 //   () => import("@/features/payment/pages/ProcessPaymentPage"),
 // );
@@ -63,121 +68,126 @@
 // const CookiesPage = lazy(() => import("@/features/legal/pages/CookiesPage"));
 
 // // All roles that can access shared routes
-// const allRoles = [UserRole.CUSTOMER, UserRole.VENDOR, UserRole.DELIVERY];
-// const customerVendorRoles = [UserRole.CUSTOMER, UserRole.VENDOR];
+const allRoles = [UserRoles.CUSTOMER, UserRoles.VENDOR, UserRoles.DELIVERY];
+const customerVendorRoles = [UserRoles.CUSTOMER, UserRoles.VENDOR];
 
-// export const sharedRoutes: RouteGroup[] = [
-//   // Order Routes - Accessible by all roles
-//   {
-//     path: ROUTES.ORDER.DETAILS,
-//     element: <OrderDetailsSharedPage />,
-//     roles: allRoles,
-//   },
-//   {
-//     path: ROUTES.ORDER.TRACK,
-//     element: <OrderTrackSharedPage />,
-//     roles: allRoles,
-//   },
-//   {
-//     path: ROUTES.ORDER.INVOICE,
-//     element: <OrderInvoicePage />,
-//     roles: allRoles,
-//   },
-//   {
-//     path: ROUTES.ORDER.RECEIPT,
-//     element: <OrderReceiptPage />,
-//     roles: allRoles,
-//   },
+export const sharedRoutes: RouteGroup[] = [
+  // Order Routes - Accessible by all roles
+  //   {
+  //     path: ROUTES.ORDER.DETAILS,
+  //     element: <OrderDetailsSharedPage />,
+  //     roles: allRoles,
+  //   },
+  {
+    path: ROUTES.SHARED.PROFILE,
+    element: <SharedProfilePage />,
+    roles: allRoles,
+  },
+  //   {
+  //     path: ROUTES.ORDER.TRACK,
+  //     element: <OrderTrackSharedPage />,
+  //     roles: allRoles,
+  //   },
+  //   {
+  //     path: ROUTES.ORDER.INVOICE,
+  //     element: <OrderInvoicePage />,
+  //     roles: allRoles,
+  //   },
+  //   {
+  //     path: ROUTES.ORDER.RECEIPT,
+  //     element: <OrderReceiptPage />,
+  //     roles: allRoles,
+  //   },
 
-//   // Payment Routes - Accessible by Customer and Vendor
-//   {
-//     path: ROUTES.PAYMENT.PROCESS,
-//     element: <ProcessPaymentPage />,
-//     roles: customerVendorRoles,
-//   },
-//   {
-//     path: ROUTES.PAYMENT.SUCCESS,
-//     element: <PaymentSuccessPage />,
-//     roles: customerVendorRoles,
-//   },
-//   {
-//     path: ROUTES.PAYMENT.FAILED,
-//     element: <PaymentFailedPage />,
-//     roles: customerVendorRoles,
-//   },
-//   {
-//     path: ROUTES.PAYMENT.METHODS,
-//     element: <PaymentMethodsSharedPage />,
-//     roles: customerVendorRoles,
-//   },
-//   {
-//     path: ROUTES.PAYMENT.HISTORY,
-//     element: <PaymentHistoryPage />,
-//     roles: customerVendorRoles,
-//   },
+  // Payment Routes - Accessible by Customer and Vendor
+  //   {
+  //     path: ROUTES.PAYMENT.PROCESS,
+  //     element: <ProcessPaymentPage />,
+  //     roles: customerVendorRoles,
+  //   },
+  //   {
+  //     path: ROUTES.PAYMENT.SUCCESS,
+  //     element: <PaymentSuccessPage />,
+  //     roles: customerVendorRoles,
+  //   },
+  //   {
+  //     path: ROUTES.PAYMENT.FAILED,
+  //     element: <PaymentFailedPage />,
+  //     roles: customerVendorRoles,
+  //   },
+  //   {
+  //     path: ROUTES.PAYMENT.METHODS,
+  //     element: <PaymentMethodsSharedPage />,
+  //     roles: customerVendorRoles,
+  //   },
+  //   {
+  //     path: ROUTES.PAYMENT.HISTORY,
+  //     element: <PaymentHistoryPage />,
+  //     roles: customerVendorRoles,
+  //   },
 
-//   // Notifications - Accessible by all roles
-//   {
-//     path: ROUTES.NOTIFICATIONS,
-//     element: <NotificationsPage />,
-//     roles: allRoles,
-//   },
-//   {
-//     path: ROUTES.NOTIFICATION_DETAILS,
-//     element: <NotificationDetailsPage />,
-//     roles: allRoles,
-//   },
+  // Notifications - Accessible by all roles
+  //   {
+  //     path: ROUTES.NOTIFICATIONS,
+  //     element: <NotificationsPage />,
+  //     roles: allRoles,
+  //   },
+  //   {
+  //     path: ROUTES.NOTIFICATION_DETAILS,
+  //     element: <NotificationDetailsPage />,
+  //     roles: allRoles,
+  //   },
 
-//   // Chat - Accessible by all roles
-//   {
-//     path: ROUTES.CHAT.LIST,
-//     element: <ChatListPage />,
-//     roles: allRoles,
-//   },
-//   {
-//     path: ROUTES.CHAT.ROOM,
-//     element: <ChatRoomPage />,
-//     roles: allRoles,
-//   },
-//   {
-//     path: ROUTES.CHAT.SUPPORT,
-//     element: <ChatSupportPage />,
-//     roles: allRoles,
-//   },
+  // Chat - Accessible by all roles
+  //   {
+  //     path: ROUTES.CHAT.LIST,
+  //     element: <ChatListPage />,
+  //     roles: allRoles,
+  //   },
+  //   {
+  //     path: ROUTES.CHAT.ROOM,
+  //     element: <ChatRoomPage />,
+  //     roles: allRoles,
+  //   },
+  //   {
+  //     path: ROUTES.CHAT.SUPPORT,
+  //     element: <ChatSupportPage />,
+  //     roles: allRoles,
+  //   },
 
-//   // Support - Accessible by all roles
-//   {
-//     path: ROUTES.SUPPORT.CENTER,
-//     element: <SupportCenterPage />,
-//     roles: allRoles,
-//   },
-//   {
-//     path: ROUTES.SUPPORT.FAQ,
-//     element: <FAQPage />,
-//     roles: allRoles,
-//   },
-//   {
-//     path: ROUTES.SUPPORT.CONTACT,
-//     element: <ContactPage />,
-//     roles: allRoles,
-//   },
-//   {
-//     path: ROUTES.SUPPORT.REPORT,
-//     element: <ReportPage />,
-//     roles: allRoles,
-//   },
+  // Support - Accessible by all roles
+  //   {
+  //     path: ROUTES.SUPPORT.CENTER,
+  //     element: <SupportCenterPage />,
+  //     roles: allRoles,
+  //   },
+  //   {
+  //     path: ROUTES.SUPPORT.FAQ,
+  //     element: <FAQPage />,
+  //     roles: allRoles,
+  //   },
+  //   {
+  //     path: ROUTES.SUPPORT.CONTACT,
+  //     element: <ContactPage />,
+  //     roles: allRoles,
+  //   },
+  //   {
+  //     path: ROUTES.SUPPORT.REPORT,
+  //     element: <ReportPage />,
+  //     roles: allRoles,
+  //   },
 
-//   // Legal - Public routes (no roles needed)
-//   {
-//     path: ROUTES.LEGAL.TERMS,
-//     element: <TermsPage />,
-//   },
-//   {
-//     path: ROUTES.LEGAL.PRIVACY,
-//     element: <PrivacyPage />,
-//   },
-//   {
-//     path: ROUTES.LEGAL.COOKIES,
-//     element: <CookiesPage />,
-//   },
-// ];
+  // Legal - Public routes (no roles needed)
+  //   {
+  //     path: ROUTES.LEGAL.TERMS,
+  //     element: <TermsPage />,
+  //   },
+  //   {
+  //     path: ROUTES.LEGAL.PRIVACY,
+  //     element: <PrivacyPage />,
+  //   },
+  //   {
+  //     path: ROUTES.LEGAL.COOKIES,
+  //     element: <CookiesPage />,
+  //   },
+];

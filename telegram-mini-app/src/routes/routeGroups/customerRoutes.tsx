@@ -10,14 +10,38 @@ const CustomerHomePage = lazy(
 const CustomerSearchPage = lazy(
   () => import("@/features/customer/pages/SearchPage"),
 );
-// const CustomerNotificationsPage = lazy(
-//   () => import("@/features/customer/pages/NotificationsPage"),
-// );
+const CustomerNotificationsPage = lazy(
+  () => import("@/features/customer/pages/NotificationsPage"),
+);
+const CustomerSupportPage = lazy(
+  () => import("@/features/customer/pages/SupportPage"),
+);
 
+const CustomerOffersDetailsPage = lazy(
+  () => import("@/features/customer/pages/OffersDetailsPage"),
+);
+const CustomerOrderListPage = lazy(
+  () => import("@/features/customer/pages/OrderListPage"),
+);
 // Restaurant & Food
 const RestaurantListPage = lazy(
   () => import("@/features/customer/pages/RestaurantListPage"),
 );
+
+const EditProfilePage = lazy(
+  () => import("@/features/customer/pages/EditProfilePage"),
+);
+const ChangePasswordPage = lazy(
+  () => import("@/features/customer/pages/ChangePasswordPage"),
+);
+const AddPaymentListPage = lazy(
+  () => import("@/features/customer/pages/AddPaymentListPage"),
+);
+const AddTelebirrFormPage = lazy(
+  () => import("@/features/customer/pages/AddTelebirrFormPage"),
+);
+// const PaymentMethodsPage = lazy(()=>import("@/features/customer/pages/PaymentMethodsPage"),);
+
 const RestaurantDetailsPage = lazy(
   () => import("@/features/customer/pages/RestaurantDetailsPage"),
 );
@@ -30,7 +54,7 @@ const RestaurantDetailsPage = lazy(
 const FoodDetailsPage = lazy(
   () => import("@/features/customer/pages/FoodDetailsPage"),
 );
-// const FoodSearchPage = lazy( 
+// const FoodSearchPage = lazy(
 //   () => import("@/features/customer/pages/FoodSearchPage"),
 // );
 // const FoodCategoryPage = lazy(
@@ -90,6 +114,7 @@ const AddressesPage = lazy(
 const FavoritesPage = lazy(
   () => import("@/features/customer/pages/FavoritesPage"),
 );
+
 // const CustomerSettingsPage = lazy(
 //   () => import("@/features/customer/pages/SettingsPage"),
 // );
@@ -99,6 +124,11 @@ export const customerRoutes: RouteGroup[] = [
   {
     path: ROUTES.CUSTOMER.HOME,
     element: <CustomerHomePage />,
+    roles: [UserRoles.CUSTOMER],
+  },
+  {
+    path: ROUTES.CUSTOMER.ORDERS.LIST,
+    element: <CustomerOrderListPage />,
     roles: [UserRoles.CUSTOMER],
   },
   {
@@ -113,7 +143,7 @@ export const customerRoutes: RouteGroup[] = [
   // },
 
   // Restaurant Discovery
-  
+
   {
     path: ROUTES.CUSTOMER.RESTAURANT.LIST,
     element: <RestaurantListPage />,
@@ -129,11 +159,11 @@ export const customerRoutes: RouteGroup[] = [
   //   element: <RestaurantMenuPage />,
   //   roles: [UserRole.CUSTOMER],
   // },
-//   {
-//     path: ROUTES.CUSTOMER.RESTAURANT.REVIEWS,
-//     element: <RestaurantReviewsPage />,
-//     roles: [UserRole.CUSTOMER],
-//   },
+  //   {
+  //     path: ROUTES.CUSTOMER.RESTAURANT.REVIEWS,
+  //     element: <RestaurantReviewsPage />,
+  //     roles: [UserRole.CUSTOMER],
+  //   },
 
   // Food Items
   {
@@ -161,6 +191,21 @@ export const customerRoutes: RouteGroup[] = [
   {
     path: ROUTES.CUSTOMER.CART,
     element: <CartPage />,
+    roles: [UserRoles.CUSTOMER],
+  },
+  {
+    path: ROUTES.CUSTOMER.FOOD.OFFER_DETAILS,
+    element: <CustomerOffersDetailsPage />,
+    roles: [UserRoles.CUSTOMER],
+  },
+  {
+    path: ROUTES.CUSTOMER.NOTIFICATIONS,
+    element: <CustomerNotificationsPage />,
+    roles: [UserRoles.CUSTOMER],
+  },
+  {
+    path: ROUTES.CUSTOMER.SUPPORT,
+    element: <CustomerSupportPage />,
     roles: [UserRoles.CUSTOMER],
   },
   {
@@ -196,11 +241,11 @@ export const customerRoutes: RouteGroup[] = [
     element: <OrderHistoryPage />,
     roles: [UserRoles.CUSTOMER],
   },
-//   {
-//     path: ROUTES.CUSTOMER.ORDERS.REVIEW,
-//     element: <OrderReviewPage />,
-//     roles: [UserRole.CUSTOMER],
-//   },
+  //   {
+  //     path: ROUTES.CUSTOMER.ORDERS.REVIEW,
+  //     element: <OrderReviewPage />,
+  //     roles: [UserRole.CUSTOMER],
+  //   },
 
   // Payment Methods
   {
@@ -208,16 +253,16 @@ export const customerRoutes: RouteGroup[] = [
     element: <PaymentMethodsPage />,
     roles: [UserRoles.CUSTOMER],
   },
-//   {
-//     path: ROUTES.CUSTOMER.PAYMENT.ADD_METHOD,
-//     element: <AddPaymentMethodPage />,
-//     roles: [UserRole.CUSTOMER],
-//   },
-//   {
-//     path: ROUTES.CUSTOMER.PAYMENT.WALLET,
-//     element: <WalletPage />,
-//     roles: [UserRole.CUSTOMER],
-//   },
+  //   {
+  //     path: ROUTES.CUSTOMER.PAYMENT.ADD_METHOD,
+  //     element: <AddPaymentMethodPage />,
+  //     roles: [UserRole.CUSTOMER],
+  //   },
+  //   {
+  //     path: ROUTES.CUSTOMER.PAYMENT.WALLET,
+  //     element: <WalletPage />,
+  //     roles: [UserRole.CUSTOMER],
+  //   },
   // {
   //   path: ROUTES.CUSTOMER.PAYMENT.TRANSACTIONS,
   //   element: <TransactionsPage />,
@@ -240,19 +285,39 @@ export const customerRoutes: RouteGroup[] = [
   //   element: <AddAddressPage />,
   //   roles: [UserRole.CUSTOMER],
   // },
-//   {
-//     path: ROUTES.CUSTOMER.EDIT_ADDRESS,
-//     element: <EditAddressPage />,
-//     roles: [UserRole.CUSTOMER],
-//   },
+  //   {
+  //     path: ROUTES.CUSTOMER.EDIT_ADDRESS,
+  //     element: <EditAddressPage />,
+  //     roles: [UserRole.CUSTOMER],
+  //   },
   {
     path: ROUTES.CUSTOMER.FAVORITES,
     element: <FavoritesPage />,
     roles: [UserRoles.CUSTOMER],
   },
-//   {
-//     path: ROUTES.CUSTOMER.SETTINGS,
-//     element: <CustomerSettingsPage />,
-//     roles: [UserRole.CUSTOMER],
-//   },
+  {
+    path: ROUTES.CUSTOMER.PAYMENT.ADD_METHOD,
+    element: <AddPaymentListPage />,
+    roles: [UserRoles.CUSTOMER],
+  },
+  {
+    path: ROUTES.CUSTOMER.PAYMENT.TELEBIRR_FORM,
+    element: <AddTelebirrFormPage />,
+    roles: [UserRoles.CUSTOMER],
+  },
+  {
+    path: ROUTES.CUSTOMER.CHANGE_PASSWORD,
+    element: <ChangePasswordPage />,
+    roles: [UserRoles.CUSTOMER],
+  },
+  {
+    path: ROUTES.CUSTOMER.EDIT_PROFILE,
+    element: <EditProfilePage />,
+    roles: [UserRoles.CUSTOMER],
+  },
+  //   {
+  //     path: ROUTES.CUSTOMER.SETTINGS,
+  //     element: <CustomerSettingsPage />,
+  //     roles: [UserRole.CUSTOMER],
+  //   },
 ];

@@ -7,20 +7,24 @@ export const ROUTES = {
   RESET_PASSWORD: "/reset-password/:token",
   VERIFY_EMAIL: "/verify-email/:token",
   TEST: "/test",
+  //===================shared profiles Route=================
+
+  SHARED: { PROFILE: "/shared/profile" },
 
   // ==================== CUSTOMER ROUTES ====================
   CUSTOMER: {
     // Core navigation
-    HOME: "/customer/home",
-    SEARCH: "customer/search",
+    HOME: "/customer/dashboard",
+    SEARCH: "/customer/search",
     NOTIFICATIONS: "/customer/notifications",
+    SUPPORT: "/customer/support",
 
     // Restaurant & Food discovery
     RESTAURANT: {
       LIST: "/restaurants",
-      DETAILS: "/restaurant/:restaurantId",
-      MENU: "/restaurant/:restaurantId/menu",
-      REVIEWS: "/restaurant/:restaurantId/reviews",
+      DETAILS: "/customer/restaurant/:restaurantId",
+      MENU: "/customer/restaurant/:restaurantId/menu",
+      REVIEWS: "/customer/restaurant/:restaurantId/reviews",
     },
 
     // Food items
@@ -29,16 +33,17 @@ export const ROUTES = {
       SEARCH: "/food/search",
       CATEGORY: "/food/category/:categoryId",
       OFFERS: "/offers",
+      OFFER_DETAILS: "/customer/offers/:offerId",
     },
 
     // Order management
-    CART: "/cart",
-    CHECKOUT: "/checkout",
-    CHECKOUT_SUCCESS: "/checkout/success/:orderId",
+    CART: "/customer/cart",
+    CHECKOUT: "/customer/checkout",
+    CHECKOUT_SUCCESS: "/customer/checkout/success/:orderId",
     ORDERS: {
-      LIST: "/orders",
+      LIST: "/customer/orders",
       DETAILS: "/order/:orderId",
-      TRACK: "/order/:orderId/track",
+      TRACK: "customer/order/track/:orderId",
       HISTORY: "/orders/history",
       REVIEW: "/order/:orderId/review",
     },
@@ -49,14 +54,18 @@ export const ROUTES = {
       ADD_METHOD: "/payment/methods/add",
       WALLET: "/wallet",
       TRANSACTIONS: "/wallet/transactions",
+      LIST: "/payment/paymentList",
+      TELEBIRR_FORM: "/payment/telebirr-form",
     },
 
     // User profile
-    PROFILE: "/user/profile",
+    PROFILE: "/customer/profile",
     ADDRESSES: "/user/profile/addresses",
     ADD_ADDRESS: "/user/profile/addresses/add",
     EDIT_ADDRESS: "/user/profile/addresses/:addressId/edit",
-    FAVORITES: "/favorites",
+    FAVORITES: "/customer/favorites",
+    EDIT_PROFILE: "/customer/profile/edit",
+    CHANGE_PASSWORD: "/customer/profile/change-password",
     SETTINGS: "/settings",
   },
 
