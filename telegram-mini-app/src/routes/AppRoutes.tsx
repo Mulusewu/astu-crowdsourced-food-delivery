@@ -186,9 +186,11 @@ export default function AppRoutes() {
         </Route>
 
         {/* ====================== DELIVERY ROUTES ====================== */}
-        {deliveryRoutes.map((route) => (
-          <Route key={route.path} path={route.path} element={route.element} />
-        ))}
+        <Route element={<DeliveryLayout />}>
+          {deliveryRoutes.map((route) => (
+            <Route key={route.path} path={route.path} element={route.element} />
+          ))}
+        </Route>
 
         {/* ====================== FALLBACK ROUTES ====================== */}
         <Route path="*" element={<FallbackRoute />} />

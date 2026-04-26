@@ -1,16 +1,30 @@
 import React, { useEffect, useState } from "react";
-import { Search, SlidersHorizontal, ArrowLeft, ChevronDown, Bookmark } from "lucide-react";
+import {
+  Search,
+  SlidersHorizontal,
+  ArrowLeft,
+  ChevronDown,
+  Bookmark,
+} from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useInView } from "react-intersection-observer";
 
 import { useOrderStore } from "@/store/orders/orderStore";
 import { useCafeStore } from "@/store/cafeStore";
 
-import BottomNav from "@/components/common/BottomNav1";
-
 // Custom fast food icon (Drink + Burger matching the image)
 const FoodPlateIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-[#F26A1C] mr-1 shrink-0">
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className="text-[#F26A1C] mr-1 shrink-0"
+  >
     <path d="M12 11h8" />
     <path d="M4 11h4" />
     <path d="M12 15h8" />
@@ -52,7 +66,8 @@ export default function AvailableDeliveriesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  const activeSortLabel = sortOptions.find(opt => opt.value === secondaryFilter)?.label || "Sort";
+  const activeSortLabel =
+    sortOptions.find((opt) => opt.value === secondaryFilter)?.label || "Sort";
 
   // Initial data fetch
   useEffect(() => {
@@ -83,7 +98,6 @@ export default function AvailableDeliveriesPage() {
           >
             <ArrowLeft strokeWidth={2.5} size={22} />
           </button>
-
           <h1 className="absolute w-full text-center text-[26px] font-black text-black">
             Orders
           </h1>
@@ -117,7 +131,11 @@ export default function AvailableDeliveriesPage() {
               className="flex items-center justify-between gap-2 bg-white border border-gray-300 text-black font-semibold text-[15px] px-4 h-[44px] rounded-[14px] shadow-sm"
             >
               <span className="truncate max-w-[130px]">{activeSortLabel}</span>
-              <ChevronDown size={20} strokeWidth={3} className={`transition-transform ${isFilterOpen ? "rotate-180" : ""}`} />
+              <ChevronDown
+                size={20}
+                strokeWidth={3}
+                className={`transition-transform ${isFilterOpen ? "rotate-180" : ""}`}
+              />
             </button>
 
             {isFilterOpen && (
@@ -135,10 +153,11 @@ export default function AvailableDeliveriesPage() {
                           setSecondaryFilter(option.value);
                           setIsFilterOpen(false);
                         }}
-                        className={`flex w-full text-left items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors ${secondaryFilter === option.value
-                          ? "bg-orange-50 text-[#F26A1C]"
-                          : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                          }`}
+                        className={`flex w-full text-left items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                          secondaryFilter === option.value
+                            ? "bg-orange-50 text-[#F26A1C]"
+                            : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                        }`}
                       >
                         {option.label}
                       </button>
@@ -162,7 +181,9 @@ export default function AvailableDeliveriesPage() {
             {filteredOrders.map((order, idx) => {
               const orderId = order.orderNumber || order.id.slice(-3);
               const itemCount = order.items?.length || 1;
-              const firstImage = order.items?.[0]?.image || "https://images.unsplash.com/photo-1544025162-831e5088eb7e?q=80&w=200&auto=format&fit=crop";
+              const firstImage =
+                order.items?.[0]?.image ||
+                "https://images.unsplash.com/photo-1544025162-831e5088eb7e?q=80&w=200&auto=format&fit=crop";
 
               return (
                 <div
@@ -183,7 +204,15 @@ export default function AvailableDeliveriesPage() {
                     onClick={() => toggleBookmark(order.id)}
                     className="absolute top-4 right-4 text-[#F26A1C] transition-transform active:scale-95"
                   >
-                    <Bookmark size={20} strokeWidth={3} className={order.isBookmarked ? "fill-[#F26A1C]" : "fill-transparent"} />
+                    <Bookmark
+                      size={20}
+                      strokeWidth={3}
+                      className={
+                        order.isBookmarked
+                          ? "fill-[#F26A1C]"
+                          : "fill-transparent"
+                      }
+                    />
                   </button>
 
                   <h2 className="text-[17px] font-black text-black tracking-tight mt-2">
@@ -219,13 +248,13 @@ export default function AvailableDeliveriesPage() {
             {isLoadingMore ? (
               <div className="w-6 h-6 border-2 border-[#F26A1C] border-t-transparent rounded-full animate-spin" />
             ) : (
-              <p className="text-xs text-gray-400 font-medium">Scroll down for more</p>
+              <p className="text-xs text-gray-400 font-medium">
+                Scroll down for more
+              </p>
             )}
           </div>
         )}
       </main>
-
-      <BottomNav />
     </div>
   );
 }

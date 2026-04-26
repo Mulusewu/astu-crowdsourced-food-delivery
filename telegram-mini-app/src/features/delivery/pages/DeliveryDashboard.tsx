@@ -15,7 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import BottomNav from "@/components/common/BottomNav1";
+
 import { cn } from "@/lib/utils";
 import { useDeliveryDashboardStore } from "@/store/deliveryDashboardStore";
 
@@ -82,7 +82,6 @@ export default function DeliveryDashboard() {
           <Skeleton className="h-5 w-64" />
           <Skeleton className="h-56 w-full rounded-2xl" />
         </div>
-        <BottomNav />
       </div>
     );
   }
@@ -94,8 +93,8 @@ export default function DeliveryDashboard() {
     locationValue === "all"
       ? cafes
       : cafes.filter((cafe) =>
-        cafe.location.toLowerCase().includes(locationValue.toLowerCase())
-      );
+          cafe.location.toLowerCase().includes(locationValue.toLowerCase()),
+        );
 
   return (
     <div className="flex min-h-screen flex-col bg-[#FDFDFD]">
@@ -128,7 +127,9 @@ export default function DeliveryDashboard() {
               <div className="absolute right-0 mt-2 w-56 rounded-xl border border-gray-100 bg-white py-2 shadow-lg z-[60]">
                 <div className="border-b border-gray-100 px-4 py-3">
                   <p className="text-sm font-medium text-gray-900">{name}</p>
-                  <p className="text-xs text-gray-500">{deliveryPerson?.email}</p>
+                  <p className="text-xs text-gray-500">
+                    {deliveryPerson?.email}
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -197,34 +198,41 @@ export default function DeliveryDashboard() {
               <span className="truncate">
                 {locationValue === "all" ? "All Locations" : locationValue}
               </span>
-              <ChevronDown className="size-4 shrink-0 text-[#F26A1C] transition-transform" style={{ transform: isLocationOpen ? "rotate(180deg)" : "rotate(0deg)" }} />
+              <ChevronDown
+                className="size-4 shrink-0 text-[#F26A1C] transition-transform"
+                style={{
+                  transform: isLocationOpen ? "rotate(180deg)" : "rotate(0deg)",
+                }}
+              />
             </button>
 
             {/* Dropdown Menu */}
             {isLocationOpen && (
               <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-[140px] rounded-xl border border-gray-100 bg-white shadow-xl animate-in fade-in zoom-in-95 duration-150">
                 <div className="flex flex-col p-1.5">
-                  {["All Locations", "Bole Gate", "Gedagate", "Main Gate"].map((loc) => {
-                    const val = loc === "All Locations" ? "all" : loc;
-                    const isSelected = locationValue === val;
-                    return (
-                      <button
-                        key={loc}
-                        onClick={() => {
-                          setLocationValue(val);
-                          setIsLocationOpen(false);
-                        }}
-                        className={cn(
-                          "flex w-full items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                          isSelected
-                            ? "bg-orange-50 text-[#F26A1C]"
-                            : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                        )}
-                      >
-                        {loc}
-                      </button>
-                    );
-                  })}
+                  {["All Locations", "Bole Gate", "Gedagate", "Main Gate"].map(
+                    (loc) => {
+                      const val = loc === "All Locations" ? "all" : loc;
+                      const isSelected = locationValue === val;
+                      return (
+                        <button
+                          key={loc}
+                          onClick={() => {
+                            setLocationValue(val);
+                            setIsLocationOpen(false);
+                          }}
+                          className={cn(
+                            "flex w-full items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                            isSelected
+                              ? "bg-orange-50 text-[#F26A1C]"
+                              : "text-gray-700 hover:bg-gray-50 hover:text-gray-900",
+                          )}
+                        >
+                          {loc}
+                        </button>
+                      );
+                    },
+                  )}
                 </div>
               </div>
             )}
@@ -298,7 +306,10 @@ export default function DeliveryDashboard() {
                   Order #{order.orderNo}
                 </p>
                 <div className="mt-1 flex items-center justify-center gap-1 text-xs text-gray-600">
-                  <Package className="h-3.5 w-3.5 text-primary" strokeWidth={2} />
+                  <Package
+                    className="h-3.5 w-3.5 text-primary"
+                    strokeWidth={2}
+                  />
                   <span>{order.items} items</span>
                 </div>
                 <p className="mt-1 text-center text-sm font-bold text-gray-900">
@@ -344,7 +355,9 @@ export default function DeliveryDashboard() {
                     <Bookmark
                       className={cn(
                         "h-5 w-5",
-                        cafe.isBookmarked ? "fill-white text-white" : "text-white",
+                        cafe.isBookmarked
+                          ? "fill-white text-white"
+                          : "text-white",
                       )}
                     />
                   </button>
@@ -385,8 +398,6 @@ export default function DeliveryDashboard() {
           </div>
         </section>
       </main>
-
-      <BottomNav />
     </div>
   );
 }

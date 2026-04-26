@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth/authStore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import BottomNav from "@/components/common/BottomNav1";
+
 import { Header } from "@/features/shared/components/ProfileShared";
 
 export default function ProfileMain() {
@@ -72,7 +72,6 @@ export default function ProfileMain() {
           <ChevronRight size={18} className="text-gray-400" />
         </div>
 
-
         <div
           className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800 cursor-pointer active:bg-gray-50 dark:active:bg-gray-800/50 transition-colors"
           onClick={() => navigate("/delivery/profile/password")}
@@ -115,7 +114,6 @@ export default function ProfileMain() {
           Log Out
         </button>
       </div>
-      <BottomNav />
     </div>
   );
 }

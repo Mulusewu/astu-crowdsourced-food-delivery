@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Check, Plus } from "lucide-react";
-import BottomNav from "@/components/common/BottomNav1";
-import { Header } from "@/components/profile/ProfileShared";
+
+import { Header } from "@/features/shared/components/ProfileShared";
 import { usePaymentStore } from "@/store/paymentStore";
 
 const AVAILABLE_BANKS = [
@@ -26,7 +26,7 @@ export default function AddPayment() {
   const navigate = useNavigate();
   const { paymentMethods, addPaymentMethod } = usePaymentStore();
 
-  const handleAddPayment = (bank: typeof AVAILABLE_BANKS[0]) => {
+  const handleAddPayment = (bank: (typeof AVAILABLE_BANKS)[0]) => {
     addPaymentMethod({
       id: Math.random().toString(36).substr(2, 9),
       type: bank.name,
@@ -51,7 +51,7 @@ export default function AddPayment() {
         <div className="flex-1 space-y-4">
           {AVAILABLE_BANKS.map((bank) => {
             const isAdded = paymentMethods.some(
-              (method) => method.type === bank.name
+              (method) => method.type === bank.name,
             );
 
             if (isAdded) {
@@ -95,7 +95,6 @@ export default function AddPayment() {
           })}
         </div>
       </div>
-      <BottomNav />
     </div>
   );
 }

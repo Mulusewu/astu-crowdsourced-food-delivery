@@ -1,16 +1,15 @@
-import { useLocation, useNavigate } from "react-router-dom";
 import { Home, Bookmark, Package, Newspaper, User } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { ROUTES } from "@/routes/routePaths";
 
-export default function DeliveryBottomNav() {
+export default function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
   const path = location.pathname;
 
   // Robust active state calculation
   const isActive = (routePattern: string) => path.includes(routePattern);
-  const isHomeActive = path === ROUTES.DELIVERY.DASHBOARD || path === "/delivery";
+  const isHomeActive = path === "/delivery/dashboard" || path === "/delivery";
 
   return (
     <nav className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-md">
@@ -32,27 +31,27 @@ export default function DeliveryBottomNav() {
           <NavIconButton
             icon={Home}
             isActive={isHomeActive}
-            onClick={() => navigate(ROUTES.DELIVERY.DASHBOARD)}
+            onClick={() => navigate("/delivery/dashboard")}
           />
 
           <NavIconButton
             icon={Bookmark}
-            isActive={isActive("saved")}
-            onClick={() => navigate(ROUTES.DELIVERY.SAVED)}
+            isActive={isActive("bookmark")}
+            onClick={() => navigate("/delivery/saved")}
           />
 
           {/* Invisible spacer for the center button */}
           <div className="w-[60px]" />
 
           <NavIconButton
-            icon={Newspaper} // History/Messages
-            isActive={isActive("history")}
-            onClick={() => navigate(ROUTES.DELIVERY.HISTORY.LIST)}
+            icon={Newspaper}
+            isActive={isActive("messages")}
+            onClick={() => navigate("/delivery/messages")}
           />
 
           {/* Profile (Uses the Shared route!) */}
           <button
-            onClick={() => navigate("/profile")}
+            onClick={() => navigate("/delivery/profile")}
             className="relative flex items-center justify-center p-1 transition-transform active:scale-95"
           >
             <div
@@ -76,10 +75,10 @@ export default function DeliveryBottomNav() {
           </button>
         </div>
 
-        {/* Floating Center Action Button (Active Deliveries) */}
+        {/* Floating Center Action Button (Active Orders) */}
         <div className="absolute top-[-24px] left-1/2 -translate-x-1/2 z-20">
           <button
-            onClick={() => navigate(ROUTES.DELIVERY.ACTIVE.LIST)}
+            onClick={() => navigate("/delivery/orders")}
             className="flex h-[64px] w-[64px] items-center justify-center rounded-full bg-white shadow-[0_4px_12px_rgba(0,0,0,0.15)] transition-transform active:scale-95"
           >
             <div className="flex h-[48px] w-[48px] items-center justify-center rounded-full border-[2px] border-[#F26A1C] bg-orange-50">
@@ -87,7 +86,7 @@ export default function DeliveryBottomNav() {
                 size={24}
                 className={cn(
                   "text-[#F26A1C] transition-transform duration-300",
-                  isActive("active")
+                  isActive("orders")
                     ? "scale-110 fill-[#F26A1C]/20"
                     : "scale-100",
                 )}
@@ -129,4 +128,3 @@ function NavIconButton({
     </button>
   );
 }
-
