@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { ArrowLeft, Phone, Truck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import BottomNav from "@/components/common/BottomNav1";
+
 import { useOrderStore } from "@/store/orders/orderStore";
 
 // Helper for exact date formatting "03 June 2026"
@@ -58,7 +58,9 @@ export default function ActiveDeliveriesPage() {
           {activeOrders.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <Truck size={48} className="text-gray-300 mb-4" />
-              <p className="text-gray-500 font-medium">No active deliveries at the moment.</p>
+              <p className="text-gray-500 font-medium">
+                No active deliveries at the moment.
+              </p>
             </div>
           ) : (
             activeOrders.map((order) => (
@@ -80,10 +82,16 @@ export default function ActiveDeliveriesPage() {
                 {/* Order Number & Status */}
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-[16px] font-black tracking-tight text-[#F26A1C]">
-                    Order #{order.orderNumber?.replace("ORD-", "") || order.id.slice(-3)}
+                    Order #
+                    {order.orderNumber?.replace("ORD-", "") ||
+                      order.id.slice(-3)}
                   </span>
                   <div className="flex items-center gap-[6px] text-gray-900">
-                    <Truck size={15} strokeWidth={1.5} className="text-gray-700" />
+                    <Truck
+                      size={15}
+                      strokeWidth={1.5}
+                      className="text-gray-700"
+                    />
                     <span className="text-[14px] font-medium text-black">
                       {statusMap[order.status] || order.status}
                     </span>
@@ -96,8 +104,12 @@ export default function ActiveDeliveriesPage() {
                     <div key={item.id || index} className="flex flex-col">
                       <div className="flex items-center py-[10px] text-[14px] font-medium text-black">
                         <span className="flex-1">{item.name}</span>
-                        <span className="w-16 text-center">{item.quantity} Pcs</span>
-                        <span className="w-20 text-right">{item.price} Birr</span>
+                        <span className="w-16 text-center">
+                          {item.quantity} Pcs
+                        </span>
+                        <span className="w-20 text-right">
+                          {item.price} Birr
+                        </span>
                       </div>
                       {/* Divider except after last item */}
                       {index < order.items.length - 1 && (
@@ -110,14 +122,20 @@ export default function ActiveDeliveriesPage() {
                 {/* Phone & Total */}
                 <div className="mt-3 flex items-center justify-between py-2">
                   <div className="flex items-center gap-1.5">
-                    <Phone size={16} strokeWidth={2.5} className="text-[#F26A1C] fill-[#F26A1C]" />
+                    <Phone
+                      size={16}
+                      strokeWidth={2.5}
+                      className="text-[#F26A1C] fill-[#F26A1C]"
+                    />
                     <span className="text-[15px] font-medium text-[#F26A1C]">
                       {order.customer?.phone || "N/A"}
                     </span>
                   </div>
                   <div className="text-[15px]">
                     <span className="font-bold text-black mr-2">Total</span>
-                    <span className="font-black text-black">{order.totalAmount} Birr</span>
+                    <span className="font-black text-black">
+                      {order.totalAmount} Birr
+                    </span>
                   </div>
                 </div>
 
@@ -138,8 +156,6 @@ export default function ActiveDeliveriesPage() {
       </main>
 
       {/* Bottom Navigation */}
-      <BottomNav />
     </div>
   );
 }
-

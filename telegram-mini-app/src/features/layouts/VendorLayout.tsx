@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import VendorBottomNav from "@/components/common/VendorBottomNav";
+import VendorBottomNav from "../vendor/components/VendorBottomNav";
 // import { TMAStatusBar } from "@/components/layout/TMAStatusBar"; // Optional: Add if using a custom status bar
 
 export default function VendorLayout() {

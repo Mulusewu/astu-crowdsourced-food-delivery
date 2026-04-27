@@ -76,9 +76,10 @@ export default function BottomNav() {
         </div>
 
         {/* Floating Center Action Button (Active Orders) */}
+        {/* Floating Center Action Button (Active Orders) */}
         <div className="absolute top-[-24px] left-1/2 -translate-x-1/2 z-20">
           <button
-            onClick={() => navigate("/delivery/orders")}
+            onClick={() => navigate("/delivery/active")} // 👈 Changed navigation path
             className="flex h-[64px] w-[64px] items-center justify-center rounded-full bg-white shadow-[0_4px_12px_rgba(0,0,0,0.15)] transition-transform active:scale-95"
           >
             <div className="flex h-[48px] w-[48px] items-center justify-center rounded-full border-[2px] border-[#F26A1C] bg-orange-50">
@@ -86,7 +87,7 @@ export default function BottomNav() {
                 size={24}
                 className={cn(
                   "text-[#F26A1C] transition-transform duration-300",
-                  isActive("orders")
+                  isActive("active") // 👈 Changed active state check to match
                     ? "scale-110 fill-[#F26A1C]/20"
                     : "scale-100",
                 )}

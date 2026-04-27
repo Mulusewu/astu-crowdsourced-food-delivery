@@ -123,6 +123,8 @@ import { customerRoutes } from "./routeGroups/customerRoutes";
 //import { vendorRoutes } from "./routeGroups/vendorRoutes";
 import { deliveryRoutes } from "./routeGroups/deliveryRoutes";
 import { sharedRoutes } from "./routeGroups/sharedRoutes";
+import VendorLayout from "@/features/layouts/VendorLayout";
+import { vendorRoutes } from "./routeGroups/vendorRoutes";
 
 function FallbackRoute() {
   const { user, activeRole } = useAuthStore();
@@ -148,7 +150,6 @@ export default function AppRoutes() {
         {authRoutes.map((route) => (
           <Route key={route.path} path={route.path} element={route.element} />
         ))}
-
         {/* ====================== SHARED ROUTES ====================== */}
         {/* Accessible by all authenticated roles. No specific layout wrapper here 
             unless you create a SharedLayout, otherwise the pages handle their own UI */}
@@ -164,7 +165,6 @@ export default function AppRoutes() {
             <Route key={route.path} path={route.path} element={route.element} />
           ))}
         </Route>
-
         {/* ====================== CUSTOMER ZONE ====================== */}
         <Route
         // element={
@@ -184,14 +184,32 @@ export default function AppRoutes() {
             ))}
           </Route>
         </Route>
-
         {/* ====================== DELIVERY ROUTES ====================== */}
         <Route element={<DeliveryLayout />}>
           {deliveryRoutes.map((route) => (
             <Route key={route.path} path={route.path} element={route.element} />
           ))}
         </Route>
-
+        // vendor routes will go here when you create the VendorLayout and
+        vendor route group
+        <Route
+        // element={
+        //   <ProtectedRoute
+        //     allowedRoles={["vendor"]}
+        //     redirectPath={ROUTES.AUTH}
+        //   />
+        // }
+        >
+          <Route element={<VendorLayout />}>
+            {vendorRoutes.map((route) => (
+              <Route
+                key={route.path}
+                path={route.path}
+                element={route.element}
+              />
+            ))}
+          </Route>
+        </Route>
         {/* ====================== FALLBACK ROUTES ====================== */}
         <Route path="*" element={<FallbackRoute />} />
       </Routes>
