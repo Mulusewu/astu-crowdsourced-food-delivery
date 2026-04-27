@@ -15,9 +15,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import BottomNav from "@/components/common/BottomNav1";
 import { cn } from "@/lib/utils";
 import { useDeliveryDashboardStore } from "@/store/deliveryDashboardStore";
+import { useAuthStore } from "@/store/auth/authStore";
 
 function firstName(fullName: string) {
   return fullName.split(/\s+/)[0] ?? fullName;
@@ -40,6 +40,7 @@ export default function DeliveryDashboard() {
     toggleActiveStatus,
     toggleBookmark,
   } = useDeliveryDashboardStore();
+  const { logout } = useAuthStore();
 
   // Local UI-only states
   const [locationValue, setLocationValue] = useState("all");
@@ -57,7 +58,7 @@ export default function DeliveryDashboard() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen flex-col bg-white pb-32">
+      <div className="flex min-h-screen flex-col bg-white">
         <div className="sticky top-0 z-10 bg-white px-4 pb-3 pt-4">
           <div className="flex items-start justify-between">
             <div className="space-y-2">
@@ -82,7 +83,6 @@ export default function DeliveryDashboard() {
           <Skeleton className="h-5 w-64" />
           <Skeleton className="h-56 w-full rounded-2xl" />
         </div>
-        <BottomNav />
       </div>
     );
   }
@@ -98,7 +98,7 @@ export default function DeliveryDashboard() {
       );
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#FDFDFD]">
+    <>
       <header className="sticky top-0 z-20 bg-white px-4 pb-3 pt-4 shadow-[0_1px_0_rgba(0,0,0,0.06)]">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -108,10 +108,17 @@ export default function DeliveryDashboard() {
             </h1>
           </div>
           <div className="relative shrink-0">
+            {/* Click-away overlay for Profile Menu */}
+            {showProfileMenu && (
+              <div
+                className="fixed inset-0 z-[90]"
+                onClick={() => setShowProfileMenu(false)}
+              />
+            )}
             <button
               type="button"
               onClick={() => setShowProfileMenu(!showProfileMenu)}
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-lg font-semibold text-white shadow-sm transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              className="relative z-[101] flex h-11 w-11 items-center justify-center rounded-full bg-primary text-lg font-semibold text-white shadow-sm transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               aria-label="Account menu"
             >
               {deliveryPerson?.avatar ? (
@@ -125,26 +132,39 @@ export default function DeliveryDashboard() {
               )}
             </button>
             {showProfileMenu && (
-              <div className="absolute right-0 mt-2 w-56 rounded-xl border border-gray-100 bg-white py-2 shadow-lg z-[60]">
+              <div className="absolute right-0 mt-2 w-56 rounded-xl border border-gray-100 bg-white py-2 shadow-lg z-[100] animate-in fade-in zoom-in-95 duration-200">
                 <div className="border-b border-gray-100 px-4 py-3">
                   <p className="text-sm font-medium text-gray-900">{name}</p>
                   <p className="text-xs text-gray-500">{deliveryPerson?.email}</p>
                 </div>
                 <button
                   type="button"
-                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm hover:bg-gray-50"
+                  onClick={() => {
+                    navigate(ROUTES.DELIVERY.PROFILE);
+                    setShowProfileMenu(false);
+                  }}
+                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors"
                 >
                   <User size={16} /> View Profile
                 </button>
                 <button
                   type="button"
-                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm hover:bg-gray-50"
+                  onClick={() => {
+                    navigate(ROUTES.DELIVERY.SETTINGS);
+                    setShowProfileMenu(false);
+                  }}
+                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors"
                 >
                   <Settings size={16} /> Settings
                 </button>
                 <button
                   type="button"
-                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50"
+                  onClick={() => {
+                    logout();
+                    navigate(ROUTES.AUTH);
+                    setShowProfileMenu(false);
+                  }}
+                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 transition-colors"
                 >
                   <LogOut size={16} /> Sign Out
                 </button>
@@ -269,7 +289,7 @@ export default function DeliveryDashboard() {
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto px-4 pb-32 pt-5">
+      <main className="flex-1 overflow-y-auto px-4 pt-5">
         <section>
           <h2 className="mb-3 text-base font-semibold text-gray-900">
             Cheap Orders
@@ -386,7 +406,6 @@ export default function DeliveryDashboard() {
         </section>
       </main>
 
-      <BottomNav />
-    </div>
+    </>
   );
 }

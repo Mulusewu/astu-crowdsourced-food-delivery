@@ -5,6 +5,7 @@ import { ROUTES } from "./routePaths";
 import ProtectedRoute from "./ProtectedRoute";
 import LoadingSkeleton from "@/components/common/LoadingSkeleton";
 import { useAuthStore } from "@/store/auth/authStore";
+import AppLayout from "@/components/layout/AppLayout";
 
 // Import route groups
 import { authRoutes } from "./routeGroups/authRoutes";
@@ -69,13 +70,15 @@ export default function AppRoutes() {
         ))} */}
 
         {/* ====================== DELIVERY ROUTES ====================== */}
-        {deliveryRoutes.map((route) => (
-          <Route
-            key={route.path}
-            path={route.path}
-            element={route.element}
-          />
-        ))}
+        <Route element={<AppLayout />}>
+          {deliveryRoutes.map((route) => (
+            <Route
+              key={route.path}
+              path={route.path}
+              element={route.element}
+            />
+          ))}
+        </Route>
 
         {/* ====================== FALLBACK ROUTES ====================== */}
         <Route path="*" element={<FallbackRoute />} />

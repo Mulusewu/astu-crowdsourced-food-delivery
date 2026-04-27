@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Search, SlidersHorizontal, ArrowLeft, ChevronDown, Bookmark } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useInView } from "react-intersection-observer";
@@ -6,7 +6,6 @@ import { useInView } from "react-intersection-observer";
 import { useOrderStore } from "@/store/orders/orderStore";
 import { useCafeStore } from "@/store/cafeStore";
 
-import BottomNav from "@/components/common/BottomNav1";
 
 // Custom fast food icon (Drink + Burger matching the image)
 const FoodPlateIcon = () => (
@@ -73,7 +72,7 @@ export default function AvailableDeliveriesPage() {
   }, [inView, hasMore, isLoading, isLoadingMore, loadMoreOrders]);
 
   return (
-    <div className="min-h-screen bg-white font-sans flex flex-col pb-24">
+    <div className="bg-white font-sans flex flex-col">
       {/* Header */}
       <header className="px-5 pt-10 pb-2">
         <div className="flex items-center justify-between mb-6 relative">
@@ -225,7 +224,6 @@ export default function AvailableDeliveriesPage() {
         )}
       </main>
 
-      <BottomNav />
     </div>
   );
 }

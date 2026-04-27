@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Star, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import BottomNav from "@/components/common/BottomNav1";
 import { useOrderStore } from "@/store/orders/orderStore";
 
 // ─── constants ────────────────────────────────────────────────────────────────
@@ -126,7 +125,7 @@ export default function HistoryPage() {
     }, [fetchOrderHistory]);
 
     return (
-        <div className="flex min-h-screen flex-col bg-white">
+        <div className="flex flex-col bg-white">
             {/* ── Header ── */}
             <header className="sticky top-0 z-20 bg-white px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] shadow-[0_1px_0_rgba(0,0,0,0.06)]">
                 <div className="relative flex h-12 items-center justify-center">
@@ -151,7 +150,7 @@ export default function HistoryPage() {
             </header>
 
             {/* ── Order list ── */}
-            <main className="flex-1 overflow-y-auto px-4 py-5 pb-32">
+            <main className="flex-1 overflow-y-auto px-4 py-5">
                 <div className="mx-auto w-full max-w-lg">
                     {isLoading ? (
                         <div className="flex h-[50vh] items-center justify-center">
@@ -180,7 +179,6 @@ export default function HistoryPage() {
                 </div>
             </main>
 
-            <BottomNav />
         </div>
     );
 }

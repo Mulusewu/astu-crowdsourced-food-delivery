@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, MapPin, Trash2 } from "lucide-react";
-import BottomNav from "@/components/common/BottomNav1";
 import { useSavedItemsStore, type SavedItem } from "@/store/savedItemsStore";
 
 // ─── constants ────────────────────────────────────────────────────────────────
@@ -80,7 +79,7 @@ export default function SavedItemsPage() {
   const { items, removeItem } = useSavedItemsStore();
 
   return (
-    <div className="flex min-h-screen flex-col bg-white">
+    <div className="flex flex-col bg-white">
       {/* ── Header ── */}
       <header className="sticky top-0 z-20 bg-white px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] shadow-[0_1px_0_rgba(0,0,0,0.06)]">
         <div className="relative flex h-12 items-center justify-center">
@@ -105,7 +104,7 @@ export default function SavedItemsPage() {
       </header>
 
       {/* ── Content ── */}
-      <main className="flex-1 overflow-y-auto px-4 py-5 pb-32">
+      <main className="flex-1 overflow-y-auto px-4 py-5">
         <div className="mx-auto w-full max-w-lg">
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -133,7 +132,6 @@ export default function SavedItemsPage() {
         </div>
       </main>
 
-      <BottomNav />
     </div>
   );
 }

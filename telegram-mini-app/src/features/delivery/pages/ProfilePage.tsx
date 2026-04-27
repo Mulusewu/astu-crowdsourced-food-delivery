@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth/authStore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import BottomNav from "@/components/common/BottomNav1";
 import { Header } from "@/components/profile/ProfileShared";
 
 export default function ProfileMain() {
@@ -17,7 +16,7 @@ export default function ProfileMain() {
   const { user, logout } = useAuthStore();
 
   return (
-    <div className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 pb-28 font-sans flex flex-col">
+    <div className="bg-[#FDFDFD] dark:bg-gray-950 font-sans flex flex-col">
       <Header
         title="Profile"
         showBack
@@ -115,7 +114,6 @@ export default function ProfileMain() {
           Log Out
         </button>
       </div>
-      <BottomNav />
     </div>
   );
 }

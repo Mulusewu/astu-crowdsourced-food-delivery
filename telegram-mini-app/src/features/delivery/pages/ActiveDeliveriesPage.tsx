@@ -1,7 +1,6 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { ArrowLeft, Phone, Truck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import BottomNav from "@/components/common/BottomNav1";
 import { useOrderStore } from "@/store/orders/orderStore";
 
 // Helper for exact date formatting "03 June 2026"
@@ -35,7 +34,7 @@ export default function ActiveDeliveriesPage() {
   }, [fetchActiveOrders]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#FDFDFD] font-sans pb-24 text-gray-900">
+    <div className="flex flex-col bg-[#FDFDFD] font-sans text-gray-900">
       {/* Header */}
       <header className="px-5 pt-[max(2.5rem,env(safe-area-inset-top))] pb-8">
         <div className="relative flex items-center justify-center h-12">
@@ -64,7 +63,8 @@ export default function ActiveDeliveriesPage() {
             activeOrders.map((order) => (
               <div
                 key={order.id}
-                className="w-full rounded-[24px] border border-gray-100/80 bg-white p-[20px] shadow-[0_8px_30px_rgba(0,0,0,0.06)]"
+                onClick={() => navigate(`/delivery/active/${order.id}`)}
+                className="w-full rounded-[24px] border border-gray-100/80 bg-white p-[20px] shadow-[0_8px_30px_rgba(0,0,0,0.06)] cursor-pointer active:scale-[0.98] transition-all"
               >
                 {/* Date & Time */}
                 <div className="flex items-center justify-between pb-[10px]">
@@ -120,25 +120,12 @@ export default function ActiveDeliveriesPage() {
                     <span className="font-black text-black">{order.totalAmount} Birr</span>
                   </div>
                 </div>
-
-                {/* Action Button */}
-                <div className="mt-[20px] flex justify-center pb-2">
-                  <button
-                    type="button"
-                    onClick={() => navigate(`/delivery/report/${order.id}`)}
-                    className="rounded-full border-[1.5px] border-[#F26A1C]/60 bg-white px-8 py-[6px] text-[15px] font-medium text-[#F26A1C] transition hover:bg-orange-50 active:scale-95"
-                  >
-                    Report Issue
-                  </button>
-                </div>
               </div>
             ))
           )}
         </div>
       </main>
 
-      {/* Bottom Navigation */}
-      <BottomNav />
     </div>
   );
 }

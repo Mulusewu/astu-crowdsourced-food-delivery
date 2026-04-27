@@ -46,6 +46,7 @@ export interface Order {
     | "preparing"
     | "ready"
     | "picked_up"
+    | "in_transit"
     | "delivered"
     | "cancelled";
   paymentMethod: "cash" | "card" | "telegram_stars";

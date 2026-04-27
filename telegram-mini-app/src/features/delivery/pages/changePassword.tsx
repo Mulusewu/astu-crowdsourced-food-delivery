@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Lock } from "lucide-react";
-import BottomNav from "@/components/common/BottomNav1";
 import { useAuthStore } from "@/store/auth/authStore";
 import {
   Header,
@@ -46,7 +45,7 @@ export default function ChangePassword() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 pb-28 font-sans flex flex-col">
+    <div className="bg-[#FDFDFD] dark:bg-gray-950 font-sans flex flex-col">
       <Header
         title="Change Password"
         showBack
@@ -96,7 +95,6 @@ export default function ChangePassword() {
           {isLoading ? "Updating..." : "Change Password"}
         </ActionButton>
       </div>
-      <BottomNav />
     </div>
   );
 }

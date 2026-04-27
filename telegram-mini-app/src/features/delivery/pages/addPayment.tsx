@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
 import { Check, Plus } from "lucide-react";
-import BottomNav from "@/components/common/BottomNav1";
 import { Header } from "@/components/profile/ProfileShared";
 import { usePaymentStore } from "@/store/paymentStore";
 
@@ -36,7 +35,7 @@ export default function AddPayment() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 pb-28 font-sans flex flex-col">
+    <div className="bg-[#FDFDFD] dark:bg-gray-950 font-sans flex flex-col">
       <Header
         title="Add Payment Method"
         showBack
@@ -95,7 +94,6 @@ export default function AddPayment() {
           })}
         </div>
       </div>
-      <BottomNav />
     </div>
   );
 }
