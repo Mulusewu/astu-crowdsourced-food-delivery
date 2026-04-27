@@ -32,7 +32,9 @@ function SavedItemCard({
 
       {/* Name + location */}
       <div className="min-w-0 flex-1">
-        <p className="truncate text-base font-bold text-gray-900">{item.name}</p>
+        <p className="truncate text-base font-bold text-gray-900">
+          {item.name}
+        </p>
         <div className="mt-0.5 flex items-center gap-1">
           <MapPin
             className="h-3.5 w-3.5 shrink-0"
@@ -40,7 +42,9 @@ function SavedItemCard({
             strokeWidth={2.5}
             aria-hidden
           />
-          <span className="truncate text-sm text-gray-500">{item.location}</span>
+          <span className="truncate text-sm text-gray-500">
+            {item.location}
+          </span>
         </div>
       </div>
 
@@ -131,8 +135,6 @@ export default function SavedItemsPage() {
           )}
         </div>
       </main>
-
     </div>
   );
 }
-

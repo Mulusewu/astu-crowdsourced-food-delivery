@@ -1,5 +1,3 @@
-import React from "react";
-
 function VendorDashboard() {
   return <div>VendorDashboard</div>;
 }

@@ -10,6 +10,7 @@ export interface CartItem {
   discountPercent?: number;
   quantity: number;
   image?: string;
+  description?: string;
   restaurantId: string;
   restaurantName: string;
   specialInstructions?: string;
@@ -42,20 +43,21 @@ interface CartState {
     type: "percentage" | "fixed";
     description?: string;
   } | null;
-  
+
   // Basic actions
   addToCart: (item: Omit<CartItem, "quantity"> & { quantity?: number }) => void;
+  addItem: (item: Omit<CartItem, "quantity"> & { quantity?: number }) => void; // Added UI compatibility alias
   removeFromCart: (itemId: string) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
   updateSpecialInstructions: (itemId: string, instructions: string) => void;
   updateItemOptions: (itemId: string, options: Record<string, string>) => void;
   clearCart: () => void;
   setRestaurant: (restaurant: RestaurantInfo) => void;
-  
+
   // Promo actions
   applyPromoCode: (code: string) => Promise<boolean>;
   removePromoCode: () => void;
-  
+
   // Computed values
   getTotalItems: () => number;
   getSubtotal: () => number;
@@ -64,16 +66,16 @@ interface CartState {
   getTotal: () => number;
   getItemCount: (itemId: string) => number;
   getSavings: () => number;
-  
+
   // Cart management
   isCartEmpty: () => boolean;
   canAddMoreItems: () => boolean;
   canCheckout: () => { allowed: boolean; reason?: string };
-  
+
   // Bulk operations
   addMultipleItems: (items: CartItem[]) => void;
   updateCartItems: (items: CartItem[]) => void;
-  
+
   // Helpers
   clearError: () => void;
 }
@@ -98,7 +100,11 @@ export const useCartStore = create<CartState>()(
 
         // Check if adding from different restaurant
         if (restaurant && restaurant.id !== newItem.restaurantId) {
-          if (!confirm("Adding items from a different restaurant will clear your cart. Continue?")) {
+          if (
+            !confirm(
+              "Adding items from a different restaurant will clear your cart. Continue?",
+            )
+          ) {
             return;
           }
           set({ items: [], restaurant: null, appliedPromo: null });
@@ -106,15 +112,18 @@ export const useCartStore = create<CartState>()(
 
         set((state) => {
           const existingItemIndex = state.items.findIndex(
-            (item) => item.id === newItem.id
+            (item) => item.id === newItem.id,
           );
 
           const finalPrice = newItem.discountPrice || newItem.price;
-          
+
           // Calculate item total with modifiers
           let modifiersTotal = 0;
           if (newItem.modifiers) {
-            modifiersTotal = newItem.modifiers.reduce((sum, mod) => sum + mod.price, 0);
+            modifiersTotal = newItem.modifiers.reduce(
+              (sum, mod) => sum + mod.price,
+              0,
+            );
           }
 
           if (existingItemIndex >= 0) {
@@ -124,7 +133,8 @@ export const useCartStore = create<CartState>()(
             updatedItems[existingItemIndex] = {
               ...existingItem,
               quantity: existingItem.quantity + quantity,
-              specialInstructions: newItem.specialInstructions || existingItem.specialInstructions,
+              specialInstructions:
+                newItem.specialInstructions || existingItem.specialInstructions,
               modifiers: newItem.modifiers || existingItem.modifiers,
               options: newItem.options || existingItem.options,
             };
@@ -136,13 +146,13 @@ export const useCartStore = create<CartState>()(
               quantity,
               price: finalPrice,
             };
-            
+
             return {
               items: [...state.items, newCartItem],
             };
           }
         });
-        
+
         // Set restaurant info if not already set
         const { restaurant: currentRestaurant } = get();
         if (!currentRestaurant) {
@@ -155,9 +165,14 @@ export const useCartStore = create<CartState>()(
               minimumOrder: 50,
               freeDeliveryThreshold: FREE_DELIVERY_THRESHOLD,
               deliveryTime: "20-30 min",
-            }
+            },
           });
         }
+      },
+
+      // Added UI compatibility alias pointing to addToCart
+      addItem: (newItem) => {
+        get().addToCart(newItem);
       },
 
       removeFromCart: (itemId) => {
@@ -179,7 +194,7 @@ export const useCartStore = create<CartState>()(
 
         set((state) => ({
           items: state.items.map((item) =>
-            item.id === itemId ? { ...item, quantity } : item
+            item.id === itemId ? { ...item, quantity } : item,
           ),
         }));
       },
@@ -187,7 +202,9 @@ export const useCartStore = create<CartState>()(
       updateSpecialInstructions: (itemId, instructions) => {
         set((state) => ({
           items: state.items.map((item) =>
-            item.id === itemId ? { ...item, specialInstructions: instructions } : item
+            item.id === itemId
+              ? { ...item, specialInstructions: instructions }
+              : item,
           ),
         }));
       },
@@ -195,7 +212,9 @@ export const useCartStore = create<CartState>()(
       updateItemOptions: (itemId, options) => {
         set((state) => ({
           items: state.items.map((item) =>
-            item.id === itemId ? { ...item, options: { ...item.options, ...options } } : item
+            item.id === itemId
+              ? { ...item, options: { ...item.options, ...options } }
+              : item,
           ),
         }));
       },
@@ -210,21 +229,21 @@ export const useCartStore = create<CartState>()(
 
       applyPromoCode: async (code) => {
         set({ isLoading: true, error: null });
-        
+
         // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
+        await new Promise((resolve) => setTimeout(resolve, 800));
+
         const { restaurant, getSubtotal } = get();
         const subtotal = getSubtotal();
-        
+
         // Mock promo validation from database.json
         if (code === "WELCOME20") {
           set({
-            appliedPromo: { 
-              code, 
-              discount: 20, 
+            appliedPromo: {
+              code,
+              discount: 20,
               type: "percentage",
-              description: "20% off your entire order"
+              description: "20% off your entire order",
             },
             isLoading: false,
           });
@@ -232,28 +251,28 @@ export const useCartStore = create<CartState>()(
         } else if (code === "FREEDELIVERY") {
           const deliveryFee = get().getDeliveryFee();
           set({
-            appliedPromo: { 
-              code, 
-              discount: deliveryFee, 
+            appliedPromo: {
+              code,
+              discount: deliveryFee,
               type: "fixed",
-              description: "Free delivery on this order"
+              description: "Free delivery on this order",
             },
             isLoading: false,
           });
           return true;
         } else if (code === "FIRSTORDER" && subtotal >= 100) {
           set({
-            appliedPromo: { 
-              code, 
-              discount: 50, 
+            appliedPromo: {
+              code,
+              discount: 50,
               type: "fixed",
-              description: "ETB 50 off your first order"
+              description: "ETB 50 off your first order",
             },
             isLoading: false,
           });
           return true;
         }
-        
+
         set({ error: "Invalid or expired promo code", isLoading: false });
         return false;
       },
@@ -271,12 +290,15 @@ export const useCartStore = create<CartState>()(
         get().items.forEach((item) => {
           let itemPrice = item.discountPrice || item.price;
           let itemTotal = itemPrice * item.quantity;
-          
+
           // Add modifier prices
           if (item.modifiers && item.modifiers.length > 0) {
-            itemTotal += item.modifiers.reduce((sum, mod) => sum + mod.price, 0);
+            itemTotal += item.modifiers.reduce(
+              (sum, mod) => sum + mod.price,
+              0,
+            );
           }
-          
+
           subtotal += itemTotal;
         });
         return Math.round(subtotal * 100) / 100;
@@ -285,13 +307,13 @@ export const useCartStore = create<CartState>()(
       getDiscountAmount: () => {
         const subtotal = get().getSubtotal();
         const promo = get().appliedPromo;
-        
+
         if (!promo) return 0;
-        
+
         if (promo.type === "percentage") {
-          return Math.round((subtotal * (promo.discount / 100)) * 100) / 100;
+          return Math.round(subtotal * (promo.discount / 100) * 100) / 100;
         }
-        
+
         return Math.min(promo.discount, subtotal);
       },
 
@@ -299,14 +321,15 @@ export const useCartStore = create<CartState>()(
         const subtotal = get().getSubtotal();
         const discount = get().getDiscountAmount();
         const finalAmount = subtotal - discount;
-        
+
         if (finalAmount === 0) return 0;
-        
+
         const { restaurant } = get();
-        const threshold = restaurant?.freeDeliveryThreshold || FREE_DELIVERY_THRESHOLD;
-        
+        const threshold =
+          restaurant?.freeDeliveryThreshold || FREE_DELIVERY_THRESHOLD;
+
         if (finalAmount >= threshold) return 0;
-        
+
         return restaurant?.deliveryFee || DEFAULT_DELIVERY_FEE;
       },
 
@@ -345,21 +368,21 @@ export const useCartStore = create<CartState>()(
 
       canCheckout: () => {
         const { items, restaurant } = get();
-        
+
         if (items.length === 0) {
           return { allowed: false, reason: "Your cart is empty" };
         }
-        
+
         const subtotal = get().getSubtotal();
         const minimumOrder = restaurant?.minimumOrder || 50;
-        
+
         if (subtotal < minimumOrder) {
-          return { 
-            allowed: false, 
-            reason: `Minimum order amount is ETB ${minimumOrder}. Add ETB ${(minimumOrder - subtotal).toFixed(2)} more` 
+          return {
+            allowed: false,
+            reason: `Minimum order amount is ETB ${minimumOrder}. Add ETB ${(minimumOrder - subtotal).toFixed(2)} more`,
           };
         }
-        
+
         return { allowed: true };
       },
 
@@ -382,6 +405,6 @@ export const useCartStore = create<CartState>()(
         restaurant: state.restaurant,
         appliedPromo: state.appliedPromo,
       }),
-    }
-  )
+    },
+  ),
 );

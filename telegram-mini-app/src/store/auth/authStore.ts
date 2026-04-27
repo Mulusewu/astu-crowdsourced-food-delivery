@@ -142,7 +142,7 @@ export const useAuthStore = create<AuthState>()(
           finalRoles = foundUser.roles as UserRole[];
           activeRole =
             foundUser.activeRole &&
-            finalRoles.includes(foundUser.activeRole as UserRole)
+              finalRoles.includes(foundUser.activeRole as UserRole)
               ? (foundUser.activeRole as UserRole)
               : finalRoles[0];
         }

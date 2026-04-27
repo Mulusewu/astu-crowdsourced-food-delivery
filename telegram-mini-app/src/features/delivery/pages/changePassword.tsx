@@ -1,17 +1,18 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Lock } from "lucide-react";
+
 import { useAuthStore } from "@/store/auth/authStore";
 import {
   Header,
   SoftInput,
   ActionButton,
-} from "@/components/profile/ProfileShared";
+} from "@/features/shared/components/ProfileShared";
 
 export default function ChangePassword() {
   const navigate = useNavigate();
   const { updatePassword, isLoading } = useAuthStore();
-  
+
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -32,11 +33,11 @@ export default function ChangePassword() {
     try {
       // 3. Call updatePassword from store
       await updatePassword(oldPassword, newPassword);
-      
+
       // 4. Success feedback
       alert("Password Updated Successfully!");
       console.log("✅ Password Update Success");
-      
+
       // 5. Navigate back
       navigate("/delivery/profile");
     } catch (err) {
@@ -57,12 +58,14 @@ export default function ChangePassword() {
           <label className="text-[12px] font-bold text-gray-700 dark:text-gray-300 mb-2 block px-2">
             Enter Old Password
           </label>
-          <SoftInput 
-            icon={Lock} 
-            type="password" 
-            placeholder="••••••••" 
+          <SoftInput
+            icon={Lock}
+            type="password"
+            placeholder="••••••••"
             value={oldPassword}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setOldPassword(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setOldPassword(e.target.value)
+            }
           />
         </div>
 
@@ -75,27 +78,27 @@ export default function ChangePassword() {
             type="password"
             placeholder="Create New Password"
             value={newPassword}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewPassword(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setNewPassword(e.target.value)
+            }
           />
           <SoftInput
             icon={Lock}
             type="password"
             placeholder="Confirm New Password"
             value={confirmPassword}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setConfirmPassword(e.target.value)
+            }
           />
         </div>
       </div>
 
       <div className="mt-8 px-5">
-        <ActionButton 
-          onClick={handlePasswordChange}
-          disabled={isLoading}
-        >
+        <ActionButton onClick={handlePasswordChange} disabled={isLoading}>
           {isLoading ? "Updating..." : "Change Password"}
         </ActionButton>
       </div>
     </div>
   );
 }
-

@@ -2,17 +2,21 @@
 import { Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { ROUTES } from "./routePaths";
-import ProtectedRoute from "./ProtectedRoute";
 import LoadingSkeleton from "@/components/common/LoadingSkeleton";
 import { useAuthStore } from "@/store/auth/authStore";
+
+// Import Layouts
+import CustomerLayout from "@/features/layouts/CustomerLayout";
+import DeliveryLayout from "@/features/layouts/DeliveryLayout";
+import VendorLayout from "@/features/layouts/VendorLayout";
 import AppLayout from "@/components/layout/AppLayout";
 
-// Import route groups
+// Import Route Groups
 import { authRoutes } from "./routeGroups/authRoutes";
 import { customerRoutes } from "./routeGroups/customerRoutes";
-// import { vendorRoutes } from "./routeGroups/vendorRoutes";
+import { vendorRoutes } from "./routeGroups/vendorRoutes";
 import { deliveryRoutes } from "./routeGroups/deliveryRoutes";
-// import { sharedRoutes } from "./routeGroups/sharedRoutes";
+import { sharedRoutes } from "./routeGroups/sharedRoutes";
 
 function FallbackRoute() {
   const { user, activeRole } = useAuthStore();
@@ -39,45 +43,45 @@ export default function AppRoutes() {
           <Route key={route.path} path={route.path} element={route.element} />
         ))}
 
-        {/* ====================== CUSTOMER ROUTES ====================== */}
-        {customerRoutes.map((route) => (
-          <Route
-            key={route.path}
-            element={
-              <ProtectedRoute
-                allowedRoles={["customer"]}
-                redirectPath={ROUTES.AUTH}
-              />
-            }
-          >
-            <Route path={route.path} element={route.element} />
-          </Route>
+        {/* ====================== SHARED ROUTES ====================== */}
+        {sharedRoutes.map((route) => (
+          <Route key={route.path} path={route.path} element={route.element} />
         ))}
 
-        {/* ====================== VENDOR ROUTES ====================== */}
-        {/* {vendorRoutes.map((route) => (
-          <Route
-            key={route.path}
-            element={
-              <ProtectedRoute 
-                allowedRoles={["vendor"]} 
-                redirectPath={ROUTES.AUTH}
-              />
-            }
-          >
-            <Route path={route.path} element={route.element} />
-          </Route>
-        ))} */}
-
-        {/* ====================== DELIVERY ROUTES ====================== */}
+        {/* ====================== AUTHENTICATED ZONE ====================== */}
         <Route element={<AppLayout />}>
-          {deliveryRoutes.map((route) => (
-            <Route
-              key={route.path}
-              path={route.path}
-              element={route.element}
-            />
-          ))}
+          {/* ====================== CUSTOMER ZONE ====================== */}
+          <Route element={<CustomerLayout />}>
+            {customerRoutes.map((route) => (
+              <Route
+                key={route.path}
+                path={route.path}
+                element={route.element}
+              />
+            ))}
+          </Route>
+
+          {/* ====================== DELIVERY ROUTES ====================== */}
+          <Route element={<DeliveryLayout />}>
+            {deliveryRoutes.map((route) => (
+              <Route 
+                key={route.path} 
+                path={route.path} 
+                element={route.element} 
+              />
+            ))}
+          </Route>
+
+          {/* ====================== VENDOR ROUTES ====================== */}
+          <Route element={<VendorLayout />}>
+            {vendorRoutes.map((route) => (
+              <Route
+                key={route.path}
+                path={route.path}
+                element={route.element}
+              />
+            ))}
+          </Route>
         </Route>
 
         {/* ====================== FALLBACK ROUTES ====================== */}

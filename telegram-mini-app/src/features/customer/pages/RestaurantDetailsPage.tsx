@@ -1,102 +1,269 @@
+import { useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  ArrowLeft,
+  Bookmark,
+  Star,
+  Clock,
+  Heart,
+  Loader2,
+  AlertCircle,
+  MapPin,
+} from "lucide-react";
 
+import { useRestaurantStore } from "@/store/restaurantStore";
+import { useCartStore } from "@/store/cart/cartStore";
+import { useSavedItemsStore } from "@/store/customer/savedItemsStore";
 
-const CafeDetailsScreen = () => {
-  // Sample data extracted from the image
-  const restaurant = {
-    name: 'Helen Restaurant',
-    rating: 4.3,
-    reviews: 382,
-    avgDeliveryTime: 20,
-    description: 'Daihad Awdowid Awidiso Daiwdno Cmasandwai Omdowin Omdowin',
-    image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=600&auto=format&fit=crop', // Replace with actual image asset
+export default function RestaurantDetailsPage() {
+  const { restaurantId } = useParams<{ restaurantId: string }>();
+  const navigate = useNavigate();
+
+  // Stores
+  const {
+    currentRestaurant: restaurant,
+    isLoading,
+    error,
+    fetchRestaurantDetails,
+    clearCurrentRestaurant,
+  } = useRestaurantStore();
+
+  const addToCart = useCartStore((state) => state.addToCart); // Using direct addToCart
+
+  const {
+    items: savedItems,
+    addItem: saveItem,
+    removeItem: unsaveItem,
+  } = useSavedItemsStore();
+
+  const isSaved = restaurantId
+    ? savedItems.some((item) => item.id === restaurantId)
+    : false;
+
+  useEffect(() => {
+    if (restaurantId) {
+      fetchRestaurantDetails(restaurantId);
+    }
+    return () => clearCurrentRestaurant();
+  }, [restaurantId, fetchRestaurantDetails, clearCurrentRestaurant]);
+
+  const handleToggleSave = () => {
+    if (!restaurant) return;
+    if (isSaved) {
+      unsaveItem(restaurant.id);
+    } else {
+      saveItem({
+        id: restaurant.id,
+        name: restaurant.name,
+        location: restaurant.location || "Adama",
+        image: restaurant.image,
+      });
+    }
   };
 
-  const menuItems = [
-    { name: 'Beyoaynet', rating: 4.5, price: 120, image: 'https://images.unsplash.com/photo-1541544741938-0af808871cc0?q=80&w=200&auto=format&fit=crop' },
-    { name: 'Soya', rating: 4.5, price: 100, image: 'https://images.unsplash.com/photo-1621646700877-c9179e19e7a7?q=80&w=200&auto=format&fit=crop' },
-    { name: 'Beyoaynet', rating: 4.5, price: 120, image: 'https://images.unsplash.com/photo-1541544741938-0af808871cc0?q=80&w=200&auto=format&fit=crop' },
-    { name: 'Ruz Beatakeit', rating: 4.5, price: 100, image: 'https://images.unsplash.com/photo-1589302168068-964664d93dc0?q=80&w=200&auto=format&fit=crop' },
-    { name: 'Pasta', rating: 4.5, price: 100, image: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?q=80&w=200&auto=format&fit=crop' },
-    { name: 'Pasta', rating: 4.5, price: 100, image: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?q=80&w=200&auto=format&fit=crop' },
-  ];
+  const handleAddToCart = (menuItem: any) => {
+    if (!restaurant) return;
+    addToCart({
+      id: menuItem.id,
+      name: menuItem.name,
+      price: menuItem.price,
+      description: menuItem.description,
+      image: menuItem.imageUrl || menuItem.image,
+      restaurantId: restaurant.id,
+      restaurantName: restaurant.name,
+      quantity: 1,
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center pb-20">
+        <Loader2 className="w-10 h-10 animate-spin text-[#F26A1C] mb-4" />
+        <p className="text-gray-500 font-bold text-sm">Loading Menu...</p>
+      </div>
+    );
+  }
+
+  if (error || !restaurant) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center px-5 pb-20 text-center">
+        <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-4">
+          <AlertCircle size={32} className="text-red-500" />
+        </div>
+        <h2 className="text-xl font-bold text-gray-900 mb-2">Oops!</h2>
+        <p className="text-gray-500 font-medium mb-8 text-sm">
+          {error || "We couldn't find this restaurant."}
+        </p>
+        <button
+          onClick={() => navigate(-1)}
+          className="bg-white border-2 border-[#F26A1C] text-[#F26A1C] font-bold py-3 px-8 rounded-[16px] active:scale-95 transition-transform"
+        >
+          Go Back
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-white min-h-screen text-gray-900">
-      {/* Header */}
-      <header className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-        <button className="text-gray-500 hover:text-gray-900">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+    <div className="bg-white min-h-screen text-gray-900 pb-28 flex flex-col font-sans antialiased">
+      {/* ── Header ── */}
+      <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md flex items-center justify-between px-4 py-4 border-b border-gray-100">
+        <button
+          onClick={() => navigate(-1)}
+          className="w-10 h-10 bg-orange-50 dark:bg-gray-800 rounded-xl flex items-center justify-center text-[#F26A1C] active:scale-95 transition-transform"
+        >
+          <ArrowLeft size={20} strokeWidth={2.5} />
         </button>
-        <h1 className="text-xl font-bold">Restaurant Detail</h1>
-        <button className="text-gray-500 hover:text-gray-900">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5h14v16l-7-7-7 7V5z" /></svg>
+        <h1 className="text-[17px] font-black tracking-wide truncate px-4">
+          {restaurant.name}
+        </h1>
+        <button
+          onClick={handleToggleSave}
+          className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center active:scale-95 transition-transform"
+        >
+          {isSaved ? (
+            <Bookmark
+              size={20}
+              className="fill-[#F26A1C] text-[#F26A1C]"
+              strokeWidth={2}
+            />
+          ) : (
+            <Bookmark size={20} className="text-gray-400" strokeWidth={2.5} />
+          )}
         </button>
       </header>
 
-      {/* Hero Image */}
-      <div className="px-4 py-5">
+      {/* ── Hero Image ── */}
+      <div className="px-4 pt-4 pb-5">
         <img
           src={restaurant.image}
           alt={restaurant.name}
-          className="w-full h-64 object-cover rounded-3xl"
+          className="w-full h-[220px] object-cover rounded-[24px] shadow-sm"
         />
       </div>
 
-      {/* Restaurant Info & Stats */}
+      {/* ── Restaurant Info & Stats ── */}
       <section className="px-4 mb-6">
-        <h2 className="text-2xl font-bold mb-5">{restaurant.name}</h2>
-        
-        {/* Stats Grid - Matching the visual design with borders */}
-        <div className="grid grid-cols-3 gap-0 border border-gray-200 rounded-xl overflow-hidden divide-x divide-gray-200">
-          {[
-            { value: restaurant.rating, label: 'Rating', icon: 'M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.921-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z' },
-            { value: restaurant.reviews, label: 'Reviews', icon: 'M8 10h.01M12 10h.01M16 10h.01M21 16a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v10z' },
-            { value: `${restaurant.avgDeliveryTime}Min`, label: 'Avg Delivery', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' }
-          ].map((stat, idx) => (
-            <div key={idx} className="flex flex-col items-center justify-center py-4 px-2">
-              <div className="flex items-center space-x-2 mb-1">
-                <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={stat.icon} /></svg>
-                <span className="text-xl font-semibold text-gray-900">{stat.value}</span>
-              </div>
-              <p className="text-sm text-gray-500 font-medium">{stat.label}</p>
+        <div className="flex justify-between items-start mb-5">
+          <div>
+            <h2 className="text-[22px] font-black leading-tight mb-1">
+              {restaurant.name}
+            </h2>
+            <div className="flex items-center gap-1 text-gray-500">
+              <MapPin size={14} className="text-[#F26A1C]" />
+              <span className="text-[13px] font-semibold">
+                {restaurant.location}
+              </span>
             </div>
-          ))}
+          </div>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-3 gap-0 border border-gray-100 bg-gray-50 rounded-[18px] overflow-hidden divide-x divide-gray-200 shadow-sm">
+          <div className="flex flex-col items-center justify-center py-3.5 px-2">
+            <div className="flex items-center space-x-1.5 mb-0.5">
+              <Star size={16} className="fill-[#F26A1C] text-[#F26A1C]" />
+              <span className="text-[16px] font-black text-gray-900">
+                {restaurant.rating}
+              </span>
+            </div>
+            <p className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">
+              Rating
+            </p>
+          </div>
+
+          <div className="flex flex-col items-center justify-center py-3.5 px-2">
+            <div className="flex items-center space-x-1.5 mb-0.5">
+              <Heart size={16} className="text-[#F26A1C]" strokeWidth={2.5} />
+              <span className="text-[16px] font-black text-gray-900">
+                {restaurant.reviews}
+              </span>
+            </div>
+            <p className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">
+              Reviews
+            </p>
+          </div>
+
+          <div className="flex flex-col items-center justify-center py-3.5 px-2">
+            <div className="flex items-center space-x-1.5 mb-0.5">
+              <Clock size={16} className="text-[#F26A1C]" strokeWidth={2.5} />
+              <span className="text-[16px] font-black text-gray-900">
+                {restaurant.avgDeliveryTime}m
+              </span>
+            </div>
+            <p className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">
+              Delivery
+            </p>
+          </div>
         </div>
       </section>
 
-      {/* Description */}
-      <p className="px-4 text-gray-600 mb-8 leading-relaxed">
+      {/* ── Description ── */}
+      <p className="px-5 text-[14px] text-gray-600 font-medium mb-8 leading-relaxed">
         {restaurant.description}
       </p>
 
-      {/* Menu Items */}
-      <section className="px-4 pb-10">
-        <h3 className="text-xl font-semibold mb-6">Menu Items</h3>
-        
-        {/* Menu Grid - 2 columns */}
-        <div className="grid grid-cols-2 gap-6">
-          {menuItems.map((item, idx) => (
-            <div key={idx} className="bg-gray-50 rounded-2xl p-4 flex flex-col items-center text-center shadow-sm">
-              <img
-                src={item.image}
-                alt={item.name}
-                className="w-32 h-24 object-contain rounded-xl mb-4"
-              />
-              <h4 className="font-semibold text-gray-800 mb-1">{item.name}</h4>
-              <div className="flex items-center space-x-1.5 mb-2">
-                <svg className="w-4 h-4 text-orange-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
-                <span className="text-sm text-gray-500 font-medium">{item.rating}</span>
+      {/* ── Menu Items ── */}
+      <section className="px-4">
+        <h3 className="text-[18px] font-black mb-4 px-1">Menu Items</h3>
+
+        {restaurant.menu && restaurant.menu.length > 0 ? (
+          <div className="grid grid-cols-2 gap-4">
+            {restaurant.menu.map((item) => (
+              <div
+                key={item.id}
+                className="bg-white border border-gray-100 rounded-[20px] p-3 flex flex-col items-center text-center shadow-[0_4px_16px_rgba(0,0,0,0.03)] relative overflow-hidden"
+              >
+                {/* Clickable area for Food Details Page */}
+                <div
+                  className="w-full cursor-pointer group"
+                  onClick={() => navigate(`/customer/food/${item.id}`)}
+                >
+                  <div className="w-full h-[100px] mb-3 rounded-xl overflow-hidden bg-gray-50">
+                    <img
+                      src={item.imageUrl}
+                      alt={item.name}
+                      className="w-full h-full object-cover group-active:scale-105 transition-transform"
+                    />
+                  </div>
+
+                  <h4 className="font-bold text-[14px] text-gray-900 mb-1 truncate w-full px-1">
+                    {item.name}
+                  </h4>
+
+                  <div className="flex items-center justify-center space-x-1 mb-2">
+                    <Star size={12} className="fill-[#F26A1C] text-[#F26A1C]" />
+                    <span className="text-xs text-gray-500 font-bold">
+                      {item.rating}
+                    </span>
+                  </div>
+
+                  <p className="font-black text-[#F26A1C] mb-4">
+                    {item.price} Birr
+                  </p>
+                </div>
+
+                {/* Add to Cart Button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAddToCart(item);
+                  }}
+                  className="bg-[#FFF4ED] hover:bg-[#F26A1C] text-[#F26A1C] hover:text-white font-bold py-2.5 px-4 rounded-[14px] w-full text-[13px] active:scale-95 transition-all mt-auto"
+                >
+                  Add to Cart
+                </button>
               </div>
-              <p className="font-bold text-gray-900 mb-4">{item.price} Birr</p>
-              <button className="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-6 rounded-full w-full text-sm">
-                Add
-              </button>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="py-10 text-center bg-gray-50 rounded-[24px] border border-gray-100">
+            <p className="text-gray-500 font-bold text-sm">
+              No menu items found.
+            </p>
+          </div>
+        )}
       </section>
     </div>
   );
-};
-
-export default CafeDetailsScreen;
+}

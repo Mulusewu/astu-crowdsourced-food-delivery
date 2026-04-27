@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth/authStore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Header } from "@/components/profile/ProfileShared";
+import { Header } from "@/features/shared/components/ProfileShared";
 
 export default function ProfileMain() {
   const navigate = useNavigate();
@@ -21,7 +21,6 @@ export default function ProfileMain() {
         title="Profile"
         showBack
         onBackClick={() => navigate("/delivery/dashboard")}
-        showRoleSwitcher
       />
 
       <div className="flex flex-col items-center mt-6 mb-2 relative">
@@ -70,7 +69,6 @@ export default function ProfileMain() {
           </div>
           <ChevronRight size={18} className="text-gray-400" />
         </div>
-
 
         <div
           className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800 cursor-pointer active:bg-gray-50 dark:active:bg-gray-800/50 transition-colors"
