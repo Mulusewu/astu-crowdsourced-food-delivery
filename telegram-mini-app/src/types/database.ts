@@ -1,4 +1,4 @@
-import type { Users, Customer } from "./user";
+import type { Users } from "./user";
 import type { Restaurant } from "./restaurant";
 
 export interface OrderItem {

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "../../../routes/routePaths";
+import { useDeliveryDashboardStore } from "@/store/deliveryDashboardStore";
 
 const ORANGE = "#F97316";
 
@@ -97,12 +98,14 @@ const ASTULogo: React.FC = () => {
 // ✅ Main Page
 const OfflinePage: React.FC = () => {
   const navigate = useNavigate();
+  const { toggleActiveStatus } = useDeliveryDashboardStore();
   const [isOnline, setIsOnline] = useState(false);
 
   const handleToggle = () => {
     if (isOnline) return;
 
     setIsOnline(true);
+    toggleActiveStatus();
 
     setTimeout(() => {
       navigate(ROUTES.DELIVERY.DASHBOARD);

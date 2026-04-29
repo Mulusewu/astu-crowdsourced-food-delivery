@@ -1,41 +1,73 @@
-import React, { useState, useEffect } from "react";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { ArrowLeft, Loader2, Camera, X } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useOrderStore } from "@/store/orders/orderStore";
+import { ROUTES, buildRoute } from "@/routes/routePaths";
 
 const ISSUES_LIST = [
   "Restaurant Refused The Order",
   "Order Not Ready",
-  "Restorant Closed",
+  "Restaurant Closed",
   "Other",
 ];
 
 export default function ReportIssuePage() {
-  const { deliveryId } = useParams<{ deliveryId: string }>();
+  const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
   const { activeOrders, currentOrder, fetchOrderById, submitOrderIssue, isLoading } = useOrderStore();
   
   const [selectedIssue, setSelectedIssue] = useState<string>(ISSUES_LIST[0]);
   const [description, setDescription] = useState("");
+  const [, setEvidence] = useState<File | null>(null);
+  const [evidencePreview, setEvidencePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [error, setError] = useState("");
+  const [submitted, setSubmitted] = useState(false);
 
   // Find the specific order from the list or fetch it if not present
-  const order = activeOrders.find(o => o.id === deliveryId) || currentOrder;
+  const order = activeOrders.find(o => o.id === orderId) || currentOrder;
 
   useEffect(() => {
-    if (deliveryId && (!order || order.id !== deliveryId)) {
-      fetchOrderById(deliveryId);
+    if (orderId && (!order || order.id !== orderId)) {
+      fetchOrderById(orderId);
     }
-  }, [deliveryId, order, fetchOrderById]);
+  }, [orderId, order, fetchOrderById]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setEvidence(file);
+      setEvidencePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const removeEvidence = () => {
+    setEvidence(null);
+    setEvidencePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
   const handleSubmit = async () => {
-    if (!deliveryId) return;
+    if (!orderId) return;
+    if (!description.trim()) {
+      setError("Please describe the issue before submitting.");
+      return;
+    }
+
+    setError("");
     
-    await submitOrderIssue(deliveryId, {
+    // In a real app, evidence file would be uploaded first and its URL attached
+    await submitOrderIssue(orderId, {
       type: selectedIssue,
-      description: description
+      description: description.trim(),
     });
-    
-    navigate(-1); // Navigate back after submission
+
+    setSubmitted(true);
+    setTimeout(() => {
+      navigate(ROUTES.DELIVERY.ACTIVE.LIST);
+    }, 800);
   };
 
   return (
@@ -44,7 +76,7 @@ export default function ReportIssuePage() {
       <header className="px-5 pt-[max(2.5rem,env(safe-area-inset-top))] pb-6">
         <div className="relative flex items-center justify-center h-12">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate(buildRoute(ROUTES.DELIVERY.ACTIVE.DETAILS, { orderId }))}
             className="absolute left-0 top-1/2 -translate-y-1/2 flex h-[42px] w-[42px] items-center justify-center rounded-[14px] bg-[#FFEFE5] text-[#F26A1C] transition hover:bg-orange-200 active:scale-95"
             aria-label="Go back"
           >
@@ -88,14 +120,54 @@ export default function ReportIssuePage() {
         {/* Text Area Section */}
         <div className="mt-10">
           <h2 className="text-[16px] font-black text-black mb-[10px] tracking-tight">
-            Reporting For Order #{order?.orderNumber?.replace("ORD-", "") || "..."}
+            Reporting For Order #{order?.shortId || "..."}
           </h2>
           <textarea
             value={description}
             onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
             placeholder="Describe The Problem Here.."
-            className="h-[220px] w-full resize-none rounded-[16px] border border-gray-300 bg-white p-4 text-[15px] text-gray-800 placeholder-gray-400 outline-none transition-colors focus:border-[#F26A1C] focus:ring-1 focus:ring-[#F26A1C] shadow-sm"
+            className="h-[140px] w-full resize-none rounded-[16px] border border-gray-300 bg-white p-4 text-[15px] text-gray-800 placeholder-gray-400 outline-none transition-colors focus:border-[#F26A1C] focus:ring-1 focus:ring-[#F26A1C] shadow-sm"
           />
+          
+          {/* Evidence Attachment */}
+          <div className="mt-4">
+            <h3 className="text-[14px] font-bold text-gray-900 mb-2">Attach Evidence (Optional)</h3>
+            {!evidencePreview ? (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full flex flex-col items-center justify-center py-6 border-2 border-dashed border-gray-300 rounded-[16px] bg-gray-50 active:bg-gray-100 transition-colors"
+              >
+                <Camera size={24} className="text-gray-400 mb-2" />
+                <span className="text-[13px] font-medium text-gray-500">Tap to take or upload a photo</span>
+              </button>
+            ) : (
+              <div className="relative w-full h-[140px] rounded-[16px] border border-gray-200 overflow-hidden">
+                <img src={evidencePreview} alt="Evidence" className="w-full h-full object-cover" />
+                <button
+                  type="button"
+                  onClick={removeEvidence}
+                  className="absolute top-2 right-2 w-8 h-8 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white active:scale-95"
+                >
+                  <X size={16} strokeWidth={2.5} />
+                </button>
+              </div>
+            )}
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+          </div>
+
+          {error && <p className="mt-3 text-sm font-medium text-red-500">{error}</p>}
+          {submitted && (
+            <p className="mt-3 text-sm font-medium text-[#F26A1C]">
+              Issue submitted. Returning to active deliveries...
+            </p>
+          )}
         </div>
 
         {/* Submit Button */}

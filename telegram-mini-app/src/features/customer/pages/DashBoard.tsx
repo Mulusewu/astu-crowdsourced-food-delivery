@@ -6,7 +6,6 @@ import {
   Bell,
   Star,
   Bookmark,
-  Check,
   Headphones,
   SlidersHorizontal,
   ChevronDown,
@@ -23,17 +22,12 @@ import {
   type Restaurant,
 } from "@/store/restaurantStore";
 
-import {
-  getRoleIcon,
-  getRoleDisplayName,
-  getAvailableRoles,
-} from "@/types/user.types";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // --- Main Page Component ---
 export default function CustomerDashboard() {
   const navigate = useNavigate();
-  const { user, activeRole, switchRole } = useAuthStore();
+  const { user } = useAuthStore();
   const { fetchUserData, isLoading: userLoading } = useCustomerStore();
   const {
     restaurants,
@@ -48,10 +42,9 @@ export default function CustomerDashboard() {
   >("All");
   const [isLoading, setIsLoading] = useState(true);
 
-  // Multi-role Dropdown
+  // Role dropdown disabled (single-role model)
   const [showRoleMenu, setShowRoleMenu] = useState(false);
-  const availableRoles = getAvailableRoles(user);
-  const hasMultipleRoles = availableRoles.length > 1;
+  const hasMultipleRoles = false;
 
   // Dropdown states for Restaurant Tab
   const [showSortDropdown, setShowSortDropdown] = useState(false);
@@ -74,7 +67,7 @@ export default function CustomerDashboard() {
       setIsLoading(false);
     };
     init();
-  }, [fetchUserData, fetchRestaurants, fetchPopularFoods]);
+  }, []);
 
   // --- UI Sub-Components ---
 
@@ -217,43 +210,13 @@ export default function CustomerDashboard() {
               }
               className="text-gray-900 dark:text-white font-black text-2xl capitalize flex items-center gap-1 cursor-pointer active:opacity-70 transition-opacity"
             >
-              {user?.name?.split(" ")[0] || "John"}
+              {user?.fullName?.split(" ")[0] || "Hello"}
               {hasMultipleRoles && (
                 <ChevronDown size={20} className="text-[#F26A1C] mt-1" />
               )}
             </h2>
 
-            {/* Multi-role Support Dropdown */}
-            {showRoleMenu && (
-              <div className="absolute left-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 py-2 z-50">
-                {availableRoles.map((role) => (
-                  <button
-                    key={role}
-                    onClick={() => {
-                      switchRole(role as any);
-                      setShowRoleMenu(false);
-                    }}
-                    className="w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                  >
-                    <span
-                      className={
-                        activeRole === role ? "text-[#F26A1C]" : "text-gray-500"
-                      }
-                    >
-                      {getRoleIcon(role)}
-                    </span>
-                    <span
-                      className={`font-medium ${activeRole === role ? "text-gray-900 dark:text-white" : "text-gray-500"}`}
-                    >
-                      {getRoleDisplayName(role)}
-                    </span>
-                    {activeRole === role && (
-                      <Check size={16} className="ml-auto text-[#F26A1C]" />
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
+            {/* Multi-role dropdown disabled in single-role model */}
           </div>
 
           <div className="flex gap-2">

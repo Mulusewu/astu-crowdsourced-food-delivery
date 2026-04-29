@@ -32,7 +32,8 @@ export default function FoodItemCard({
       price,
       quantity: 1,
       image,
-      restaurantId: "", // You can pass restaurantId if needed
+      restaurantId: "",
+      restaurantName,
     });
   };
 

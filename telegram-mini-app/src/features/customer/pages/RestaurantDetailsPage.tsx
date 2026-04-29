@@ -214,7 +214,21 @@ export default function RestaurantDetailsPage() {
                 key={item.id}
                 className="bg-white border border-gray-100 rounded-[20px] p-3 flex flex-col items-center text-center shadow-[0_4px_16px_rgba(0,0,0,0.03)] relative overflow-hidden"
               >
-                {/* Clickable area for Food Details Page */}
+                {/* Fasting badge */}
+                {item.isFasting && (
+                  <span className="absolute top-2 left-2 bg-green-100 text-green-700 text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full">
+                    Fasting
+                  </span>
+                )}
+
+                {/* Unavailability badge */}
+                {item.isAvailable === false && (
+                  <span className="absolute top-2 right-2 bg-red-100 text-red-600 text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full">
+                    Unavailable
+                  </span>
+                )}
+
+                {/* Clickable image area */}
                 <div
                   className="w-full cursor-pointer group"
                   onClick={() => navigate(`/customer/food/${item.id}`)}
@@ -231,27 +245,31 @@ export default function RestaurantDetailsPage() {
                     {item.name}
                   </h4>
 
-                  <div className="flex items-center justify-center space-x-1 mb-2">
-                    <Star size={12} className="fill-[#F26A1C] text-[#F26A1C]" />
-                    <span className="text-xs text-gray-500 font-bold">
-                      {item.rating}
-                    </span>
-                  </div>
+                  {/* Prep time badge */}
+                  {item.prepTimeMins && (
+                    <div className="flex items-center justify-center gap-1 mb-1">
+                      <Clock size={11} className="text-gray-400" />
+                      <span className="text-[10px] text-gray-400 font-medium">
+                        {item.prepTimeMins} min
+                      </span>
+                    </div>
+                  )}
 
-                  <p className="font-black text-[#F26A1C] mb-4">
-                    {item.price} Birr
+                  <p className="font-black text-[#F26A1C] mb-3">
+                    {item.price} ETB
                   </p>
                 </div>
 
-                {/* Add to Cart Button */}
+                {/* Add to Cart */}
                 <button
+                  disabled={item.isAvailable === false}
                   onClick={(e) => {
                     e.stopPropagation();
                     handleAddToCart(item);
                   }}
-                  className="bg-[#FFF4ED] hover:bg-[#F26A1C] text-[#F26A1C] hover:text-white font-bold py-2.5 px-4 rounded-[14px] w-full text-[13px] active:scale-95 transition-all mt-auto"
+                  className="bg-[#FFF4ED] hover:bg-[#F26A1C] text-[#F26A1C] hover:text-white font-bold py-2.5 px-4 rounded-[14px] w-full text-[13px] active:scale-95 transition-all mt-auto disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Add to Cart
+                  {item.isAvailable === false ? (item.availabilityReason ?? "Unavailable") : "Add to Cart"}
                 </button>
               </div>
             ))}

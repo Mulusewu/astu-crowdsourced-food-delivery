@@ -21,14 +21,14 @@ export default function CustomerProfilePage() {
       <div className="flex flex-col items-center mt-4 mb-8">
         <Avatar className="w-24 h-24 border-[3px] border-white dark:border-gray-900 shadow-md mb-3">
           <AvatarImage
-            src={user?.avatar || "https://i.pravatar.cc/150?u=gray"}
+            src={user?.avatarUrl || "https://i.pravatar.cc/150?u=gray"}
           />
           <AvatarFallback className="bg-[#F26A1C] text-white text-2xl font-bold">
-            {user?.name?.[0] || "G"}
+            {user?.fullName?.[0] || "G"}
           </AvatarFallback>
         </Avatar>
         <h2 className="text-xl font-black text-gray-900 dark:text-white">
-          {user?.name || "Gray Johnson"}
+          {user?.fullName || "Gray Johnson"}
         </h2>
         <p className="text-gray-500 text-sm font-medium mt-0.5">
           +251912345678

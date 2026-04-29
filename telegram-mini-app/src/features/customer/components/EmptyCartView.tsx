@@ -1,6 +1,4 @@
-import React from "react";
 import { ShoppingCart } from "lucide-react";
-import { Button } from "./Button";
 
 // TMA specific empty view
 export const EmptyCartView: React.FC = () => {

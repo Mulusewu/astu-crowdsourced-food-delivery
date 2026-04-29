@@ -95,7 +95,7 @@ export const useCartStore = create<CartState>()(
       appliedPromo: null,
 
       addToCart: (newItem) => {
-        const { items, restaurant } = get();
+        const { items: _items, restaurant } = get();
         const quantity = newItem.quantity || 1;
 
         // Check if adding from different restaurant
@@ -118,13 +118,6 @@ export const useCartStore = create<CartState>()(
           const finalPrice = newItem.discountPrice || newItem.price;
 
           // Calculate item total with modifiers
-          let modifiersTotal = 0;
-          if (newItem.modifiers) {
-            modifiersTotal = newItem.modifiers.reduce(
-              (sum, mod) => sum + mod.price,
-              0,
-            );
-          }
 
           if (existingItemIndex >= 0) {
             // Update existing item
@@ -233,7 +226,7 @@ export const useCartStore = create<CartState>()(
         // Simulate API call
         await new Promise((resolve) => setTimeout(resolve, 800));
 
-        const { restaurant, getSubtotal } = get();
+        const { restaurant: _restaurant, getSubtotal } = get();
         const subtotal = getSubtotal();
 
         // Mock promo validation from database.json

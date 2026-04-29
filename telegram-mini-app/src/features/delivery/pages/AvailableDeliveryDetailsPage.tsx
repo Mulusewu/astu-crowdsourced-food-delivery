@@ -2,27 +2,38 @@ import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { MapPin, ArrowLeft, UtensilsCrossed, Store } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useOrderDetailsStore } from "@/store/orderDetailsStore";
-import { useDeliveryDashboardStore } from "@/store/deliveryDashboardStore";
+import { ROUTES, buildRoute } from "@/routes/routePaths";
+import { useOrderStore } from "@/store/orders/orderStore";
 
 export default function AvailableDeliveryDetailsPage() {
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
 
   const {
-    order,
     isLoading,
-    fetchOrderDetails,
+    orders,
+    currentOrder,
+    fetchAvailableOrders,
+    fetchOrderById,
     acceptOrder,
-    declineOrder,
-    isAccepting,
-  } = useOrderDetailsStore();
+    rejectOrder,
+  } = useOrderStore();
 
-  const { setOrderStatus } = useDeliveryDashboardStore();
+  const order =
+    orders.find((item) => item.id === orderId) ??
+    (currentOrder?.id === orderId ? currentOrder : null);
 
   useEffect(() => {
-    if (orderId) fetchOrderDetails(orderId);
-  }, [orderId, fetchOrderDetails]);
+    if (orders.length === 0) {
+      fetchAvailableOrders();
+    }
+  }, [orders.length, fetchAvailableOrders]);
+
+  useEffect(() => {
+    if (orderId && !order) {
+      fetchOrderById(orderId);
+    }
+  }, [orderId, order, fetchOrderById]);
 
   // Loading Skeleton
   if (isLoading) {
@@ -57,6 +68,12 @@ export default function AvailableDeliveryDetailsPage() {
   }
 
   // Helper for the summary rows
+  const subtotal = order.items.reduce(
+    (sum, item) => sum + item.unitPrice * item.quantity,
+    0,
+  );
+
+
   const SummaryRow = ({
     label,
     value,
@@ -87,7 +104,7 @@ export default function AvailableDeliveryDetailsPage() {
           <div className="flex items-center gap-2">
             <Store className="text-[#F26A1C]" size={22} strokeWidth={2.5} />
             <h1 className="text-xl font-black text-gray-900 dark:text-white tracking-wide">
-              {order.cafeName || "Helen Cafe"}
+              {order.restaurant.name}
             </h1>
           </div>
         </div>
@@ -104,7 +121,7 @@ export default function AvailableDeliveryDetailsPage() {
               {/* Circular Food Image */}
               <div className="w-[70px] h-[70px] shrink-0">
                 <img
-                  src={item.image}
+                  src={item.imageUrl ?? "https://images.unsplash.com/photo-1544025162-831e5088eb7e?w=200"}
                   alt={item.name}
                   className="w-full h-full object-cover rounded-full shadow-sm"
                 />
@@ -116,7 +133,7 @@ export default function AvailableDeliveryDetailsPage() {
                   {item.name}
                 </h3>
                 <p className="font-bold text-[13px] text-gray-600 dark:text-gray-400 mt-0.5">
-                  {item.price * item.quantity} ETB
+                  {item.unitPrice * item.quantity} ETB
                 </p>
 
                 <div className="flex items-center gap-1 mt-1.5 text-gray-500">
@@ -126,7 +143,7 @@ export default function AvailableDeliveryDetailsPage() {
                     strokeWidth={3}
                   />
                   <span className="text-[11px] font-semibold line-clamp-1">
-                    {order.customer.address}
+                    {order.customer.deliveryAddress ?? order.restaurant.location}
                   </span>
                 </div>
               </div>
@@ -146,21 +163,18 @@ export default function AvailableDeliveryDetailsPage() {
               strokeWidth={2.5}
             />
             <h2 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">
-              Order #{order.orderNumber || order.id.slice(-3)}
+              Order #{order.shortId}
             </h2>
           </div>
 
           {/* Breakdown Rows */}
           <div className="mb-6">
-            <SummaryRow label="Sub Total" value={`${order.subtotal} ETB`} />
+            <SummaryRow label="Sub Total" value={`${subtotal} ETB`} />
+            <SummaryRow label="Delivery Fee" value={`${order.deliveryFee} ETB`} />
+            <SummaryRow label="Pickup Location" value={order.restaurant.location} />
             <SummaryRow
-              label="Delivery Fee"
-              value={`${order.deliveryFee} ETB`}
-            />
-            <SummaryRow label="Delivery Distance" value={order.distance} />
-            <SummaryRow
-              label="Time To Deliver"
-              value={`${order.estimatedDeliveryTime || "30"} Min`}
+              label="Ready At"
+              value={order.estimatedReadyAt ? new Date(order.estimatedReadyAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}
             />
           </div>
 
@@ -168,18 +182,27 @@ export default function AvailableDeliveryDetailsPage() {
           <div className="flex gap-4">
             <button
               onClick={async () => {
-                await acceptOrder();
-                setOrderStatus("awaiting_payment");
+                if (!orderId) return;
+                await acceptOrder(orderId);
+                navigate(
+                  buildRoute(ROUTES.DELIVERY.ACTIVE.DETAILS, {
+                    orderId,
+                  }),
+                );
               }}
-              disabled={isAccepting || order.status !== "pending"}
+              disabled={isLoading || order.status !== "AWAITING_ACCEPT"}
               className="flex-1 bg-[#F26A1C] hover:bg-[#e05d15] text-white rounded-full py-3.5 font-bold text-[15px] shadow-lg shadow-orange-500/20 active:scale-95 transition-all disabled:opacity-50"
             >
-              {isAccepting ? "..." : "Accept"}
+              {isLoading ? "..." : "Accept"}
             </button>
 
             <button
-              onClick={declineOrder}
-              disabled={isAccepting}
+              onClick={async () => {
+                if (!orderId) return;
+                await rejectOrder(orderId, "Declined from delivery detail page");
+                navigate(ROUTES.DELIVERY.AVAILABLE.LIST);
+              }}
+              disabled={isLoading}
               className="flex-1 bg-transparent border-2 border-[#F26A1C] text-[#F26A1C] hover:bg-orange-50 dark:hover:bg-gray-800 rounded-full py-3.5 font-bold text-[15px] active:scale-95 transition-all disabled:opacity-50"
             >
               Decline

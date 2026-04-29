@@ -18,11 +18,13 @@ import { Header, ActionButton } from "../components/ProfileShared";
 
 export default function SharedProfilePage() {
   const navigate = useNavigate();
-  const { user, activeRole, logout } = useAuthStore();
+  const { user, logout } = useAuthStore();
   const { mode, toggleTheme } = useThemeStore();
 
   const handleBack = () => {
-    navigate(`/${activeRole}/dashboard`);
+    if (user?.role === "DELIVERER") navigate("/delivery/dashboard");
+    else if (user?.role === "VENDOR_STAFF") navigate("/vendor/dashboard");
+    else navigate("/customer/dashboard");
   };
 
   const handleLogout = () => {
@@ -41,9 +43,9 @@ export default function SharedProfilePage() {
           <div className="absolute inset-0 bg-gradient-to-tr from-red-600 to-orange-500 rounded-full scale-[1.02]" />
 
           <Avatar className="relative w-28 h-28 border-[3px] border-white dark:border-gray-950 shadow-md">
-            <AvatarImage src={user?.avatar} className="object-cover" />
+            <AvatarImage src={user?.avatarUrl ?? undefined} className="object-cover" />
             <AvatarFallback className="bg-[#F26A1C] text-white text-3xl font-bold">
-              {user?.name?.[0] || "U"}
+              {user?.fullName?.[0] || "U"}
             </AvatarFallback>
           </Avatar>
 
@@ -54,11 +56,10 @@ export default function SharedProfilePage() {
         </div>
 
         <h2 className="text-xl font-bold text-gray-900 dark:text-white mt-4">
-          {user?.name || "Natnael Abebe"}
+          {user?.fullName || "Natnael Abebe"}
         </h2>
-        {/* Subtle role indicator */}
         <p className="text-xs font-semibold text-gray-400 capitalize mt-1 tracking-wide">
-          {activeRole}
+          {user?.role?.replace(/_/g, " ").toLowerCase() ?? "user"}
         </p>
       </div>
 
@@ -86,7 +87,7 @@ export default function SharedProfilePage() {
               strokeWidth={1.5}
             />
             <span className="text-[14px] font-medium text-gray-500 dark:text-gray-400">
-              {user?.phone || "0949486753"}
+              {user?.phoneNumber || "Not provided"}
             </span>
           </div>
           <ChevronRight size={18} className="text-gray-400" />

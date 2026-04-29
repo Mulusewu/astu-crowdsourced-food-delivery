@@ -1,27 +1,17 @@
 import { useNavigate } from "react-router-dom";
-import {
-  ChevronRight,
-  Lock,
-  Camera,
-  Mail,
-  Phone,
-  ClipboardList,
-  ArrowLeft,
-} from "lucide-react";
+import { ChevronRight, Lock, ArrowLeft } from "lucide-react";
 import { useAuthStore } from "@/store/auth/authStore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-// Import our new dynamic components
-import DynamicBottomNav from "@/components/common/DynamicBottomNav";
-import RoleDropdown from "@/components/profile/RoleDropdown";
 
 export default function SharedProfilePage() {
   const navigate = useNavigate();
-  const { user, activeRole, logout } = useAuthStore();
+  const { user, logout } = useAuthStore();
 
-  // Dynamic back routing based on current role
   const handleBack = () => {
-    navigate(`/${activeRole}/dashboard`);
+    if (user?.role === "DELIVERER") navigate("/delivery/dashboard");
+    else if (user?.role === "VENDOR_STAFF") navigate("/vendor/dashboard");
+    else navigate("/customer/dashboard");
   };
 
   return (
@@ -38,8 +28,7 @@ export default function SharedProfilePage() {
           Profile
         </h1>
 
-        {/* Dropdown injected here */}
-        <RoleDropdown />
+        {/* Role indicator — no dropdown needed in single-role architecture */}
       </div>
 
       {/* Avatar Section */}
@@ -47,17 +36,17 @@ export default function SharedProfilePage() {
         <div className="relative">
           <div className="absolute inset-0 bg-red-600 rounded-full scale-105" />
           <Avatar className="relative w-28 h-28 border-[4px] border-white dark:border-gray-950 shadow-md">
-            <AvatarImage src={user?.avatar} className="object-cover" />
+            <AvatarImage src={user?.avatarUrl ?? undefined} className="object-cover" />
             <AvatarFallback className="bg-[#F26A1C] text-white text-3xl font-bold">
-              {user?.name?.[0] || "U"}
+              {user?.fullName?.[0] || "U"}
             </AvatarFallback>
           </Avatar>
         </div>
         <h2 className="text-[22px] font-black text-gray-900 dark:text-white mt-4">
-          {user?.name}
+          {user?.fullName}
         </h2>
         <p className="text-sm font-medium text-[#F26A1C] capitalize">
-          {activeRole} Account
+          {user?.role?.replace(/_/g, " ").toLowerCase() ?? "user"} Account
         </p>
       </div>
 
@@ -91,8 +80,7 @@ export default function SharedProfilePage() {
         </button>
       </div>
 
-      {/* Dynamic Nav injected here */}
-      <DynamicBottomNav />
+      {/* Bottom nav is rendered by the role-specific layout wrapper */}
     </div>
   );
 }

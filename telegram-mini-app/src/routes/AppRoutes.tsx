@@ -19,14 +19,17 @@ import { deliveryRoutes } from "./routeGroups/deliveryRoutes";
 import { sharedRoutes } from "./routeGroups/sharedRoutes";
 
 function FallbackRoute() {
-  const { user, activeRole } = useAuthStore();
+  const { user } = useAuthStore();
 
-  if (user && activeRole) {
-    if (activeRole === "delivery") {
+  if (user) {
+    if (user.role === "DELIVERER") {
       return <Navigate to={ROUTES.DELIVERY.DASHBOARD} replace />;
     }
-    if (activeRole === "vendor") {
+    if (user.role === "VENDOR_STAFF") {
       return <Navigate to={ROUTES.VENDOR.DASHBOARD} replace />;
+    }
+    if (user.role === "ADMIN") {
+      return <Navigate to={ROUTES.DELIVERY.DASHBOARD} replace />;
     }
     return <Navigate to={ROUTES.CUSTOMER.HOME} replace />;
   }
@@ -64,10 +67,10 @@ export default function AppRoutes() {
           {/* ====================== DELIVERY ROUTES ====================== */}
           <Route element={<DeliveryLayout />}>
             {deliveryRoutes.map((route) => (
-              <Route 
-                key={route.path} 
-                path={route.path} 
-                element={route.element} 
+              <Route
+                key={route.path}
+                path={route.path}
+                element={route.element}
               />
             ))}
           </Route>

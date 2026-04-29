@@ -1,149 +1,128 @@
 // src/types/user.types.ts
+// Fully aligned with Prisma schema
 
-// Use union type for better compatibility with TypeScript's erasableSyntaxOnly
-export type UserRole = "customer" | "vendor" | "delivery" | "admin";
+export type UserRole = "CUSTOMER" | "DELIVERER" | "VENDOR_STAFF" | "ADMIN";
+export type ActiveMode = "CUSTOMER" | "DELIVERER";
+export type UserStatus = "ACTIVE" | "BANNED" | "PENDING";
+export type VerificationStatus = "PENDING" | "APPROVED" | "REJECTED";
 
-// Role constants for type-safe usage
 export const UserRoles = {
-  CUSTOMER: "customer" as const,
-  VENDOR: "vendor" as const,
-  DELIVERY: "delivery" as const,
-  ADMIN: "admin" as const,
+  CUSTOMER: "CUSTOMER" as const,
+  DELIVERER: "DELIVERER" as const,
+  VENDOR_STAFF: "VENDOR_STAFF" as const,
+  ADMIN: "ADMIN" as const,
 } as const;
 
-// Helper to get all roles as array
-export const ALL_ROLES: UserRole[] = ["customer", "vendor", "delivery", "admin"];
+// ─── Sub-profiles ─────────────────────────────────────────────────────────────
+
+export interface CustomerProfile {
+  id: string;
+  userId: string;
+  defaultLocation: string | null;
+  rating: number;
+  totalOrders: number;
+  prefferedPaymentMethod: string | null;
+  bookmarkRestaurants: string[];
+  bookmarkMeals: string[];
+}
+
+export interface DelivererProfile {
+  id: string;
+  userId: string;
+  isVerified: boolean;
+  verificationStatus: VerificationStatus;
+  isOnline: boolean;
+  currentLocation: string | null;
+  rating: number;
+  isAvailable: boolean;
+  payoutAccount: string | null;
+  payoutProvider: string | null;
+  totalDeliveries: number;
+  totalEarnings: number;
+  lat: number | null;
+  lng: number | null;
+  lastPingAt: string | null;
+}
+
+export interface VendorProfile {
+  id: string;
+  userId: string;
+  restaurantId: string | null;
+  isOwner: boolean;
+  businessDocumentUrl: string;
+  verificationStatus: VerificationStatus;
+}
+
+// ─── Core User (mirrors Prisma `User` model) ──────────────────────────────────
 
 export interface User {
   id: string;
-  email: string;
-  name: string;
-  roles: UserRole[];           // Supports multiple roles
-  activeRole?: UserRole;       // Current active role for this session
-  avatar?: string;
-  phone?: string;
+  telegramId: number;
+  astuEmail: string | null;
+  email: string | null;
+  fullName: string;
+  phoneNumber: string | null;
+  avatarUrl: string | null;
+  status: UserStatus;
+  isEmailVerified: boolean;
+  isPhoneVerified: boolean;
+  role: UserRole;
+  activeMode: ActiveMode;
+  lastActiveAt: string;
+  failedLoginAttempts: number;
+  lockedUntil: string | null;
   createdAt: string;
   updatedAt: string;
-  isVerified: boolean;
 
-  // Customer specific
-  defaultAddress?: Address;
-  savedAddresses?: Address[];
-
-  // Vendor specific
-  restaurantId?: string;
-  businessName?: string;
-
-  // Delivery specific
-  vehicleType?: string;
-  isAvailable?: boolean;
-  vehiclePlate?: string;
+  // Profiles — populated by backend when needed
+  customerProfile?: CustomerProfile | null;
+  delivererProfile?: DelivererProfile | null;
+  vendorProfile?: VendorProfile | null;
 }
 
-export interface Address {
-  id: string;
-  street: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  country: string;
-  latitude?: number;
-  longitude?: number;
-  isDefault: boolean;
-  label?: string; // 'home', 'work', etc.
-}
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-export interface AuthState {
-  user: User | null;
-  roles: UserRole[];           // All roles the user has
-  activeRole: UserRole | null; // Currently active role
-  token: string | null;
-  isLoading: boolean;
-  error: string | null;
-}
+export const hasRole = (user: User | null, role: UserRole): boolean =>
+  user?.role === role;
 
-// Helper type for role checks
-export type RoleCheck = {
-  isCustomer: boolean;
-  isVendor: boolean;
-  isDelivery: boolean;
-  isAdmin: boolean;
-};
+export const isDeliverer = (user: User | null): boolean =>
+  user?.role === "DELIVERER";
 
-// Helper function to check if user has a specific role
-export const hasRole = (user: User | null, role: UserRole): boolean => {
-  return user?.roles?.includes(role) ?? false;
-};
+export const isCustomer = (user: User | null): boolean =>
+  user?.role === "CUSTOMER";
 
-// Helper function to get role check object
-export const getRoleCheck = (user: User | null): RoleCheck => ({
-  isCustomer: hasRole(user, UserRoles.CUSTOMER),
-  isVendor: hasRole(user, UserRoles.VENDOR),
-  isDelivery: hasRole(user, UserRoles.DELIVERY),
-  isAdmin: hasRole(user, UserRoles.ADMIN),
-});
+export const isVendor = (user: User | null): boolean =>
+  user?.role === "VENDOR_STAFF";
 
-// Helper function to get display name for role
+export const isAdmin = (user: User | null): boolean =>
+  user?.role === "ADMIN";
+
 export const getRoleDisplayName = (role: UserRole): string => {
   const names: Record<UserRole, string> = {
-    customer: "Customer",
-    vendor: "Vendor",
-    delivery: "Delivery Person",
-    admin: "Administrator",
+    CUSTOMER: "Customer",
+    DELIVERER: "Deliverer",
+    VENDOR_STAFF: "Vendor Staff",
+    ADMIN: "Administrator",
   };
   return names[role];
 };
 
-// Helper function to get role icon
-export const getRoleIcon = (role: UserRole): string => {
-  const icons: Record<UserRole, string> = {
-    customer: "👤",
-    vendor: "🏪",
-    delivery: "🛵",
-    admin: "👑",
-  };
-  return icons[role];
-};
-
-// Helper function to get available roles for a user (for RoleSwitcher)
-export const getAvailableRoles = (user: User | null): UserRole[] => {
-  return user?.roles ?? [];
-};
-
-// Helper function to check if user can switch to a specific role
-export const canSwitchToRole = (user: User | null, role: UserRole): boolean => {
-  return hasRole(user, role);
-};
-
-// Helper function to get default redirect path for a role
 export const getRoleRedirectPath = (role: UserRole): string => {
   const paths: Record<UserRole, string> = {
-    customer: "/",
-    vendor: "/vendor/dashboard",
-    delivery: "/delivery/dashboard",
-    admin: "/admin/dashboard",
+    CUSTOMER: "/customer/dashboard",
+    DELIVERER: "/delivery/dashboard",
+    VENDOR_STAFF: "/vendor/dashboard",
+    ADMIN: "/admin/dashboard",
   };
   return paths[role];
 };
 
-// Helper function to get dashboard title for a role
-export const getDashboardTitle = (role: UserRole): string => {
-  const titles: Record<UserRole, string> = {
-    customer: "Customer Dashboard",
-    vendor: "Vendor Dashboard",
-    delivery: "Delivery Dashboard",
-    admin: "Admin Dashboard",
+export const getRoleIcon = (role: UserRole): string => {
+  const icons: Record<UserRole, string> = {
+    CUSTOMER: "👤",
+    DELIVERER: "🛵",
+    VENDOR_STAFF: "🏪",
+    ADMIN: "👑",
   };
-  return titles[role];
-};
-
-// Helper to get role badge color (for Tailwind)
-export const getRoleBadgeColor = (role: UserRole): string => {
-  const colors: Record<UserRole, string> = {
-    customer: "bg-blue-100 text-blue-800",
-    vendor: "bg-purple-100 text-purple-800",
-    delivery: "bg-green-100 text-green-800",
-    admin: "bg-red-100 text-red-800",
-  };
-  return colors[role];
+  return icons[role];
 };

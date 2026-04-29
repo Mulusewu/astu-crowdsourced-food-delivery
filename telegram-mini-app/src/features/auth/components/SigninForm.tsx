@@ -13,7 +13,7 @@ const signinSchema = z.object({
 type SigninFormData = z.infer<typeof signinSchema>;
 
 export default function SigninForm() {
-  const { signin, isLoading, error, clearError } = useAuthStore();
+  const { signin, isLoading, error: _error, clearError } = useAuthStore();
 
   const [showPassword, setShowPassword] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);

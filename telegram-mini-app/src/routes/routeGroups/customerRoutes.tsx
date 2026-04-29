@@ -82,9 +82,9 @@ const OrderTrackingPage = lazy(
 const OrderHistoryPage = lazy(
   () => import("@/features/customer/pages/OrderHistoryPage"),
 );
-// const OrderReviewPage = lazy(
-//   () => import("@/features/customer/pages/OrderReviewPage"),
-// );
+const OrderReviewPage = lazy(
+  () => import("@/features/customer/pages/OrderReviewPage"),
+);
 
 // Payment & Wallet
 const PaymentMethodsPage = lazy(
@@ -241,11 +241,11 @@ export const customerRoutes: RouteGroup[] = [
     element: <OrderHistoryPage />,
     roles: [UserRoles.CUSTOMER],
   },
-  //   {
-  //     path: ROUTES.CUSTOMER.ORDERS.REVIEW,
-  //     element: <OrderReviewPage />,
-  //     roles: [UserRole.CUSTOMER],
-  //   },
+  {
+    path: ROUTES.CUSTOMER.ORDERS.REVIEW,
+    element: <OrderReviewPage />,
+    roles: [UserRoles.CUSTOMER],
+  },
 
   // Payment Methods
   {

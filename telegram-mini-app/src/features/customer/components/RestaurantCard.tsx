@@ -12,7 +12,7 @@ interface RestaurantCardProps {
 }
 
 export default function RestaurantCard({
-  id,
+  id: _id,
   name,
   image,
   rating,

@@ -8,13 +8,13 @@ interface ThemeToggleProps {
 }
 
 export function ThemeToggle({ className = "", variant = "icon" }: ThemeToggleProps) {
-  const { mode, toggleMode } = useThemeStore();
+  const { mode, toggleTheme } = useThemeStore();
   const isDark = mode === "dark";
 
   if (variant === "button") {
     return (
       <Button
-        onClick={toggleMode}
+        onClick={toggleTheme}
         variant="outline"
         size="sm"
         className={`gap-2 ${className}`}
@@ -28,7 +28,7 @@ export function ThemeToggle({ className = "", variant = "icon" }: ThemeTogglePro
   if (variant === "switch") {
     return (
       <button
-        onClick={toggleMode}
+        onClick={toggleTheme}
         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
           isDark ? "bg-primary" : "bg-gray-200"
         } ${className}`}
@@ -45,7 +45,7 @@ export function ThemeToggle({ className = "", variant = "icon" }: ThemeTogglePro
   // Default: icon variant
   return (
     <button
-      onClick={toggleMode}
+      onClick={toggleTheme}
       className={`p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${className}`}
       aria-label="Toggle theme"
     >

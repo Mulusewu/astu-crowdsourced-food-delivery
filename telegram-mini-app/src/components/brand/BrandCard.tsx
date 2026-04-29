@@ -1,5 +1,4 @@
 import { Card } from "@/components/ui/card";
-import { Bike } from "lucide-react";
 
 export function BrandCard() {
   return (

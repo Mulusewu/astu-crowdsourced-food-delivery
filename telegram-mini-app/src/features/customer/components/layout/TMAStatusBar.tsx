@@ -1,4 +1,3 @@
-import React from "react";
 
 // TMA StatusBar simulation (top left/right in images)
 export const TMAStatusBar: React.FC = () => {

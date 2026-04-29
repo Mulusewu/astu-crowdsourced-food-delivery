@@ -42,10 +42,10 @@ export const ROUTES = {
     CHECKOUT_SUCCESS: "/customer/checkout/success/:orderId",
     ORDERS: {
       LIST: "/customer/orders",
-      DETAILS: "/order/:orderId",
-      TRACK: "customer/order/track/:orderId",
-      HISTORY: "/orders/history",
-      REVIEW: "/order/:orderId/review",
+      DETAILS: "/customer/orders/:orderId",
+      TRACK: "/customer/orders/track/:orderId",
+      HISTORY: "/customer/orders/history",
+      REVIEW: "/customer/orders/:orderId/review",
     },
 
     // Payment & Wallet
@@ -188,19 +188,19 @@ export const ROUTES = {
     // Active Deliveries
     ACTIVE: {
       LIST: "/delivery/active",
-      DETAILS: "/delivery/active/:deliveryId",
-      TRACK: "/delivery/active/:deliveryId/track",
+      DETAILS: "/delivery/active/:orderId",
+      TRACK: "/delivery/active/:orderId/track",
     },
 
     // Delivery Actions (CRUD for delivery process)
     DELIVERY_ACTIONS: {
       ACCEPT: "/delivery/accept/:orderId",
-      PICKUP: "/delivery/:deliveryId/pickup",
-      START: "/delivery/:deliveryId/start",
-      COMPLETE: "/delivery/:deliveryId/complete",
-      FAIL: "/delivery/:deliveryId/fail",
-      CANCEL: "/delivery/:deliveryId/cancel",
-      UPDATE_LOCATION: "/delivery/:deliveryId/location",
+      PICKUP: "/delivery/:orderId/pickup",
+      START: "/delivery/:orderId/start",
+      COMPLETE: "/delivery/:orderId/complete",
+      FAIL: "/delivery/:orderId/fail",
+      CANCEL: "/delivery/:orderId/cancel",
+      UPDATE_LOCATION: "/delivery/:orderId/location",
     },
 
     // Earnings
@@ -215,7 +215,7 @@ export const ROUTES = {
     // Delivery History
     HISTORY: {
       LIST: "/delivery/history",
-      DETAILS: "/delivery/history/:deliveryId",
+      DETAILS: "/delivery/history/:orderId",
       STATS: "/delivery/history/stats",
     },
 
@@ -223,7 +223,7 @@ export const ROUTES = {
     COMMUNICATION: {
       CALL: "/delivery/call/:customerId",
       MESSAGE: "/delivery/message/:customerId",
-      REPORT: "/delivery/report/:deliveryId",
+      REPORT: "/delivery/report/:orderId",
     },
 
     // Vehicle Management
@@ -293,28 +293,21 @@ export const ROUTES = {
 
 // Type for route parameters
 export type RouteParams = {
-  // Customer params
-  restaurantId?: string;
-  foodId?: string;
-  categoryId?: string;
-  addressId?: string;
-
-  // Vendor params
-  orderId?: string;
-  reviewId?: string;
-  offerId?: string;
-  staffId?: string;
-  period?: string;
-
-  // Delivery params
-  deliveryId?: string;
-  customerId?: string;
-
-  // Shared params
-  token?: string;
-  notificationId?: string;
-  roomId?: string;
-  month?: string;
+  restaurantId?: string | number;
+  foodId?: string | number;
+  categoryId?: string | number;
+  addressId?: string | number;
+  orderId?: string | number;
+  reviewId?: string | number;
+  offerId?: string | number;
+  staffId?: string | number;
+  period?: string | number;
+  customerId?: string | number;
+  token?: string | number;
+  notificationId?: string | number;
+  roomId?: string | number;
+  month?: string | number;
+  deliveryId?: string | number;
 };
 
 // Helper function to build dynamic routes

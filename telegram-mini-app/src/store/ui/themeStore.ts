@@ -76,16 +76,22 @@ export const useThemeStore = create<ThemeState>()(
       primaryColor: "#F26A1C",
       isInitialized: false,
 
-      setMode: (_mode) => {
-        // Force light mode
-        set({ mode: "light" });
+      setMode: (mode) => {
+        set({ mode });
         if (typeof document !== "undefined") {
-          document.documentElement.classList.remove("dark");
+          if (mode === "dark") {
+            document.documentElement.classList.add("dark");
+            document.body.classList.add("dark");
+          } else {
+            document.documentElement.classList.remove("dark");
+            document.body.classList.remove("dark");
+          }
         }
       },
 
       toggleTheme: () => {
-        // No-op to disable theme switching
+        const nextMode = get().mode === "dark" ? "light" : "dark";
+        get().setMode(nextMode);
       },
 
       setPrimaryColor: (color) => {
@@ -99,8 +105,8 @@ export const useThemeStore = create<ThemeState>()(
       initializeTheme: () => {
         if (get().isInitialized) return;
 
-        // Force light mode on initialization
-        get().setMode("light");
+        const mode = get().mode;
+        get().setMode(mode);
 
         // Set primary color CSS variable
         const primaryColor = get().primaryColor;
@@ -113,7 +119,7 @@ export const useThemeStore = create<ThemeState>()(
 
       getCurrentTheme: () => {
         return {
-          ...themeColors.light,
+          ...themeColors[get().mode],
           primary: get().primaryColor,
         };
       },
@@ -121,6 +127,7 @@ export const useThemeStore = create<ThemeState>()(
     {
       name: "theme-storage",
       partialize: (state) => ({
+        mode: state.mode,
         primaryColor: state.primaryColor,
       }),
     },

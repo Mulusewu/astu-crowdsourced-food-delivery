@@ -7,7 +7,7 @@ import {
   UtensilsCrossed,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ROUTES } from "@/routes/routePaths";
+
 
 const ORANGE = "#F27420";
 const ORANGE_SOFT = "#FFF0E6";
@@ -142,7 +142,7 @@ export default function DeliveryOrderDetailPage() {
         <div className="relative flex h-12 items-center justify-center sm:h-14">
           <button
             type="button"
-            onClick={() => navigate(ROUTES.DELIVERY.ORDERS)}
+            onClick={() => navigate(-1)}
             className="absolute left-0 flex h-10 w-10 items-center justify-center rounded-xl border border-[#F27420]/30 transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F27420]/40"
             style={{ backgroundColor: ORANGE_SOFT }}
             aria-label="Go back"

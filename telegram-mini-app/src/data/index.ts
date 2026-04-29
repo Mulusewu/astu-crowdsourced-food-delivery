@@ -2,80 +2,81 @@ import db from "./database.json";
 
 export default db;
 
-// Export individual data sections
-export const users = db.users;
-export const customers = db.users.customers;
-export const vendors = db.users.vendors;
-export const deliveryPersons = db.users.delivery;
-export const restaurants = db.restaurants;
-export const menu = db.menu;
-export const orders = db.orders;
-export const earnings = db.earnings;
-export const notifications = db.notifications;
-export const payments = db.payments;
+// ── Flat collections aligned with the new database.json structure ──────────────
 
-// Helper functions for common data operations
-export const getAvailableOrders = () => orders.available;
-export const getActiveOrders = () => orders.active;
-export const getOrderHistory = () => orders.history;
+export const users = db.users;
+export const restaurants = db.restaurants;
+export const orders = db.orders;
+export const menuItems = db.menuItems;
+export const orderItems = db.orderItems;
+export const notifications = db.notifications ?? [];
+export const payments = db.payments ?? [];
+
+// ── Typed helpers ──────────────────────────────────────────────────────────────
 
 export const getRestaurantById = (id: string) =>
-  restaurants.find((r) => r.id === id);
+  restaurants.find((r) => r.id === id) ?? null;
 
-export const getMenuByRestaurantId = (id: string) =>
-  menu[id as keyof typeof menu] || [];
+export const getUserById = (id: string) =>
+  users.find((u) => u.id === id) ?? null;
 
-export const getDeliveryPersonById = (id: string) =>
-  deliveryPersons.find((d) => d.id === id);
+export const getOrdersByStatus = (status: string) =>
+  orders.filter((o) => o.status === status);
 
-export const getCustomerById = (id: string) =>
-  customers.find((c) => c.id === id);
+export const getOrderById = (id: string) =>
+  orders.find((o) => o.id === id) ?? null;
 
-export const getEarningsByDeliveryId = (id: string) =>
-  earnings[id as keyof typeof earnings];
+export const getMenuItemsByRestaurant = (restaurantId: string) =>
+  menuItems.filter((m) => m.restaurantId === restaurantId);
 
-// Simulate API delay
-export const delay = (ms: number = 500) =>
-  new Promise((resolve) => setTimeout(resolve, ms));
+export const getOrderItemsByOrder = (orderId: string) =>
+  orderItems.filter((i) => i.orderId === orderId);
 
-// Mock API functions (to be replaced with real API calls)
+// ── Mock API shim (replaced later with real axios calls) ───────────────────────
+
+export const delay = (ms = 500) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export const mockApi = {
-  // Auth
-  login: async (email: string, password: string) => {
+  login: async (email: string, _password: string) => {
     await delay();
-    const user = [...customers, ...vendors, ...deliveryPersons].find(
-      (u) => u.email === email,
-    );
+    const user = users.find((u) => u.email === email);
     if (!user) throw new Error("Invalid credentials");
     return { user, token: "mock-jwt-token" };
   },
 
-  // Orders
   getAvailableOrders: async () => {
     await delay();
-    return orders.available;
+    return getOrdersByStatus("AWAITING_ACCEPT");
   },
 
-  getActiveOrders: async () => {
+  getActiveOrders: async (delivererId: string) => {
     await delay();
-    return orders.active;
+    return orders.filter(
+      (o) =>
+        o.delivererId === delivererId &&
+        ["ASSIGNED", "PICKED_UP", "EN_ROUTE", "ARRIVED"].includes(o.status),
+    );
   },
 
   acceptOrder: async (orderId: string) => {
     await delay();
-    const order = orders.available.find((o) => o.id === orderId);
+    const order = getOrderById(orderId);
     if (!order) throw new Error("Order not found");
     return { success: true, order };
   },
 
-  // Delivery
-  updateDeliveryStatus: async (deliveryId: string, status: string) => {
+  updateDeliveryStatus: async (_deliveryId: string, _status: string) => {
     await delay();
     return { success: true };
   },
 
-  updateLocation: async (deliveryId: string, location: any) => {
+  updateLocation: async (_deliveryId: string, _location: unknown) => {
     await delay();
     return { success: true };
   },
 };
+
+// ── Currency constant (was db.currency in legacy code) ────────────────────────
+export const CURRENCY = "ETB";
+export const BASE_DELIVERY_FEE = 15;
+export const MOCK_DISCOUNT = 0;

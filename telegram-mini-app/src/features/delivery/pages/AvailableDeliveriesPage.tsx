@@ -5,12 +5,14 @@ import {
   ArrowLeft,
   ChevronDown,
   Bookmark,
+  Package,
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useInView } from "react-intersection-observer";
 
 import { useOrderStore } from "@/store/orders/orderStore";
 import { useCafeStore } from "@/store/cafeStore";
+import { ROUTES, buildRoute } from "@/routes/routePaths";
 
 // Custom fast food icon (Drink + Burger matching the image)
 const FoodPlateIcon = () => (
@@ -45,6 +47,7 @@ export default function AvailableDeliveriesPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const cafeFromUrl = searchParams.get("cafe");
+  const queryFromUrl = searchParams.get("search");
 
   const { ref, inView } = useInView({ threshold: 0.1, triggerOnce: false });
 
@@ -57,14 +60,26 @@ export default function AvailableDeliveriesPage() {
     fetchAvailableOrders,
     loadMoreOrders,
     setSelectedCafe,
+    selectedCafe,
     secondaryFilter,
     setSecondaryFilter,
     toggleBookmark,
   } = useOrderStore();
 
-  const { fetchCafes } = useCafeStore();
+  const { cafes, fetchCafes } = useCafeStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  const visibleOrders = filteredOrders.filter((order) => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return true;
+    return (
+      order.shortId.toLowerCase().includes(query) ||
+      order.restaurant.name.toLowerCase().includes(query) ||
+      order.customer.fullName.toLowerCase().includes(query) ||
+      order.items.some((item) => item.name.toLowerCase().includes(query))
+    );
+  });
 
   const activeSortLabel =
     sortOptions.find((opt) => opt.value === secondaryFilter)?.label || "Sort";
@@ -76,9 +91,17 @@ export default function AvailableDeliveriesPage() {
   }, [fetchAvailableOrders, fetchCafes]);
 
   useEffect(() => {
+    if (queryFromUrl) {
+      setSearchQuery(queryFromUrl);
+    }
+  }, [queryFromUrl]);
+
+  useEffect(() => {
     if (cafeFromUrl) {
       setSelectedCafe(cafeFromUrl);
+      return;
     }
+    setSelectedCafe("all");
   }, [cafeFromUrl, setSelectedCafe]);
 
   useEffect(() => {
@@ -93,7 +116,7 @@ export default function AvailableDeliveriesPage() {
       <header className="px-5 pt-10 pb-2 bg-white">
         <div className="flex items-center justify-between mb-6 relative">
           <button
-            onClick={() => navigate("/delivery/dashboard")}
+            onClick={() => navigate(ROUTES.DELIVERY.DASHBOARD)}
             className="w-11 h-11 bg-orange-50 rounded-2xl flex items-center justify-center text-[#F26A1C] z-10"
           >
             <ArrowLeft strokeWidth={2.5} size={22} />
@@ -114,16 +137,43 @@ export default function AvailableDeliveriesPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="flex-1 bg-transparent border-none outline-none px-3 text-[16px] text-gray-800 placeholder:text-gray-400"
           />
-          <button className="text-gray-500 hover:text-gray-700 transition-colors">
+          <button
+            type="button"
+            onClick={() => setIsFilterOpen(!isFilterOpen)}
+            className="text-gray-500 hover:text-gray-700 transition-colors"
+          >
             <SlidersHorizontal size={24} />
           </button>
         </div>
 
         {/* Filters */}
-        <div className="flex gap-3 mt-6">
-          <button className="bg-[#F26A1C] hover:bg-[#e05d15] text-white font-bold text-[15px] px-7 h-[44px] rounded-[14px] shadow-sm transition-colors">
+        <div className="mt-6 flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={() => setSelectedCafe("all")}
+            className={`font-bold text-[15px] px-7 h-[44px] rounded-[14px] shadow-sm transition-colors ${
+              selectedCafe !== "all"
+                ? "bg-white text-gray-700 border border-gray-200"
+                : "bg-[#F26A1C] text-white hover:bg-[#e05d15]"
+            }`}
+          >
             ALL
           </button>
+
+          {cafes.slice(0, 4).map((cafe) => (
+            <button
+              key={cafe.id}
+              type="button"
+              onClick={() => setSelectedCafe(cafe.id)}
+              className={`h-[44px] rounded-[14px] px-4 text-sm font-semibold transition-colors ${
+                selectedCafe === cafe.id
+                  ? "bg-[#F26A1C] text-white"
+                  : "border border-gray-200 bg-white text-gray-700"
+              }`}
+            >
+              {cafe.name}
+            </button>
+          ))}
 
           <div className="relative">
             <button
@@ -172,17 +222,21 @@ export default function AvailableDeliveriesPage() {
 
       {/* Grid */}
       <main className="flex-1 px-5 mt-8 relative z-0">
-        {filteredOrders.length === 0 && !isLoading ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <p className="text-gray-500 font-medium">No orders found.</p>
+        {visibleOrders.length === 0 && !isLoading ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center bg-gray-50 rounded-[32px] border border-dashed border-gray-200">
+            <Package size={48} className="text-gray-300 mb-4" />
+            <p className="text-gray-500 font-bold text-lg">No orders found</p>
+            <p className="text-gray-400 text-sm mt-1">
+              Try adjusting your filters or search query.
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-x-4 gap-y-16 mt-6 pb-8">
-            {filteredOrders.map((order, idx) => {
-              const orderId = order.orderNumber || order.id.slice(-3);
+            {visibleOrders.map((order, idx) => {
+              const orderId = order.shortId;
               const itemCount = order.items?.length || 1;
               const firstImage =
-                order.items?.[0]?.image ||
+                order.items?.[0]?.imageUrl ||
                 "https://images.unsplash.com/photo-1544025162-831e5088eb7e?q=80&w=200&auto=format&fit=crop";
 
               return (
@@ -231,7 +285,13 @@ export default function AvailableDeliveriesPage() {
                   </div>
 
                   <button
-                    onClick={() => navigate(`/delivery/available/${order.id}`)}
+                    onClick={() =>
+                      navigate(
+                        buildRoute(ROUTES.DELIVERY.AVAILABLE.DETAILS, {
+                          orderId: order.id,
+                        }),
+                      )
+                    }
                     className="w-[85%] h-[38px] mt-4 bg-[#F26A1C] hover:bg-[#e05d15] text-white font-bold text-[13px] rounded-[19px] shadow-[0_4px_12px_rgba(242,106,28,0.3)] transition-all active:scale-95"
                   >
                     View Detail

@@ -1,7 +1,7 @@
-import { lazy } from "react";
+
 import { type RouteGroup } from "../types/routes.types";
 import { ROUTES } from "../routePaths";
-import { UserRoles, type UserRole } from "@/types/user.types";
+import { UserRoles } from "@/types/user.types";
 import SharedProfilePage from "@/features/shared/pages/ProfilePage";
 
 // Order Shared
@@ -18,9 +18,6 @@ import SharedProfilePage from "@/features/shared/pages/ProfilePage";
 //   () => import("@/features/shared/pages/OrderReceiptPage"),
 // );
 
-const sharedProfilePage = lazy(
-  () => import("@/features/shared/pages/ProfilePage"),
-);
 
 // Payment Shared
 // const ProcessPaymentPage = lazy(
@@ -67,9 +64,8 @@ const sharedProfilePage = lazy(
 // const PrivacyPage = lazy(() => import("@/features/legal/pages/PrivacyPage"));
 // const CookiesPage = lazy(() => import("@/features/legal/pages/CookiesPage"));
 
-// // All roles that can access shared routes
-const allRoles = [UserRoles.CUSTOMER, UserRoles.VENDOR, UserRoles.DELIVERY];
-const customerVendorRoles = [UserRoles.CUSTOMER, UserRoles.VENDOR];
+// All roles that can access shared routes
+const allRoles = [UserRoles.CUSTOMER, UserRoles.VENDOR_STAFF, UserRoles.DELIVERER];
 
 export const sharedRoutes: RouteGroup[] = [
   // Order Routes - Accessible by all roles

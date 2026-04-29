@@ -3,23 +3,21 @@ import db from "@/data/database.json";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-interface OrderItem {
+interface OrderItemDisplay {
   id: string;
   name: string;
   quantity: number;
   price: number;
-  image: string;
 }
 
 interface OrderDetails {
   id: string;
-  orderNumber: string;
-  cafeName: string;
-  customer: { address: string };
-  items: OrderItem[];
+  shortId: string;
+  restaurantName: string;
+  deliveryAddress: string;
+  items: OrderItemDisplay[];
   subtotal: number;
   deliveryFee: number;
-  distance: string;
   estimatedDeliveryTime: string;
   status: string;
   totalAmount: number;
@@ -35,37 +33,43 @@ interface OrderDetailsState {
   declineOrder: () => Promise<void>;
 }
 
-export const useOrderDetailsStore = create<OrderDetailsState>((set, get) => ({
+const menuItemMap = new Map(db.menuItems.map((m) => [m.id, m]));
+const restaurantMap = new Map(db.restaurants.map((r) => [r.id, r]));
+
+export const useOrderDetailsStore = create<OrderDetailsState>((set) => ({
   order: null,
   isLoading: true,
   isAccepting: false,
 
   fetchOrderDetails: async (orderId: string) => {
     set({ isLoading: true });
-
     await delay(650);
 
-    const found = db.orders.available.find((o: any) => o.id === orderId);
+    const found = db.orders.find((o) => o.id === orderId);
 
     if (found) {
-      const subtotal = found.items.reduce(
-        (sum: number, item: any) => sum + item.price * item.quantity,
-        0,
-      );
+      const orderItems = db.orderItems.filter((i) => i.orderId === orderId);
+      const items: OrderItemDisplay[] = orderItems.map((i) => ({
+        id: i.id,
+        name: menuItemMap.get(i.menuId)?.name ?? "Item",
+        quantity: i.quantity,
+        price: Number(i.unitPrice),
+      }));
+      const subtotal = items.reduce((s, i) => s + i.price * i.quantity, 0);
+      const restaurant = restaurantMap.get(found.restaurantId);
 
       set({
         order: {
           id: found.id,
-          orderNumber: found.orderNumber,
-          cafeName: found.cafeName,
-          customer: found.customer,
-          items: found.items,
+          shortId: found.shortId,
+          restaurantName: restaurant?.name ?? "Restaurant",
+          deliveryAddress: found.pickupLat != null ? `${found.pickupLat}, ${found.pickupLng}` : "Campus",
+          items,
           subtotal,
-          deliveryFee: 50,
-          distance: found.distance,
-          estimatedDeliveryTime: "30 Min",
+          deliveryFee: Number(found.deliveryFee),
+          estimatedDeliveryTime: found.estimatedDeliveryTime ?? "30 Min",
           status: found.status,
-          totalAmount: found.totalAmount,
+          totalAmount: Number(found.totalAmount),
         },
         isLoading: false,
       });
@@ -77,15 +81,10 @@ export const useOrderDetailsStore = create<OrderDetailsState>((set, get) => ({
   acceptOrder: async () => {
     set({ isAccepting: true });
     await delay(800);
-    // TODO: later → real API call
-    console.log("Order accepted");
     set({ isAccepting: false });
-    // navigate to active deliveries (handled in component)
   },
 
   declineOrder: async () => {
     await delay(400);
-    console.log("Order declined");
-    // TODO: later → real API + reason dialog
   },
 }));

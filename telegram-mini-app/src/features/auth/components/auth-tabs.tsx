@@ -4,7 +4,6 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 import SigninForm from "./SigninForm";
 import SignupForm from "./SignupForm";
-import { BrandCard } from "@/components/brand/BrandCard";
 
 export default function TabsLine() {
   const [activeTab, setActiveTab] = useState<"signin" | "signup">("signin");

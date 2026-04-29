@@ -1,5 +1,5 @@
 import { apiClient } from "../client/axiosInstance";
-import {
+import type {
   LoginRequest,
   LoginResponse,
   SignupRequest,

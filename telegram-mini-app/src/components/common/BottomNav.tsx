@@ -15,7 +15,7 @@ import { ROUTES } from "@/routes/routePaths";
 import { cn } from "@/lib/utils";
 
 function BottomNav() {
-  const { activeRole } = useAuthStore();
+  const { user } = useAuthStore();
   const { getTotalItems } = useCartStore();
   const navigate = useNavigate();
   const location = useLocation();
@@ -26,8 +26,8 @@ function BottomNav() {
 
   // Define navigation items based on role
   const getNavConfig = () => {
-    switch (activeRole) {
-      case "delivery":
+    switch (user?.role) {
+      case "DELIVERER":
         return {
           items: [
             { id: "home", icon: Home, path: ROUTES.DELIVERY.DASHBOARD, label: "Home" },
@@ -37,7 +37,7 @@ function BottomNav() {
           ],
           center: { id: "active", icon: Package, path: ROUTES.DELIVERY.ACTIVE.LIST, label: "Deliveries" }
         };
-      case "vendor":
+      case "VENDOR_STAFF":
         return {
           items: [
             { id: "home", icon: Home, path: "/vendor/dashboard", label: "Home" },
@@ -47,7 +47,7 @@ function BottomNav() {
           ],
           center: { id: "orders", icon: Bell, path: "/vendor/orders/active", label: "Orders" }
         };
-      case "customer":
+      case "CUSTOMER":
       default:
         return {
           items: [

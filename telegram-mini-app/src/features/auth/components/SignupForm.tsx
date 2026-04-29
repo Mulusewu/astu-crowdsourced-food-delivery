@@ -7,7 +7,7 @@ import { useAuthStore } from "@/store/auth/authStore";
 
 const signupSchema = z
   .object({
-    name: z.string().min(2, "Name Is Too Short!").max(50, "Name Is Too Long!"),
+    fullName: z.string().min(2, "Name Is Too Short!").max(50, "Name Is Too Long!"),
     email: z.string().email("Please Enter A Valid Email!"),
     password: z
       .string()
@@ -44,10 +44,9 @@ export default function SignupForm() {
     clearError();
     try {
       await signup({
-        name: data.name,
+        fullName: data.fullName,
         email: data.email,
         password: data.password,
-        role: "customer",
       });
     } catch (err: any) {
       setApiError(err.message || "User Already Exists With This Email!");
@@ -124,14 +123,14 @@ export default function SignupForm() {
         <form onSubmit={handleSubmit(onSubmit)} className="w-full space-y-4">
           {/* Name */}
           <div className="space-y-1">
-            <label className="text-[17px] font-bold text-gray-900 ml-1">Name</label>
+            <label className="text-[17px] font-bold text-gray-900 ml-1">Full Name</label>
             <input
-              {...register("name")}
+              {...register("fullName")}
               placeholder="John Doe"
-              className={`w-full h-13 border ${errors.name ? "border-red-500" : "border-gray-200"} rounded-[10px] px-5 text-[15px] font-medium text-gray-900 placeholder:text-gray-300 focus:border-[#F26A1C] focus:outline-none transition-all`}
+              className={`w-full h-13 border ${errors.fullName ? "border-red-500" : "border-gray-200"} rounded-[10px] px-5 text-[15px] font-medium text-gray-900 placeholder:text-gray-300 focus:border-[#F26A1C] focus:outline-none transition-all`}
             />
-            {errors.name && (
-              <p className="text-xs text-red-500 font-semibold ml-1">{errors.name.message}</p>
+            {errors.fullName && (
+              <p className="text-xs text-red-500 font-semibold ml-1">{errors.fullName.message}</p>
             )}
           </div>
 

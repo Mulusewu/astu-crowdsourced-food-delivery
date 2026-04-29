@@ -1,110 +1,281 @@
+// src/store/orders/customerOrderStore.ts
+// Prisma-aligned customer order store with full OrderStatus enum and placeOrder action.
 import { create } from "zustand";
-import db from "@/data/database.json"; // Import your JSON database
-import deliveryDb from "@/data/users/delivery.json";
+import { persist } from "zustand/middleware";
+import db from "@/data/database.json";
+import { useAuthStore } from "@/store/auth/authStore";
 
-export type OrderStatus = "placed" | "preparing" | "in_transit" | "delivered";
+// ─── Prisma-aligned OrderStatus ──────────────────────────────────────────────
+export type OrderStatus =
+  | "CREATED"
+  | "AWAITING_ACCEPT"
+  | "ASSIGNED"
+  | "AWAITING_PAYMENT"
+  | "PAYMENT_RECEIVED"
+  | "VENDOR_BEING_PREPARED"
+  | "VENDOR_FINISHED"
+  | "VENDOR_READY_FOR_PICKUP"
+  | "PICKED_UP"
+  | "EN_ROUTE"
+  | "ARRIVED"
+  | "RECEIVED"
+  | "DELIVERED"
+  | "COMPLETED"
+  | "DISPUTED"
+  | "CANCELLED"
+  | "NO_DELIVERER_FOUND";
 
-export interface Order {
+export type PaymentStatus =
+  | "AWAITING_PAYMENT"
+  | "PENDING"
+  | "AUTHORIZED"
+  | "CAPTURED"
+  | "FAILED"
+  | "REFUNDED";
+
+// ─── Customer-facing Order model ─────────────────────────────────────────────
+export interface CustomerOrder {
   id: string;
+  shortId: string;
   status: OrderStatus;
-  estimatedDelivery: string;
-  restaurant: string;
-  items: { name: string; qty: number }[];
-  total: number;
-  deliveryPerson?: {
+  paymentStatus: PaymentStatus;
+  restaurantId: string;
+  restaurantName: string;
+  restaurantImageUrl: string | null;
+  items: {
+    id: string;
+    menuId: string;
+    name: string;
+    quantity: number;
+    unitPrice: number;
+    imageUrl: string | null;
+  }[];
+  // Financials (Prisma-aligned)
+  foodPrice: number;
+  deliveryFee: number;
+  transactionFee: number;
+  serviceFee: number;
+  tip: number;
+  totalAmount: number;
+  // OTP
+  otpCode: string;
+  otpVerifiedAt: string | null;
+  // ETA
+  estimatedDeliveryTime: string | null;
+  estimatedReadyAt: string | null;
+  // Delivery address
+  deliveryAddress: string | null;
+  // Status history
+  statusHistory: {
+    oldStatus: OrderStatus | null;
+    newStatus: OrderStatus;
+    createdAt: string;
+  }[];
+  // Deliverer info (if assigned)
+  deliverer: {
     name: string;
     phone: string;
-    avatar: string;
+    avatarUrl: string | null;
     rating: number;
-  };
+  } | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
+// ─── Store interface ──────────────────────────────────────────────────────────
 interface CustomerOrderState {
-  orders: Order[];
-  getOrderById: (id: string) => Order | undefined;
-  setOrders: (orders: Order[]) => void;
+  orders: CustomerOrder[];
+  isLoading: boolean;
+  error: string | null;
+
+  fetchCustomerOrders: () => Promise<void>;
+  getOrderById: (id: string) => CustomerOrder | undefined;
+  placeOrder: (params: {
+    restaurantId: string;
+    items: { menuId: string; quantity: number; unitPrice: number; name: string; imageUrl: string | null }[];
+    foodPrice: number;
+    deliveryFee: number;
+    serviceFee: number;
+    transactionFee: number;
+    tip: number;
+    totalAmount: number;
+    deliveryAddress: string;
+  }) => Promise<CustomerOrder>;
+  clearError: () => void;
 }
 
-interface DbOrderItem {
-  name: string;
-  quantity: number;
-}
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+const delay = (ms = 500) => new Promise((r) => setTimeout(r, ms));
 
-interface DbOrder {
-  id: string;
-  status: string;
-  estimatedDeliveryTime?: string;
-  deliveredAt?: string;
-  cafeName: string;
-  items: DbOrderItem[];
-  totalAmount: number;
-}
+const generateShortId = () =>
+  `AE-${1000 + Math.floor(Math.random() * 9000)}`;
 
-interface DeliveryPersonRecord {
-  name: string;
-  phone: string;
-  avatar: string;
-  stats?: {
-    averageRating?: number;
-  };
-}
+const generateOtp = () =>
+  String(Math.floor(100000 + Math.random() * 900000));
 
-const firstDeliveryPerson = deliveryDb.delivery[0] as
-  | DeliveryPersonRecord
-  | undefined;
+// Build a CustomerOrder view from the flat database arrays
+const buildCustomerOrder = (rawOrder: (typeof db.orders)[0]): CustomerOrder => {
+  const restaurant = db.restaurants.find((r) => r.id === rawOrder.restaurantId);
+  const orderItems = db.orderItems
+    .filter((oi) => oi.orderId === rawOrder.id)
+    .map((oi) => {
+      const menuItem = db.menuItems.find((m) => m.id === oi.menuId);
+      return {
+        id: oi.id,
+        menuId: oi.menuId,
+        name: menuItem?.name ?? "Item",
+        quantity: oi.quantity,
+        unitPrice: Number(oi.unitPrice),
+        imageUrl: menuItem?.imageUrl ?? null,
+      };
+    });
 
-const mapOrderStatus = (status: string): OrderStatus => {
-  switch (status) {
-    case "pending":
-      return "placed";
-    case "preparing":
-      return "preparing";
-    case "in_transit":
-      return "in_transit";
-    case "delivered":
-      return "delivered";
-    default:
-      return "placed";
+  const statusHistory = (db.orderStatusHistories ?? [])
+    .filter((h: any) => h.orderId === rawOrder.id)
+    .map((h: any) => ({
+      oldStatus: (h.oldStatus as OrderStatus) ?? null,
+      newStatus: h.newStatus as OrderStatus,
+      createdAt: h.createdAt,
+    }))
+    .sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
+  // Find deliverer info
+  let deliverer: CustomerOrder["deliverer"] = null;
+  if (rawOrder.delivererId) {
+    const delivererProfile = (db.delivererProfiles as any[]).find(
+      (dp: any) => dp.userId === rawOrder.delivererId,
+    );
+    const delivererUser = delivererProfile
+      ? db.users.find((u) => u.id === delivererProfile.userId)
+      : null;
+    if (delivererUser) {
+      deliverer = {
+        name: delivererUser.fullName,
+        phone: delivererUser.phoneNumber ?? "",
+        avatarUrl: delivererUser.avatarUrl ?? null,
+        rating: Number(delivererProfile?.rating ?? 4.5),
+      };
+    }
   }
+
+  return {
+    id: rawOrder.id,
+    shortId: rawOrder.shortId,
+    status: rawOrder.status as OrderStatus,
+    paymentStatus: rawOrder.paymentStatus as PaymentStatus,
+    restaurantId: rawOrder.restaurantId,
+    restaurantName: restaurant?.name ?? "Restaurant",
+    restaurantImageUrl: restaurant?.imageUrl ?? null,
+    items: orderItems,
+    foodPrice: Number(rawOrder.foodPrice),
+    deliveryFee: Number(rawOrder.deliveryFee),
+    transactionFee: Number(rawOrder.transactionFee),
+    serviceFee: Number(rawOrder.serviceFee),
+    tip: Number(rawOrder.tip),
+    totalAmount: Number(rawOrder.totalAmount),
+    otpCode: rawOrder.otpCode,
+    otpVerifiedAt: rawOrder.otpVerifiedAt ?? null,
+    estimatedDeliveryTime: rawOrder.estimatedDeliveryTime ?? null,
+    estimatedReadyAt: rawOrder.estimatedReadyAt ?? null,
+    deliveryAddress: null,
+    statusHistory,
+    deliverer,
+    createdAt: rawOrder.createdAt,
+    updatedAt: rawOrder.updatedAt,
+  };
 };
 
-const assignedDeliveryPerson = firstDeliveryPerson
-  ? {
-      name: firstDeliveryPerson.name,
-      phone: firstDeliveryPerson.phone,
-      avatar: firstDeliveryPerson.avatar,
-      rating: firstDeliveryPerson.stats?.averageRating ?? 4.8,
-    }
-  : undefined;
+// ─── Store ────────────────────────────────────────────────────────────────────
+export const useCustomerOrderStore = create<CustomerOrderState>()(
+  persist(
+    (set, get) => ({
+      orders: [],
+      isLoading: false,
+      error: null,
 
-const rawOrders = [
-  ...(db.orders?.available || []),
-  ...(db.orders?.active || []),
-  ...(db.orders?.history || []),
-] as DbOrder[];
+      fetchCustomerOrders: async () => {
+        set({ isLoading: true, error: null });
+        try {
+          await delay(500);
+          const { user } = useAuthStore.getState();
+          // In the schema: Order.customerId = CustomerProfile.id
+          // But in database.json: Order.customerId = User.id (for simplicity)
+          // We try both: match by user.id or by customerProfile.id
+          const userId = user?.id ?? "";
+          const customerProfileId =
+            (db.customerProfiles as any[]).find((cp: any) => cp.userId === userId)?.id ?? "";
 
-const dbOrders: Order[] = rawOrders.map((order) => ({
-  id: order.id,
-  status: mapOrderStatus(order.status),
-  estimatedDelivery:
-    order.estimatedDeliveryTime || order.deliveredAt || "Updating soon",
-  restaurant: order.cafeName,
-  items: order.items.map((item) => ({
-    name: item.name,
-    qty: item.quantity,
-  })),
-  total: order.totalAmount,
-  deliveryPerson:
-    order.status === "in_transit" ? assignedDeliveryPerson : undefined,
-}));
+          const customerOrders = db.orders
+            .filter((o) => o.customerId === userId || o.customerId === customerProfileId)
+            .map(buildCustomerOrder);
 
-export const useCustomerOrderStore = create<CustomerOrderState>((set, get) => ({
-  // Set the initial state using the data from database.json
-  orders: dbOrders,
+          set((s) => {
+            const existingIds = new Set(customerOrders.map((o) => o.id));
+            const localOnly = s.orders.filter((o) => !existingIds.has(o.id));
+            return { orders: [...customerOrders, ...localOnly], isLoading: false };
+          });
+        } catch (e) {
+          set({ error: e instanceof Error ? e.message : "Failed to load orders", isLoading: false });
+        }
+      },
 
-  // Find a specific order by ID (used by the Tracking Page)
-  getOrderById: (id) => get().orders.find((o) => o.id === id),
+      getOrderById: (id) => get().orders.find((o) => o.id === id),
 
-  // Allow updating orders later
-  setOrders: (orders) => set({ orders }),
-}));
+      placeOrder: async (params) => {
+        set({ isLoading: true, error: null });
+        try {
+          await delay(700);
+          const now = new Date().toISOString();
+          const newOrder: CustomerOrder = {
+            id: `ord_${Date.now()}`,
+            shortId: generateShortId(),
+            status: "AWAITING_ACCEPT",
+            paymentStatus: "AWAITING_PAYMENT",
+            restaurantId: params.restaurantId,
+            restaurantName:
+              db.restaurants.find((r) => r.id === params.restaurantId)?.name ?? "Restaurant",
+            restaurantImageUrl:
+              db.restaurants.find((r) => r.id === params.restaurantId)?.imageUrl ?? null,
+            items: params.items.map((item, i) => ({
+              id: `oi_${Date.now()}_${i}`,
+              menuId: item.menuId,
+              name: item.name,
+              quantity: item.quantity,
+              unitPrice: item.unitPrice,
+              imageUrl: item.imageUrl,
+            })),
+            foodPrice: params.foodPrice,
+            deliveryFee: params.deliveryFee,
+            transactionFee: params.transactionFee,
+            serviceFee: params.serviceFee,
+            tip: params.tip,
+            totalAmount: params.totalAmount,
+            otpCode: generateOtp(),
+            otpVerifiedAt: null,
+            estimatedDeliveryTime: null,
+            estimatedReadyAt: null,
+            deliveryAddress: params.deliveryAddress,
+            statusHistory: [
+              { oldStatus: null, newStatus: "AWAITING_ACCEPT", createdAt: now },
+            ],
+            deliverer: null,
+            createdAt: now,
+            updatedAt: now,
+          };
+
+          set((s) => ({ orders: [newOrder, ...s.orders], isLoading: false }));
+          return newOrder;
+        } catch (e) {
+          set({ error: e instanceof Error ? e.message : "Failed to place order", isLoading: false });
+          throw e;
+        }
+      },
+
+      clearError: () => set({ error: null }),
+    }),
+    {
+      name: "customer-order-storage",
+      partialize: (s) => ({ orders: s.orders }),
+    },
+  ),
+);

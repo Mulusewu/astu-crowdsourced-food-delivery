@@ -56,7 +56,7 @@ const getRestaurantName = (restaurantId: string): string => {
 // Helper to get restaurant rating
 const getRestaurantRating = (restaurantId: string): number => {
   const restaurant = db.restaurants.find(r => r.id === restaurantId);
-  return restaurant?.rating || 0;
+  return restaurant?.avgRating || 0;
 };
 
 // Helper to get restaurant total reviews
@@ -65,7 +65,7 @@ const getRestaurantReviews = (restaurantId: string): number => {
   return restaurant?.totalReviews || 0;
 };
 
-export const useFoodStore = create<FoodState>((set, get) => ({
+export const useFoodStore = create<FoodState>((set) => ({
   currentFood: null,
   isLoading: false,
   error: null,
@@ -76,37 +76,15 @@ export const useFoodStore = create<FoodState>((set, get) => ({
     try {
       await delay(600); // Simulate network delay
 
-      // Search for the food item across all restaurants in database.json
+      // Search flat menuItems array (Prisma-aligned flat structure)
       let foundFood: any = null;
       let foundRestaurantId: string | null = null;
 
-      // Iterate through all restaurants and their menus
-      for (const restaurant of db.restaurants) {
-        const menuItems = db.menu[restaurant.id as keyof typeof db.menu];
-        if (menuItems && Array.isArray(menuItems)) {
-          const food = menuItems.find((item: any) => item.id === id);
-          if (food) {
-            foundFood = food;
-            foundRestaurantId = restaurant.id;
-            break;
-          }
-        }
-      }
-
-      // Also check in any other menu structures if needed
-      if (!foundFood) {
-        // Try alternative menu structure (if any)
-        const allMenuItems = Object.values(db.menu).flat();
-        const alternativeMatch = allMenuItems.find((item: any) => item.id === id);
-        if (alternativeMatch) {
-          foundFood = alternativeMatch;
-          // Try to find which restaurant this belongs to
-          for (const [restId, menuItems] of Object.entries(db.menu)) {
-            if (Array.isArray(menuItems) && menuItems.some((item: any) => item.id === id)) {
-              foundRestaurantId = restId;
-              break;
-            }
-          }
+      for (const item of db.menuItems) {
+        if (item.id === id) {
+          foundFood = item;
+          foundRestaurantId = item.restaurantId;
+          break;
         }
       }
 

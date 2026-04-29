@@ -12,6 +12,12 @@ export interface FoodItem {
   image: string;
   imageUrl: string;
   description: string;
+  // Prisma MenuItem fields
+  categoryId?: string;
+  isFasting?: boolean;
+  prepTimeMins?: number;
+  isAvailable?: boolean;
+  availabilityReason?: string | null;
 }
 
 export interface Restaurant {
@@ -158,37 +164,29 @@ export const useRestaurantStore = create<RestaurantState>((set) => ({
     try {
       await delay(400);
 
-      // Safety check: if popularFoods doesn't exist, return empty array instead of crashing
-      const popularRefs = Array.isArray(db.popularFoods) ? db.popularFoods : [];
-
-      const popularFoods: FoodItem[] = popularRefs
-        .map((ref: any) => {
-          let product: any = null;
-
-          // Hunt for the product in db.menu depending on how it's structured
-          if (db.menu && !Array.isArray(db.menu)) {
-            const restMenu = (db.menu as any)[ref.restaurantId] || [];
-            product = restMenu.find((item: any) => item.id === ref.id);
-          } else if (Array.isArray(db.menu)) {
-            product = db.menu.find((item: any) => item.id === ref.id);
-          }
-
-          if (!product) return null;
-
+      const popularFoods: FoodItem[] = db.menuItems
+        .filter((item) => item.isAvailable)
+        .slice(0, 20)
+        .map((item) => {
+          const rest = db.restaurants.find((r) => r.id === item.restaurantId);
           return {
-            id: product.id,
-            name: product.name,
-            restaurant: ref.restaurant,
-            restaurantId: ref.restaurantId,
-            location: parseLocation(ref.location),
-            price: Number(product.price) || 0,
-            rating: Number(product.rating) || 4.0,
-            image: product.image || product.imageUrl || "",
-            imageUrl: product.imageUrl || product.image || "",
-            description: product.description || "",
+            id: item.id,
+            name: item.name,
+            restaurant: rest?.name ?? "Restaurant",
+            restaurantId: item.restaurantId,
+            location: parseLocation(rest?.location),
+            price: Number(item.price) || 0,
+            rating: Number(rest?.avgRating) || 4.0,
+            image: item.imageUrl || "",
+            imageUrl: item.imageUrl || "",
+            description: item.description || "",
+            categoryId: item.categoryId,
+            isFasting: item.isFasting ?? false,
+            prepTimeMins: item.prepTimeMins ?? 15,
+            isAvailable: item.isAvailable ?? true,
+            availabilityReason: item.availabilityReason ?? null,
           };
-        })
-        .filter(Boolean) as FoodItem[];
+        });
 
       set({ popularFoods, isLoading: false });
     } catch (error) {
@@ -214,14 +212,12 @@ export const useRestaurantStore = create<RestaurantState>((set) => ({
         return;
       }
 
-      // ROBUST MENU FETCHING: Checks 3 different possible JSON structures
+      // Fetch menu items from flat db.menuItems array (Prisma-aligned)
       let rawMenu: any[] = [];
       if (Array.isArray(restBase.menu)) {
-        rawMenu = restBase.menu; // Nested inside restaurant
-      } else if (db.menu && !Array.isArray(db.menu)) {
-        rawMenu = (db.menu as any)[id] || []; // Dictionary keyed by ID
-      } else if (Array.isArray(db.menu)) {
-        rawMenu = db.menu.filter((m: any) => m.restaurantId === id); // Flat array
+        rawMenu = restBase.menu; // Nested inside restaurant (legacy)
+      } else {
+        rawMenu = db.menuItems.filter((m) => m.restaurantId === id);
       }
 
       const menuItems: FoodItem[] = rawMenu.map((item) => ({
@@ -231,7 +227,7 @@ export const useRestaurantStore = create<RestaurantState>((set) => ({
         restaurantId: restBase.id,
         location: parseLocation(restBase.location),
         price: Number(item.price) || 0,
-        rating: Number(item.rating) || 4.0,
+        rating: Number(item.rating) || Number(restBase.avgRating) || 4.0,
         image:
           item.image ||
           item.imageUrl ||
@@ -242,6 +238,11 @@ export const useRestaurantStore = create<RestaurantState>((set) => ({
           "https://images.unsplash.com/photo-1541544741938-0af808871cc0?w=200&fit=crop",
         description:
           item.description || "Delicious special from " + restBase.name,
+        categoryId: item.categoryId,
+        isFasting: item.isFasting ?? false,
+        prepTimeMins: item.prepTimeMins ?? 15,
+        isAvailable: item.isAvailable ?? true,
+        availabilityReason: item.availabilityReason ?? null,
       }));
 
       const fullRestaurant: Restaurant = {

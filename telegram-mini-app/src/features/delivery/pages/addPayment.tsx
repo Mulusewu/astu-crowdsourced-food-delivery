@@ -1,37 +1,53 @@
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check, Plus } from "lucide-react";
-import { Header } from "@/components/profile/ProfileShared";
+import { Header } from "@/features/shared/components/ProfileShared";
 import { usePaymentStore } from "@/store/paymentStore";
+import { ROUTES } from "@/routes/routePaths";
 
 const AVAILABLE_BANKS = [
   {
     id: "cbe-birr",
     name: "CBE Birr",
-    logo: "https://combanketh.et/cbe_logo.png",
+    short: "CBE",
   },
   {
     id: "amole",
     name: "Amole",
-    logo: "https://dashenbanksc.com/wp-content/uploads/2021/04/amole-logo.png",
+    short: "AM",
   },
   {
     id: "awash-birr",
     name: "Awash Birr",
-    logo: "https://awashbank.com/wp-content/uploads/2020/11/awash-logo.png",
+    short: "AW",
   },
 ];
 
 export default function AddPayment() {
   const navigate = useNavigate();
   const { paymentMethods, addPaymentMethod } = usePaymentStore();
+  const [selectedBankId, setSelectedBankId] = useState(AVAILABLE_BANKS[0].id);
+  const [accountInfo, setAccountInfo] = useState("");
+  const [accountHolder, setAccountHolder] = useState("");
+  const selectedBank = useMemo(
+    () => AVAILABLE_BANKS.find((bank) => bank.id === selectedBankId) ?? AVAILABLE_BANKS[0],
+    [selectedBankId],
+  );
 
-  const handleAddPayment = (bank: typeof AVAILABLE_BANKS[0]) => {
+  const handleAddPayment = () => {
+    if (!accountInfo.trim() || !accountHolder.trim()) return;
+
+
+
     addPaymentMethod({
-      id: Math.random().toString(36).substr(2, 9),
-      type: bank.name,
-      accountInfo: "Linked Account", // Placeholder as per requirements
+      id: `payment_${Date.now()}`,
+      providerId: selectedBank.id,
+      type: selectedBank.name,
+      accountInfo: accountInfo.trim(),
+      accountHolder: accountHolder.trim(),
+      status: "active",
     });
-    navigate(-1);
+    navigate(ROUTES.DELIVERY.PAYMENT);
   };
 
   return (
@@ -39,7 +55,7 @@ export default function AddPayment() {
       <Header
         title="Add Payment Method"
         showBack
-        onBackClick={() => navigate(-1)}
+        onBackClick={() => navigate(ROUTES.DELIVERY.PAYMENT)}
       />
 
       <div className="px-5">
@@ -50,8 +66,11 @@ export default function AddPayment() {
         <div className="flex-1 space-y-4">
           {AVAILABLE_BANKS.map((bank) => {
             const isAdded = paymentMethods.some(
-              (method) => method.type === bank.name
+
+              (method) => method.providerId === bank.id || method.type === bank.name,
+
             );
+            const isSelected = selectedBankId === bank.id;
 
             if (isAdded) {
               return (
@@ -60,11 +79,12 @@ export default function AddPayment() {
                   className="flex items-center justify-between p-3 rounded-2xl bg-white dark:bg-gray-900 cursor-default shadow-sm border border-gray-50 dark:border-gray-800"
                 >
                   <div className="flex items-center gap-3">
-                    <img
-                      src={bank.logo}
-                      alt={bank.name}
-                      className="h-8 object-contain bg-orange-50/50 p-1 rounded-md"
-                    />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-50 text-sm font-black text-[#F26A1C]">
+                      {bank.short}
+                    </div>
+                    <span className="font-bold text-sm text-gray-900 dark:text-white">
+                      {bank.name}
+                    </span>
                   </div>
                   <div className="w-5 h-5 bg-gray-400 rounded-full flex items-center justify-center">
                     <Check size={12} className="text-white" strokeWidth={3} />
@@ -76,22 +96,65 @@ export default function AddPayment() {
             return (
               <button
                 key={bank.id}
-                onClick={() => handleAddPayment(bank)}
-                className="w-full flex items-center justify-between p-3 rounded-2xl bg-white dark:bg-gray-900 hover:bg-gray-50 active:scale-[0.98] transition-all cursor-pointer shadow-sm border border-gray-50 dark:border-gray-800"
+                type="button"
+                onClick={() => setSelectedBankId(bank.id)}
+                className={`w-full flex items-center justify-between p-3 rounded-2xl bg-white dark:bg-gray-900 hover:bg-gray-50 active:scale-[0.98] transition-all cursor-pointer shadow-sm border ${isSelected
+                    ? "border-[#F26A1C]"
+                    : "border-gray-50 dark:border-gray-800"
+                  }`}
               >
                 <div className="flex items-center gap-3">
-                  <img
-                    src={bank.logo}
-                    alt={bank.name}
-                    className="h-8 object-contain"
-                  />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-50 text-sm font-black text-[#F26A1C]">
+                    {bank.short}
+                  </div>
+                  <span className="font-bold text-sm text-gray-900 dark:text-white">
+                    {bank.name}
+                  </span>
                 </div>
                 <div className="w-5 h-5 bg-[#F26A1C] rounded-full flex items-center justify-center">
-                  <Plus size={14} className="text-white" strokeWidth={3} />
+                  {isSelected ? (
+                    <Check size={14} className="text-white" strokeWidth={3} />
+                  ) : (
+                    <Plus size={14} className="text-white" strokeWidth={3} />
+                  )}
                 </div>
               </button>
             );
           })}
+
+          <div className="rounded-[20px] bg-white p-4 shadow-sm border border-gray-50 dark:border-gray-800 dark:bg-gray-900">
+            <label className="block">
+              <span className="text-[12px] font-bold uppercase tracking-wide text-gray-400">
+                Account Holder
+              </span>
+              <input
+                value={accountHolder}
+                onChange={(e) => setAccountHolder(e.target.value)}
+                placeholder="Enter account holder name"
+                className="mt-2 w-full rounded-2xl border border-gray-200 bg-[#FFF8F4] px-4 py-3 text-sm font-medium text-gray-900 outline-none focus:border-[#F26A1C]"
+              />
+            </label>
+            <label className="mt-4 block">
+              <span className="text-[12px] font-bold uppercase tracking-wide text-gray-400">
+                Account / Phone Number
+              </span>
+              <input
+                value={accountInfo}
+                onChange={(e) => setAccountInfo(e.target.value)}
+                placeholder="Enter linked wallet or bank number"
+                className="mt-2 w-full rounded-2xl border border-gray-200 bg-[#FFF8F4] px-4 py-3 text-sm font-medium text-gray-900 outline-none focus:border-[#F26A1C]"
+              />
+            </label>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleAddPayment}
+            disabled={!accountInfo.trim() || !accountHolder.trim()}
+            className="w-full rounded-[18px] bg-[#F26A1C] py-4 text-sm font-bold text-white shadow-lg shadow-orange-500/20 transition-all disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Save Payment Method
+          </button>
         </div>
       </div>
     </div>

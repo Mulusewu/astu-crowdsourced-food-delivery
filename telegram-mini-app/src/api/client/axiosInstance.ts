@@ -1,9 +1,9 @@
 import axios, {
   AxiosError,
-  AxiosInstance,
-  InternalAxiosRequestConfig,
+  type AxiosInstance,
+  type InternalAxiosRequestConfig,
 } from "axios";
-import { ApiError } from "../types/common.types";
+import type { ApiError } from "../types/common.types";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 

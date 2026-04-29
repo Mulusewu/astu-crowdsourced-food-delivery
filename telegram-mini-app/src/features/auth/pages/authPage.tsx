@@ -4,13 +4,13 @@ import { useAuthStore } from "@/store/auth/authStore";
 import { ROUTES } from "@/routes/routePaths";
 
 function AuthPage() {
-  const { user, activeRole } = useAuthStore();
+  const { user } = useAuthStore();
 
-  if (user && activeRole) {
-    if (activeRole === "delivery") {
+  if (user) {
+    if (user.role === "DELIVERER") {
       return <Navigate to={ROUTES.DELIVERY.DASHBOARD} replace />;
     }
-    if (activeRole === "vendor") {
+    if (user.role === "VENDOR_STAFF") {
       return <Navigate to={ROUTES.VENDOR.DASHBOARD} replace />;
     }
     return <Navigate to={ROUTES.CUSTOMER.HOME} replace />;

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   Loader2,
@@ -45,7 +45,6 @@ interface OTPPageProps {
 
 export default function OTPPage({
   type = "delivery",
-  role = "customer",
   recipientInfo,
   amount,
   orderId,
@@ -58,7 +57,6 @@ export default function OTPPage({
   timerDuration = 60,
 }: OTPPageProps) {
   const navigate = useNavigate();
-  const location = useLocation();
 
   // State
   const [otp, setOtp] = useState(["", "", "", ""]);

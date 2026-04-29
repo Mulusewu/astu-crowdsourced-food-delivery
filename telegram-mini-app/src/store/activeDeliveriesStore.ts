@@ -5,46 +5,26 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 interface ActiveDelivery {
   id: string;
-  orderNumber: string;
-  status:
-    | "assigned"
-    | "picked_up"
-    | "in_transit"
-    | "delivered"
-    | "cancelled"
-    | "failed";
+  shortId: string;
+  status: string;
   priority: boolean;
   createdAt: string;
   estimatedDeliveryTime: string;
   timeRemaining: number;
-  distance: string;
   restaurant: {
     id: string;
     name: string;
     phone: string;
     address: string;
-    landmark?: string;
-    image: string;
+    image: string | null;
   };
   customer: {
     id: string;
     name: string;
     phone: string;
     address: string;
-    landmark?: string;
-    avatar?: string;
   };
-  items: Array<{
-    id: string;
-    name: string;
-    quantity: number;
-    price: number;
-    image?: string;
-  }>;
-  subtotal: number;
-  deliveryFee: number;
   totalAmount: number;
-  paymentMethod: "cash" | "card" | "telegram_stars";
 }
 
 interface ActiveDeliveriesState {
@@ -63,8 +43,10 @@ interface ActiveDeliveriesState {
   updateDeliveryStatus: (deliveryId: string, newStatus: string) => void;
 }
 
+const ACTIVE_STATUSES = new Set(["ASSIGNED", "PICKED_UP", "EN_ROUTE", "ARRIVED"]);
+
 export const useActiveDeliveriesStore = create<ActiveDeliveriesState>(
-  (set, get) => ({
+  (set) => ({
     activeDeliveries: [],
     stats: {
       activeDeliveries: 0,
@@ -78,24 +60,37 @@ export const useActiveDeliveriesStore = create<ActiveDeliveriesState>(
 
     fetchActiveDeliveries: async () => {
       set({ isLoading: true });
-
       await delay(650);
 
-      // Use real data from database.json (active orders that are assigned to delivery person)
-      const deliveries =
-        db.orders.active?.map((order: any) => ({
-          ...order,
+      const activeOrders = db.orders.filter((o) => ACTIVE_STATUSES.has(o.status));
+
+      const deliveries: ActiveDelivery[] = activeOrders.map((order) => {
+        const restaurant = db.restaurants.find((r) => r.id === order.restaurantId);
+        const customer = db.users.find((u) => u.id === order.customerId);
+        return {
+          id: order.id,
+          shortId: order.shortId,
+          status: order.status,
+          priority: false,
+          createdAt: order.createdAt,
+          estimatedDeliveryTime: order.estimatedDeliveryTime ?? "TBD",
           timeRemaining: Math.floor(Math.random() * 40) + 10,
-          restaurant: db.restaurants.find(
-            (r: any) => r.id === order.cafeId,
-          ) || {
-            id: order.cafeId,
-            name: order.cafeName,
-            phone: "+251-911-123-456",
-            address: "Bole Atlas",
-            image: order.cafeImage,
+          restaurant: {
+            id: restaurant?.id ?? order.restaurantId,
+            name: restaurant?.name ?? "Restaurant",
+            phone: restaurant?.phone ?? "",
+            address: restaurant?.location ?? "",
+            image: restaurant?.imageUrl ?? null,
           },
-        })) || [];
+          customer: {
+            id: customer?.id ?? order.customerId,
+            name: customer?.fullName ?? "Customer",
+            phone: customer?.phoneNumber ?? "",
+            address: "Campus",
+          },
+          totalAmount: order.totalAmount,
+        };
+      });
 
       set({
         activeDeliveries: deliveries,
@@ -114,7 +109,7 @@ export const useActiveDeliveriesStore = create<ActiveDeliveriesState>(
       set((state) => ({
         activeDeliveries: state.activeDeliveries.map((delivery) =>
           delivery.id === deliveryId
-            ? { ...delivery, status: newStatus as any }
+            ? { ...delivery, status: newStatus }
             : delivery,
         ),
       }));

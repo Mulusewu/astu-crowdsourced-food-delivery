@@ -9,20 +9,8 @@ import { useOrderStore } from "@/store/orders/orderStore";
 const ORANGE = "#F27420";
 const ORANGE_SOFT = "#FFF0E6";
 
-// ─── types ────────────────────────────────────────────────────────────────────
-type OrderStatus = "delivered" | "cancelled";
-
-interface OrderHistoryItem {
-  id: string;
-  restaurantName: string;
-  orderNumber: string;
-  foodImage: string;
-  foodName: string;
-  quantity: number;
-  priceEtb: number;
-  rating: number | null;
-  status: OrderStatus;
-}
+// Use OrderHistoryItem from orderStore — imported for type safety
+import type { OrderHistoryItem } from "@/store/orders/orderStore";
 
 // ─── StarRating ───────────────────────────────────────────────────────────────
 function StarRating({ rating, max = 5 }: { rating: number; max?: number }) {
@@ -46,15 +34,16 @@ function StarRating({ rating, max = 5 }: { rating: number; max?: number }) {
 }
 
 // ─── StatusBadge ──────────────────────────────────────────────────────────────
-function StatusBadge({ status }: { status: OrderStatus }) {
+function StatusBadge({ status }: { status: OrderHistoryItem["status"] }) {
+  const isGood = status === "DELIVERED" || status === "COMPLETED";
   return (
     <span
       className={cn(
         "inline-flex items-center justify-center rounded-lg px-5 py-2 text-sm font-semibold text-white shadow-sm",
-        status === "delivered" ? "bg-[#28A745]" : "bg-[#DC3545]",
+        isGood ? "bg-[#28A745]" : "bg-[#DC3545]",
       )}
     >
-      {status === "delivered" ? "Delivered" : "Cancelled"}
+      {isGood ? "Delivered" : status === "CANCELLED" ? "Cancelled" : "Disputed"}
     </span>
   );
 }
@@ -64,47 +53,42 @@ function OrderCard({ item }: { item: OrderHistoryItem }) {
   return (
     <article className="overflow-hidden rounded-2xl bg-white shadow-[0_2px_16px_rgba(0,0,0,0.08)] ring-1 ring-gray-100">
       <div className="px-4 pt-4 pb-5">
-        {/* Row 1 — Restaurant name + Order number */}
+        {/* Row 1 — Restaurant name + shortId */}
         <div className="flex items-start justify-between gap-2">
           <h2 className="text-base font-bold text-gray-900 leading-tight">
             {item.restaurantName}
           </h2>
           <span className="shrink-0 text-sm text-gray-400">
-            Order #{item.orderNumber}
+            #{item.shortId}
           </span>
         </div>
 
-        {/* Row 2 — Food image + name/qty + price */}
+        {/* Row 2 — Food image + name + price */}
         <div className="mt-3 flex items-center gap-3">
-          {/* Food image — stacked double card effect like the design */}
           <div className="relative shrink-0">
             <div className="absolute -bottom-1 left-1 h-14 w-14 rounded-xl bg-gray-200/60" />
             <div className="relative h-14 w-14 overflow-hidden rounded-xl border border-gray-100 bg-gray-50 shadow-sm">
               <img
-                src={item.foodImage}
-                alt={item.foodName}
+                src={item.firstItemImageUrl ?? "https://images.unsplash.com/photo-1544025162-831e5088eb7e?w=200"}
+                alt={item.firstItemName}
                 className="h-full w-full object-cover object-center"
               />
             </div>
           </div>
-
-          {/* Name + qty */}
           <div className="min-w-0 flex-1">
             <p className="text-sm font-medium text-gray-800 leading-snug">
-              {item.foodName}
+              {item.firstItemName}
             </p>
-            <p className="mt-0.5 text-xs text-gray-400">{item.quantity} PCS</p>
+            <p className="mt-0.5 text-xs text-gray-400">Delivery: {item.deliveryFee} ETB</p>
           </div>
-
-          {/* Price */}
           <p className="shrink-0 text-base font-bold" style={{ color: ORANGE }}>
-            {item.priceEtb} Birr
+            {item.totalAmount} Birr
           </p>
         </div>
 
-        {/* Row 3 — Stars + Status button */}
+        {/* Row 3 — Stars + Status */}
         <div className="mt-4 flex items-center justify-between gap-2">
-          {item.rating !== null ? <StarRating rating={item.rating} /> : <div />}
+          {item.rating !== null ? <StarRating rating={item.rating ?? 0} /> : <div />}
           <StatusBadge status={item.status} />
         </div>
       </div>

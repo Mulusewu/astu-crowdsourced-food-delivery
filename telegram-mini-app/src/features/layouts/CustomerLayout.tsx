@@ -1,19 +1,22 @@
 import { Outlet, Navigate } from "react-router-dom";
 import { useAuthStore } from "@/store/auth/authStore";
-import { TMAStatusBar } from "../customer/components/layout/TMAStatusBar"; // If you are using this
+import { ROUTES } from "@/routes/routePaths";
+import { getRoleRedirectPath } from "@/types/user.types";
+import { TMAStatusBar } from "../customer/components/layout/TMAStatusBar";
 
 export default function CustomerLayout() {
-  const { user, activeRole } = useAuthStore();
+  const { user, isLoading } = useAuthStore();
 
-  // 1. Authentication Guard
-  if (!user) {
-    return <Navigate to="/" replace />;
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#FDFDFD]">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#F26A1C] border-t-transparent" />
+      </div>
+    );
   }
 
-  // 2. Role Guard
-  if (activeRole !== "customer") {
-    return <Navigate to={`/${activeRole}/dashboard`} replace />;
-  }
+  if (!user) return <Navigate to={ROUTES.AUTH} replace />;
+  if (user.role !== "CUSTOMER") return <Navigate to={getRoleRedirectPath(user.role)} replace />;
 
   return (
     <>

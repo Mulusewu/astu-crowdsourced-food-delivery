@@ -1,25 +1,24 @@
 import { Outlet, Navigate } from "react-router-dom";
 import { useAuthStore } from "@/store/auth/authStore";
-// import { TMAStatusBar } from "@/components/layout/TMAStatusBar"; // Optional: Add if using a custom status bar
+import { ROUTES } from "@/routes/routePaths";
+import { getRoleRedirectPath } from "@/types/user.types";
 
 export default function VendorLayout() {
-  const { user, activeRole } = useAuthStore();
+  const { user, isLoading } = useAuthStore();
 
-  // 1. Authentication Guard
-  if (!user) {
-    return <Navigate to="/" replace />;
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#FDFDFD]">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#F26A1C] border-t-transparent" />
+      </div>
+    );
   }
 
-  // 2. Role Guard
-  if (activeRole !== "vendor") {
-    const dashboardPath = activeRole === "customer" ? "/customer/dashboard" : `/${activeRole}/dashboard`;
-    return <Navigate to={dashboardPath} replace />;
-  }
+  if (!user) return <Navigate to={ROUTES.AUTH} replace />;
+  if (user.role !== "VENDOR_STAFF") return <Navigate to={getRoleRedirectPath(user.role)} replace />;
 
   return (
     <div className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 font-sans relative flex flex-col antialiased">
-      {/* <TMAStatusBar /> */}
-
       <main className="flex-1 pb-28">
         <Outlet />
       </main>

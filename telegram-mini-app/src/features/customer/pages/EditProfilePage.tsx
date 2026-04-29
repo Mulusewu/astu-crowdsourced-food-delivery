@@ -21,7 +21,7 @@ export default function EditProfilePage() {
         <div className="relative">
           <Avatar className="w-24 h-24 border-[3px] border-white dark:border-gray-900 shadow-md">
             <AvatarImage
-              src={user?.avatar || "https://i.pravatar.cc/150?u=gray"}
+              src={user?.avatarUrl || "https://i.pravatar.cc/150?u=gray"}
             />
             <AvatarFallback className="bg-[#F26A1C] text-white text-2xl font-bold">
               G
@@ -32,7 +32,7 @@ export default function EditProfilePage() {
           </button>
         </div>
         <h2 className="text-xl font-black text-gray-900 dark:text-white mt-3">
-          {user?.name || "Gray Johnson"}
+          {user?.fullName || "Gray Johnson"}
         </h2>
         <p className="text-[#F26A1C] text-xs font-bold mt-1 cursor-pointer hover:underline">
           Change Profile Picture
@@ -44,7 +44,7 @@ export default function EditProfilePage() {
           <label className="text-[11px] font-bold text-gray-500 uppercase px-2">
             Name
           </label>
-          <SoftInput defaultValue={user?.name || "Gray Johnson"} />
+          <SoftInput defaultValue={user?.fullName || "Gray Johnson"} />
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-[11px] font-bold text-gray-500 uppercase px-2">

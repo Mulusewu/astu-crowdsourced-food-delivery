@@ -118,48 +118,9 @@ interface CustomerState {
 // Helper to simulate API delay
 const delay = (ms: number = 500) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Default preferences
-const defaultPreferences: CustomerPreferences = {
-  language: "en",
-  notifications: { push: true, email: true, sms: false },
-  theme: "light",
-  defaultSortBy: "rating"
-};
 
-// Helper to normalize payment method
-const normalizePaymentMethod = (method: any): PaymentMethod => {
-  return {
-    id: method.id,
-    type: method.type as "card" | "cash" | "telegram_stars",
-    isDefault: method.isDefault || false,
-    last4: method.last4,
-    brand: method.brand,
-    expiry: method.expiry,
-    expiryMonth: method.expiryMonth,
-    expiryYear: method.expiryYear,
-    balance: method.balance,
-  };
-};
 
-// Helper to normalize address
-const normalizeAddress = (addr: any, isDefault: boolean): Address => {
-  return {
-    id: addr.id,
-    label: addr.label,
-    street: addr.street,
-    city: addr.city,
-    area: addr.area,
-    building: addr.building,
-    floor: addr.floor,
-    apartment: addr.apartment,
-    office: addr.office,
-    room: addr.room,
-    landmark: addr.landmark,
-    latitude: addr.latitude,
-    longitude: addr.longitude,
-    isDefault,
-  };
-};
+
 
 export const useCustomerStore = create<CustomerState>()(
   persist(
@@ -174,67 +135,33 @@ export const useCustomerStore = create<CustomerState>()(
       favoriteFoods: [],
       recentSearches: [],
 
-      fetchUserData: async (userId = "cust_001") => {
+      fetchUserData: async (userId = "") => {
         set({ isLoading: true, error: null });
         try {
           await delay(600);
-          
-          // Find customer in database.json
-          const customer = db.users.customers.find((c: any) => c.id === userId);
-          
+
+          // Flat db.users array (Prisma-aligned) — customers have role "CUSTOMER"
+          const customer = db.users.find((u: any) =>
+            userId ? u.id === userId : u.role === "CUSTOMER"
+          );
+
           if (!customer) {
             throw new Error("Customer not found");
           }
-          
-          // Extract addresses from savedAddresses and defaultAddress
-          const addresses: Address[] = [];
-          
-          // Add default address
-          if (customer.defaultAddress) {
-            addresses.push(normalizeAddress(customer.defaultAddress, true));
-          }
-          
-          // Add saved addresses
-          if (customer.savedAddresses && customer.savedAddresses.length > 0) {
-            addresses.push(...customer.savedAddresses.map((addr: any) => 
-              normalizeAddress(addr, false)
-            ));
-          }
-          
-          // Extract and normalize payment methods
-          const paymentMethods: PaymentMethod[] = (customer.paymentMethods || []).map(normalizePaymentMethod);
-          
-          // Extract favorites from stats
-          const favorites = customer.stats?.favoriteRestaurants || [];
-          const favoriteFoods = customer.stats?.favoriteFoods || [];
-          const recentSearches = customer.stats?.recentSearches || [];
-          
+
           const user: CustomerUser = {
             id: customer.id,
-            name: customer.name,
-            email: customer.email,
-            phone: customer.phone,
-            avatar: customer.avatar,
+            name: (customer as any).fullName ?? (customer as any).name ?? "",
+            email: (customer as any).email ?? "",
+            phone: (customer as any).phoneNumber ?? (customer as any).phone ?? "",
+            avatar: (customer as any).avatarUrl ?? (customer as any).avatar,
             role: "customer",
             createdAt: customer.createdAt,
-            isVerified: customer.isVerified,
-            defaultAddressId: customer.defaultAddress?.id,
-            preferences: customer.preferences ? {
-              language: customer.preferences.language as "am" | "en",
-              notifications: customer.preferences.notifications,
-              theme: customer.preferences.theme as "light" | "dark",
-              defaultSortBy: customer.preferences.defaultSortBy as "rating" | "distance" | "price",
-            } : defaultPreferences,
-            stats: customer.stats,
+            isVerified: (customer as any).isEmailVerified ?? false,
           };
-          
+
           set({
             user,
-            addresses,
-            paymentMethods,
-            favorites,
-            favoriteFoods,
-            recentSearches,
             isLoading: false,
           });
         } catch (error) {

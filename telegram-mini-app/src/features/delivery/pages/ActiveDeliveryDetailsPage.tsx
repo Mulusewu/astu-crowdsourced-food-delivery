@@ -1,198 +1,256 @@
-import { useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Package, MapPin, Phone, MessageSquare, AlertTriangle, CheckCircle2, Truck, Flag } from "lucide-react";
+
+import { useEffect, useMemo } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  ArrowLeft,
+  Clock3,
+  MapPin,
+  Package,
+  Phone,
+  Store,
+  Truck,
+} from "lucide-react";
+
+import { Skeleton } from "@/components/ui/skeleton";
+import { ROUTES, buildRoute } from "@/routes/routePaths";
 import { useOrderStore } from "@/store/orders/orderStore";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+
+const STATUS_OPTIONS = [
+  { value: "PICKED_UP", label: "Picked Up", icon: Truck },
+  { value: "EN_ROUTE", label: "En Route", icon: Truck },
+  { value: "ARRIVED", label: "Arrived", icon: MapPin },
+] as const;
+
+const STATUS_LABELS: Record<string, string> = {
+  ASSIGNED: "Assigned",
+  VENDOR_BEING_PREPARED: "Vendor Preparing",
+  VENDOR_FINISHED: "Vendor Finished",
+  VENDOR_READY_FOR_PICKUP: "Ready for Pickup",
+  PICKED_UP: "Picked Up",
+  EN_ROUTE: "En Route",
+  ARRIVED: "Arrived",
+  RECEIVED: "Received",
+  DELIVERED: "Delivered",
+  CANCELLED: "Cancelled",
+};
+
 
 export default function ActiveDeliveryDetailsPage() {
-  const { deliveryId } = useParams<{ deliveryId: string }>();
+  const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
-  const { currentOrder, fetchOrderById, isLoading, error } = useOrderStore();
+  const {
+    activeOrders,
+    currentOrder,
+    isLoading,
+    fetchActiveOrders,
+    fetchOrderById,
+    updateOrderStatus,
+  } = useOrderStore();
+
+  const order =
+    activeOrders.find((item) => item.id === orderId) ??
+    (currentOrder?.id === orderId ? currentOrder : null);
 
   useEffect(() => {
-    if (deliveryId) {
-      fetchOrderById(deliveryId);
+    if (activeOrders.length === 0) {
+      fetchActiveOrders();
     }
-  }, [deliveryId, fetchOrderById]);
+  }, [activeOrders.length, fetchActiveOrders]);
 
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#FDFDFD]">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (orderId && !order) {
+      fetchOrderById(orderId);
+    }
+  }, [orderId, order, fetchOrderById]);
 
-  if (error || !currentOrder) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-[#FDFDFD] px-5 text-center">
-        <AlertTriangle size={48} className="text-red-500 mb-4" />
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Order Not Found</h2>
-        <p className="text-gray-500 mb-6">We couldn't find the delivery details you're looking for.</p>
-        <Button onClick={() => navigate(-1)} className="rounded-full px-8">
-          Go Back
-        </Button>
-      </div>
-    );
-  }
-
-  const steps = [
-    { id: "picked_up", label: "Picked Up", icon: Package },
-    { id: "in_transit", label: "On Transit", icon: Truck },
-    { id: "delivered", label: "Arrived", icon: Flag },
-  ];
-
-
-
-  const getStepStatus = (index: number) => {
-    // This is simplified logic for the UI tracker
-    const statusMap: Record<string, number> = {
-      "pending": -1,
-      "confirmed": -1,
-      "preparing": -1,
-      "ready": -1,
-      "picked_up": 0,
-      "in_transit": 1,
-      "delivered": 2,
+  const nextActions = useMemo(() => {
+    if (!order) return [];
+    type StatusVal = (typeof STATUS_OPTIONS)[number]["value"];
+    const transitions: Partial<Record<string, StatusVal[]>> = {
+      ASSIGNED: ["PICKED_UP"],
+      VENDOR_READY_FOR_PICKUP: ["PICKED_UP"],
+      PICKED_UP: ["EN_ROUTE"],
+      EN_ROUTE: ["ARRIVED"],
     };
-    
-    const currentIndex = statusMap[currentOrder.status] ?? -1;
-    
-    if (index < currentIndex) return "completed";
-    if (index === currentIndex) return "current";
-    return "upcoming";
-  };
+    const next = transitions[order.status] ?? [];
+    return STATUS_OPTIONS.filter(({ value }) => next.includes(value as StatusVal));
+  }, [order]);
+
+  if (isLoading && !order) {
+    return (
+      <div className="min-h-screen bg-[#FDFDFD] px-5 pt-6">
+        <Skeleton className="h-12 w-full rounded-2xl" />
+        <Skeleton className="mt-6 h-40 w-full rounded-[28px]" />
+        <Skeleton className="mt-6 h-48 w-full rounded-[28px]" />
+
+      </div>
+    );
+  }
+
+  if (!order) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#FDFDFD] px-5">
+        <div className="text-center">
+          <p className="text-base font-medium text-gray-600">Active delivery not found.</p>
+          <button
+            type="button"
+            onClick={() => navigate(ROUTES.DELIVERY.ACTIVE.LIST)}
+            className="mt-4 rounded-full bg-[#F26A1C] px-6 py-3 font-bold text-white"
+          >
+            Back to active deliveries
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col bg-[#FDFDFD] font-sans text-gray-900">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-md px-5 pt-[max(1.5rem,env(safe-area-inset-top))] pb-4 border-b border-gray-100">
-        <div className="flex items-center gap-4">
+    <div className="min-h-screen bg-[#FDFDFD] pb-28 font-sans">
+      <header className="sticky top-0 z-20 bg-white px-5 pb-4 pt-6 shadow-[0_1px_0_rgba(0,0,0,0.06)]">
+        <div className="relative flex items-center justify-center">
           <button
-            onClick={() => navigate(-1)}
-            className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50 text-[#F26A1C] transition hover:bg-orange-100 active:scale-95"
+            type="button"
+            onClick={() => navigate(ROUTES.DELIVERY.ACTIVE.LIST)}
+            className="absolute left-0 flex h-11 w-11 items-center justify-center rounded-2xl bg-[#FFEFE5] text-[#F26A1C] active:scale-95"
+            aria-label="Go back"
           >
-            <ArrowLeft size={20} />
+            <ArrowLeft size={22} strokeWidth={2.5} />
           </button>
-          <div>
-            <h1 className="text-lg font-black text-black">
-              Order #{currentOrder.orderNumber?.replace("ORD-", "") || currentOrder.id.slice(-3)}
-            </h1>
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Delivery Detail Information
+          <div className="text-center">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#F26A1C]">
+              Active Delivery
             </p>
+            <h1 className="text-xl font-black text-gray-900">
+              Order #{order.shortId}
+            </h1>
+
           </div>
         </div>
       </header>
 
-      <main className="flex-1 px-5 py-6 space-y-6">
-        {/* Status Tracker */}
-        <section className="bg-white rounded-[28px] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-gray-100">
-          <h3 className="text-sm font-bold text-gray-400 mb-8 uppercase tracking-widest text-center">Delivery Progress</h3>
-          <div className="relative flex justify-between">
-            {/* Background Line */}
-            <div className="absolute top-5 left-8 right-8 h-0.5 bg-gray-100 -z-0" />
-            
-            {steps.map((step, index) => {
-              const status = getStepStatus(index);
-              const Icon = step.icon;
-              
-              return (
-                <div key={step.id} className="relative z-10 flex flex-col items-center gap-2">
-                  <div className={cn(
-                    "flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-300",
-                    status === "completed" ? "bg-[#F26A1C] border-[#F26A1C] text-white" : 
-                    status === "current" ? "bg-white border-[#F26A1C] text-[#F26A1C] shadow-[0_0_15px_rgba(242,106,28,0.3)]" : 
-                    "bg-white border-gray-200 text-gray-300"
-                  )}>
-                    {status === "completed" ? <CheckCircle2 size={20} /> : <Icon size={20} />}
-                  </div>
-                  <span className={cn(
-                    "text-[10px] font-bold uppercase tracking-tight",
-                    status === "upcoming" ? "text-gray-300" : "text-gray-900"
-                  )}>
-                    {step.label}
-                  </span>
-                </div>
-              );
-            })}
+      <main className="space-y-5 px-5 pt-5">
+        <section className="rounded-[28px] bg-white p-5 shadow-[0_8px_28px_rgba(0,0,0,0.05)]">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2 text-[#F26A1C]">
+                <Store size={18} strokeWidth={2.3} />
+                <span className="text-sm font-bold">{order.restaurant.name}</span>
+              </div>
+              <p className="mt-2 text-xl font-black text-gray-900">
+                {STATUS_LABELS[order.status] ?? order.status}
+              </p>
+            </div>
+            <span className="rounded-full bg-[#FFF0E6] px-3 py-1 text-xs font-bold text-[#F26A1C]">
+              {order.paymentStatus.replace(/_/g, " ")}
+            </span>
+          </div>
+
+          <div className="mt-5 grid grid-cols-2 gap-3">
+            <div className="rounded-2xl bg-[#FFF7F2] p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                ETA
+              </p>
+              <p className="mt-1 text-lg font-black text-gray-900">
+                {order.estimatedDeliveryTime ?? "—"}
+              </p>
+            </div>
           </div>
         </section>
 
-        {/* Customer Information */}
-        <section className="bg-white rounded-[28px] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-gray-100">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="h-12 w-12 rounded-full bg-orange-50 flex items-center justify-center text-[#F26A1C]">
-              <MapPin size={24} />
-            </div>
-            <div className="flex-1">
-              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Destination</h4>
-              <p className="text-[15px] font-bold text-gray-900">{currentOrder.customer.address}</p>
-            </div>
+        <section className="rounded-[28px] bg-white p-5 shadow-[0_8px_28px_rgba(0,0,0,0.05)]">
+          <div className="flex items-center gap-2">
+            <Package size={18} className="text-[#F26A1C]" />
+            <h2 className="text-lg font-black text-gray-900">Delivery Summary</h2>
           </div>
-          
-          <div className="h-[1px] w-full bg-gray-50 mb-6" />
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-600">
-                <MessageSquare size={18} />
-              </div>
-              <div>
-                <p className="text-[13px] font-bold text-gray-900">{currentOrder.customer.name}</p>
-                <p className="text-[11px] font-medium text-gray-500">Customer</p>
-              </div>
-            </div>
-            <a 
-              href={`tel:${currentOrder.customer.phone}`}
-              className="h-12 w-12 rounded-full bg-[#f26a1c] flex items-center justify-center text-white shadow-lg shadow-orange-200 active:scale-95 transition-transform"
-            >
-              <Phone size={20} fill="white" />
-            </a>
-          </div>
-        </section>
 
-        {/* Order Details */}
-        <section className="bg-white rounded-[28px] overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-gray-100">
-          <div className="bg-gray-50/50 px-6 py-4 border-b border-gray-100">
-            <h3 className="text-sm font-bold text-gray-900">Order Summary</h3>
-          </div>
-          <div className="p-6 space-y-4">
-            {currentOrder.items.map((item, index) => (
-              <div key={item.id || index} className="flex items-center justify-between">
-                <div className="flex gap-3 items-center">
-                  <div className="h-10 w-10 rounded-xl bg-gray-100 overflow-hidden">
-                    <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
-                  </div>
-                  <div>
-                    <p className="text-[14px] font-bold text-gray-900">{item.name}</p>
-                    <p className="text-[12px] font-medium text-gray-500">{item.quantity} x {item.price} Birr</p>
-                  </div>
+          <div className="mt-4 space-y-3">
+            {order.items.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center justify-between rounded-2xl border border-gray-100 px-4 py-3"
+              >
+                <div>
+                  <p className="font-bold text-gray-900">{item.name}</p>
+                  <p className="text-sm text-gray-500">{item.quantity} pcs</p>
                 </div>
-                <p className="text-[14px] font-black text-[#F26A1C]">{item.quantity * item.price} Birr</p>
+                <p className="font-bold text-[#F26A1C]">{item.unitPrice * item.quantity} ETB</p>
               </div>
             ))}
-            
-            <div className="h-[1px] w-full bg-gray-100 my-2" />
-            
-            <div className="flex items-center justify-between pt-2">
-              <span className="text-[15px] font-black text-gray-900">Total Payment</span>
-              <span className="text-[18px] font-black text-[#F26A1C]">{currentOrder.totalAmount} Birr</span>
+          </div>
+
+          <div className="mt-5 rounded-2xl bg-[#FFF7F2] p-4">
+            <div className="flex items-start gap-3">
+              <MapPin className="mt-0.5 h-5 w-5 text-[#F26A1C]" />
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  Customer Address
+                </p>
+                <p className="mt-1 font-semibold text-gray-900">{order.customer.deliveryAddress ?? "Address not set"}</p>
+              </div>
+            </div>
+            <div className="mt-4 flex items-center gap-3">
+              <Phone className="h-4 w-4 text-[#F26A1C]" />
+              <span className="font-semibold text-gray-800">{order.customer.phoneNumber || "N/A"}</span>
             </div>
           </div>
+
         </section>
 
-        {/* Action Button */}
-        <section className="pt-4">
-          <Button 
-            variant="outline"
-            onClick={() => navigate(`/delivery/report/${currentOrder.id}`)}
-            className="w-full h-14 rounded-2xl border-[1.5px] border-red-100 bg-white text-red-500 font-bold hover:bg-red-50 hover:text-red-600 transition-all flex gap-2 items-center justify-center"
-          >
-            <AlertTriangle size={20} />
-            Report Issue
-          </Button>
+        <section className="rounded-[28px] bg-white p-5 shadow-[0_8px_28px_rgba(0,0,0,0.05)]">
+          <div className="flex items-center gap-2">
+            <Clock3 size={18} className="text-[#F26A1C]" />
+            <h2 className="text-lg font-black text-gray-900">Next Actions</h2>
+          </div>
+
+          <div className="mt-4 space-y-3">
+            {nextActions.map(({ value, label, icon: Icon }) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => updateOrderStatus(order.id, value)}
+                className="flex w-full items-center justify-between rounded-2xl border border-gray-100 px-4 py-3 text-left transition hover:border-[#F26A1C]/30 active:scale-[0.99]"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="rounded-full bg-[#FFF0E6] p-2 text-[#F26A1C]">
+                    <Icon size={16} />
+                  </div>
+                  <span className="font-semibold text-gray-900">{label}</span>
+                </div>
+                <span className="text-xs font-bold uppercase text-[#F26A1C]">Update</span>
+              </button>
+            ))}
+
+            {order.status === "ARRIVED" && (
+              <button
+                type="button"
+                onClick={() =>
+                  navigate(buildRoute(ROUTES.DELIVERY.DELIVERY_ACTIONS.COMPLETE, { orderId: order.id }))
+                }
+                className="w-full rounded-full bg-[#28A745] py-3.5 text-sm font-bold text-white shadow-[0_8px_18px_rgba(40,167,69,0.24)]"
+              >
+                Complete Delivery
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() =>
+                navigate(buildRoute(ROUTES.DELIVERY.ACTIVE.TRACK, { orderId: order.id }))
+              }
+              className="w-full rounded-full bg-[#F26A1C] py-3.5 text-sm font-bold text-white shadow-[0_8px_18px_rgba(242,106,28,0.24)]"
+            >
+              Open Tracking
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                navigate(buildRoute(ROUTES.DELIVERY.COMMUNICATION.REPORT, { orderId: order.id }))
+              }
+              className="w-full rounded-full border-2 border-[#F26A1C] py-3.5 text-sm font-bold text-[#F26A1C]"
+            >
+              Report Issue
+            </button>
+          </div>
+
         </section>
       </main>
     </div>

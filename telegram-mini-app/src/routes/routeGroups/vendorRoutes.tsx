@@ -1,7 +1,7 @@
 import { lazy } from "react";
 import type { RouteGroup } from "../types/routes.types";
 import { ROUTES } from "../routePaths";
-import { type UserRole, UserRoles } from "@/types/user.types";
+import { UserRoles } from "@/types/user.types";
 
 // Dashboard & Analytics
 const VendorDashboard = lazy(
@@ -10,9 +10,6 @@ const VendorDashboard = lazy(
 // const VendorAnalyticsPage = lazy(
 //   () => import("@/features/vendor/pages/AnalyticsPage"),
 // );
-const VendorEarningsPage = lazy(
-  () => import("@/features/vendor/pages/EarningsPage"),
-);
 // const VendorEarningsDetailsPage = lazy(
 //   () => import("@/features/vendor/pages/EarningsDetailsPage"),
 // );
@@ -183,7 +180,7 @@ export const vendorRoutes: RouteGroup[] = [
   {
     path: ROUTES.VENDOR.DASHBOARD,
     element: <VendorDashboard />,
-    roles: [UserRoles.VENDOR],
+    roles: [UserRoles.VENDOR_STAFF],
   },
   //   {
   //     path: ROUTES.VENDOR.ANALYTICS,

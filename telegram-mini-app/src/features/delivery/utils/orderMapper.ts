@@ -15,28 +15,39 @@ export interface ActiveOrder {
   total: number;
 }
 
+const ACTIVE_STATUSES = new Set(["ASSIGNED", "PICKED_UP", "EN_ROUTE", "ARRIVED"]);
+
 const statusMap: Record<string, string> = {
-  in_transit: "On Transit",
-  pending: "Pending",
-  accepted: "Accepted",
-  picked_up: "Picked Up",
-  delivered: "Delivered",
-  cancelled: "Cancelled",
+  ASSIGNED: "Accepted",
+  PICKED_UP: "Picked Up",
+  EN_ROUTE: "On Transit",
+  ARRIVED: "Arrived",
+  DELIVERED: "Delivered",
+  CANCELLED: "Cancelled",
 };
 
+const menuItemMap = new Map(database.menuItems.map((m) => [m.id, m]));
+
 export const getActiveOrders = (): ActiveOrder[] => {
-  return database.orders.active.map((order: any) => ({
-    id: order.id,
-    orderNo: order.orderNumber?.replace("ORD-", "") || order.id,
-    date: order.createdAt,
-    timeRemaining: order.estimatedDeliveryTime || "30:00",
-    status: statusMap[order.status] || order.status,
-    items: order.items.map((item: any) => ({
-      name: item.name,
-      quantity: `${item.quantity} Pcs`,
-      price: item.total || item.price,
-    })),
-    phone: order.customer?.phone || "N/A",
-    total: order.totalAmount,
-  }));
+  const activeOrders = database.orders.filter((o) => ACTIVE_STATUSES.has(o.status));
+
+  return activeOrders.map((order) => {
+    const customer = database.users.find((u) => u.id === order.customerId);
+    const orderItems = database.orderItems.filter((i) => i.orderId === order.id);
+
+    return {
+      id: order.id,
+      orderNo: order.shortId,
+      date: order.createdAt,
+      timeRemaining: order.estimatedDeliveryTime ?? "30:00",
+      status: statusMap[order.status] ?? order.status,
+      items: orderItems.map((i) => ({
+        name: menuItemMap.get(i.menuId)?.name ?? "Item",
+        quantity: `${i.quantity} Pcs`,
+        price: Number(i.unitPrice) * i.quantity,
+      })),
+      phone: customer?.phoneNumber ?? "N/A",
+      total: Number(order.totalAmount),
+    };
+  });
 };

@@ -1,25 +1,29 @@
 import { Outlet, Navigate } from "react-router-dom";
 import { useAuthStore } from "@/store/auth/authStore";
+import { ROUTES } from "@/routes/routePaths";
+import { getRoleRedirectPath } from "@/types/user.types";
+import DeliveryBottomNav from "@/features/delivery/components/DeliveryBottomNav";
 
 export default function DeliveryLayout() {
-  const { user, activeRole } = useAuthStore();
+  const { user, isLoading } = useAuthStore();
 
-  // 1. Authentication Guard
-  if (!user) {
-    return <Navigate to="/" replace />;
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#FDFDFD]">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#F26A1C] border-t-transparent" />
+      </div>
+    );
   }
 
-  // 2. Role Guard
-  if (activeRole !== "delivery") {
-    const dashboardPath = activeRole === "customer" ? "/customer/dashboard" : `/${activeRole}/dashboard`;
-    return <Navigate to={dashboardPath} replace />;
-  }
+  if (!user) return <Navigate to={ROUTES.AUTH} replace />;
+  if (user.role !== "DELIVERER") return <Navigate to={getRoleRedirectPath(user.role)} replace />;
 
   return (
     <>
       <main className="flex-1 pb-28">
         <Outlet />
       </main>
+      <DeliveryBottomNav />
     </>
   );
 }
