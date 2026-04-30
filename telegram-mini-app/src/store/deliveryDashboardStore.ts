@@ -171,17 +171,22 @@ export const useDeliveryDashboardStore = create<DeliveryDashboardState>()(
         }
       },
 
-      toggleActiveStatus: (navigate) => {
+      toggleActiveStatus: async (navigate) => {
         const { delivererProfile } = get();
         if (!delivererProfile) return;
 
         const willBeOnline = !delivererProfile.isOnline;
+        // Simulate backend API call
+        set({ isLoading: true });
+        await delay(400);
+
         set({
           delivererProfile: {
             ...delivererProfile,
             isOnline: willBeOnline,
             isAvailable: willBeOnline,
           },
+          isLoading: false,
         });
 
         if (!willBeOnline && navigate) {

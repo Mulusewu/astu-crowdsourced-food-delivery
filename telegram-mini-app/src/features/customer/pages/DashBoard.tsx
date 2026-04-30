@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ROUTES, buildRoute } from "@/routes/routePaths";
 import {
   MapPin,
   Search,
@@ -9,20 +10,24 @@ import {
   Headphones,
   SlidersHorizontal,
   ChevronDown,
-  Gift,
-  X,
+  ShoppingCart,
+  X
 } from "lucide-react";
 
 import { useAuthStore } from "@/store/auth/authStore";
 import { useCustomerStore } from "@/store/customer/customerStore";
 import { useCartStore } from "@/store/cart/cartStore";
+import { useSavedItemsStore } from "@/store/customer/savedItemsStore";
 import {
   useRestaurantStore,
   type FoodItem,
   type Restaurant,
 } from "@/store/restaurantStore";
+import { useFilterStore } from "@/store/customer/filterStore";
 
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
+
 
 // --- Main Page Component ---
 export default function CustomerDashboard() {
@@ -42,6 +47,8 @@ export default function CustomerDashboard() {
   >("All");
   const [isLoading, setIsLoading] = useState(true);
 
+  const { items: savedItems, addItem: saveItem, removeItem: unsaveItem } = useSavedItemsStore();
+
   // Role dropdown disabled (single-role model)
   const [showRoleMenu, setShowRoleMenu] = useState(false);
   const hasMultipleRoles = false;
@@ -54,10 +61,40 @@ export default function CustomerDashboard() {
 
   // Advanced Filter Modal State
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  // Filter Modal local states
-  const [selectedPrice, setSelectedPrice] = useState("Any");
-  const [selectedLocation, setSelectedLocation] = useState("Any");
-  const [searchQuery, setSearchQuery] = useState("");
+  
+  // Filter Store logic
+  const {
+    searchQuery,
+    recentSearches,
+    selectedPrice,
+    selectedLocation,
+    setSearchQuery,
+    setSelectedPrice,
+    setSelectedLocation,
+    addRecentSearch,
+    removeRecentSearch,
+    clearFilters
+  } = useFilterStore();
+
+  // Compute filtered items
+  const filteredRestaurants = restaurants.filter((r) => {
+    if (searchQuery && !r.name.toLowerCase().includes(searchQuery.toLowerCase()) && !r.location.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    if (selectedLocation !== "Any" && !r.location.toLowerCase().includes(selectedLocation.replace(" Gate", "").toLowerCase())) return false;
+    return true;
+  });
+
+  const filteredFoods = popularFoods.filter((f) => {
+    if (searchQuery && !f.name.toLowerCase().includes(searchQuery.toLowerCase()) && !f.restaurant.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    if (selectedLocation !== "Any" && !f.location.toLowerCase().includes(selectedLocation.replace(" Gate", "").toLowerCase())) return false;
+    
+    if (selectedPrice !== "Any") {
+      const [minStr, maxStr] = selectedPrice.split("-");
+      const min = parseInt(minStr, 10);
+      const max = parseInt(maxStr, 10);
+      if (f.price < min || f.price > max) return false;
+    }
+    return true;
+  });
 
   useEffect(() => {
     const init = async () => {
@@ -89,7 +126,7 @@ export default function CustomerDashboard() {
             <div
               key={rest.id}
               className="w-[140px] shrink-0 bg-white dark:bg-gray-900 rounded-[16px] shadow-[0_4px_12px_rgba(0,0,0,0.04)] dark:shadow-none dark:border dark:border-gray-800 overflow-hidden active:scale-[0.98] transition-transform cursor-pointer border border-transparent"
-              onClick={() => navigate(`/customer/restaurant/${rest.id}`)}
+              onClick={() => navigate(buildRoute(ROUTES.CUSTOMER.RESTAURANT.DETAILS, { restaurantId: rest.id }))}
             >
               <img
                 src={rest.image}
@@ -124,7 +161,7 @@ export default function CustomerDashboard() {
 
   const FoodCard = ({ food }: { food: FoodItem }) => (
     <div
-      onClick={() => navigate(`/customer/food/${food.id}`)}
+      onClick={() => navigate(buildRoute(ROUTES.CUSTOMER.FOOD.DETAILS, { foodId: food.id }))}
       className="flex bg-white dark:bg-gray-900 rounded-2xl p-2.5 shadow-[0_4px_12px_rgba(0,0,0,0.04)] dark:shadow-none dark:border dark:border-gray-800 mb-3 active:scale-[0.98] transition-transform cursor-pointer"
     >
       <img
@@ -160,20 +197,41 @@ export default function CustomerDashboard() {
         <button
           onClick={(e) => {
             e.stopPropagation();
-            // Favorites logic here
+            const isSaved = savedItems.some((item) => item.id === food.id);
+            if (isSaved) {
+              unsaveItem(food.id);
+            } else {
+              saveItem({
+                id: food.id,
+                name: food.name,
+                location: `${food.restaurant}, ${food.location}`,
+                image: food.image,
+              });
+            }
           }}
           className="text-[#F26A1C] p-1.5 bg-orange-50 dark:bg-orange-900/30 rounded-md active:scale-90 transition-transform"
         >
-          <Bookmark size={16} className="fill-current" />
+          <Bookmark
+            size={16}
+            className={savedItems.some((item) => item.id === food.id) ? "fill-[#F26A1C]" : "text-[#F26A1C]"}
+          />
         </button>
         <button
           onClick={(e) => {
             e.stopPropagation();
             useCartStore.getState().addToCart({
-              ...food,
-              quantity: 1,
+              id: food.id,
+              name: food.name,
+              price: food.price,
+              image: food.image,
+              restaurantId: "dummy-rest-id", // Backend data will have real IDs
               restaurantName: food.restaurant,
-            } as any);
+              quantity: 1,
+            });
+            toast.success("Added to Cart", {
+              description: `${food.name} was added to your cart.`,
+              duration: 2000,
+            });
           }}
           className="text-white bg-[#F26A1C] text-[11px] font-bold px-4 py-1.5 rounded-full hover:bg-[#e05d15] active:scale-95 transition-all shadow-sm"
         >
@@ -220,17 +278,17 @@ export default function CustomerDashboard() {
           </div>
 
           <div className="flex gap-2">
-            <button className="text-[#F26A1C] bg-[#FFF4ED] dark:bg-gray-800 w-[38px] h-[38px] rounded-full flex items-center justify-center active:scale-95 transition-transform">
-              <Gift size={18} strokeWidth={2.5} />
+            <button onClick={() => navigate(ROUTES.CUSTOMER.CART)} className="text-[#F26A1C] bg-[#FFF4ED] dark:bg-gray-800 w-[38px] h-[38px] rounded-full flex items-center justify-center active:scale-95 transition-transform">
+              <ShoppingCart size={18} strokeWidth={2.5} />
             </button>
             <button
-              onClick={() => navigate("/customer/support")}
+              onClick={() => navigate(ROUTES.CUSTOMER.SUPPORT)}
               className="text-[#F26A1C] bg-[#FFF4ED] dark:bg-gray-800 w-[38px] h-[38px] rounded-full flex items-center justify-center active:scale-95 transition-transform"
             >
               <Headphones size={18} strokeWidth={2.5} />
             </button>
             <button
-              onClick={() => navigate("/customer/notifications")}
+              onClick={() => navigate(ROUTES.CUSTOMER.NOTIFICATIONS)}
               className="text-[#F26A1C] bg-[#FFF4ED] dark:bg-gray-800 w-[38px] h-[38px] rounded-full flex items-center justify-center active:scale-95 transition-transform relative"
             >
               <Bell size={18} strokeWidth={2.5} />
@@ -253,6 +311,9 @@ export default function CustomerDashboard() {
               placeholder="Search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') addRecentSearch(searchQuery);
+              }}
               className="w-full bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-full pl-11 pr-4 py-3.5 text-[14px] text-gray-900 dark:text-white font-medium shadow-sm outline-none focus:border-[#F26A1C] focus:ring-1 focus:ring-[#F26A1C] transition-all placeholder:text-gray-400"
             />
           </div>
@@ -280,10 +341,13 @@ export default function CustomerDashboard() {
           </h3>
           <div
             className="relative w-full h-[140px] rounded-[24px] overflow-hidden shadow-md cursor-pointer active:scale-[0.98] transition-transform"
-            onClick={() => navigate("/customer/restaurant/rest_004")}
+            onClick={() => navigate(buildRoute(ROUTES.CUSTOMER.RESTAURANT.DETAILS, { restaurantId: "rest_004" }))}
           >
             <img
-              onClick={() => navigate("/customer/offers/:offerId")}
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(buildRoute(ROUTES.CUSTOMER.FOOD.OFFER_DETAILS, { offerId: "special_combo" }));
+              }}
               src="https://images.unsplash.com/photo-1600891964092-4316b2880328?w=800"
               className="w-full h-full object-cover"
               alt="Promo"
@@ -321,11 +385,10 @@ export default function CustomerDashboard() {
                 key={tab}
                 onClick={() => setActiveTab(tab as any)}
                 className={`whitespace-nowrap px-5 py-2 rounded-[14px] text-[13px] font-bold transition-all shadow-sm border
-              ${
-                activeTab === tab
-                  ? "bg-[#F26A1C] text-white border-[#F26A1C]"
-                  : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
-              }`}
+              ${activeTab === tab
+                    ? "bg-[#F26A1C] text-white border-[#F26A1C]"
+                    : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  }`}
               >
                 {tab}
               </button>
@@ -340,11 +403,13 @@ export default function CustomerDashboard() {
               🔥 Top Restaurants
             </h3>
             <div className="flex gap-4 overflow-x-auto pb-4 pt-1 px-1 -mx-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] mb-2">
-              {restaurants.map((rest) => (
+              {filteredRestaurants.length === 0 ? (
+                <p className="text-sm text-gray-500 py-4 w-full text-center">No restaurants match your filters.</p>
+              ) : filteredRestaurants.map((rest) => (
                 <div
                   key={rest.id}
                   className="w-[150px] shrink-0 bg-white dark:bg-gray-900 rounded-[16px] shadow-[0_4px_12px_rgba(0,0,0,0.04)] dark:shadow-none dark:border dark:border-gray-800 overflow-hidden cursor-pointer active:scale-[0.98] transition-transform"
-                  onClick={() => navigate(`/customer/restaurant/${rest.id}`)}
+                  onClick={() => navigate(buildRoute(ROUTES.CUSTOMER.RESTAURANT.DETAILS, { restaurantId: rest.id }))}
                 >
                   <img
                     src={rest.image}
@@ -381,7 +446,9 @@ export default function CustomerDashboard() {
               🔥 Popular Near You
             </h3>
             <div>
-              {popularFoods.map((food) => (
+              {filteredFoods.length === 0 ? (
+                <p className="text-sm text-gray-500 py-4 w-full text-center">No foods match your filters.</p>
+              ) : filteredFoods.map((food) => (
                 <FoodCard key={food.id} food={food} />
               ))}
             </div>
@@ -465,34 +532,59 @@ export default function CustomerDashboard() {
             {/* Categorized Lists */}
             <LocationGroup
               title="In-Campus"
-              items={restaurants.filter(
+              items={filteredRestaurants.filter(
                 (r) => r.location === "ASTU Campus" || filterBy === "In-Campus",
               )}
             />
             <LocationGroup
               title="Geda Gate"
-              items={restaurants.filter(
+              items={filteredRestaurants.filter(
                 (r) => r.location === "Geda" || filterBy === "Geda",
               )}
             />
             <LocationGroup
               title="Bole Gate"
-              items={restaurants.filter(
+              items={filteredRestaurants.filter(
                 (r) => r.location === "Bole" || filterBy === "Bole",
               )}
             />
             <LocationGroup
               title="Kereyu Gate"
-              items={restaurants.filter(
+              items={filteredRestaurants.filter(
                 (r) => r.location === "Kereyu" || filterBy === "Kereyu",
               )}
             />
             <LocationGroup
               title="Main Gate"
-              items={restaurants.filter(
+              items={filteredRestaurants.filter(
                 (r) => r.location === "Main" || filterBy === "Main",
               )}
             />
+          </div>
+        )}
+
+        {/* TAB CONTENT: FOODS, FAST FOODS, COFFEE */}
+        {(activeTab === "Foods" || activeTab === "Fast Foods" || activeTab === "Coffee") && (
+          <div className="animate-in fade-in duration-300">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-bold text-gray-900 dark:text-white text-[16px]">
+                {activeTab === "Foods" ? "All Foods" : activeTab === "Fast Foods" ? "🍔 Fast Foods" : "☕ Coffee & Drinks"}
+              </h3>
+            </div>
+            <div className="space-y-3">
+              {filteredFoods.length === 0 && (
+                <p className="text-sm text-gray-500 py-4 w-full text-center">No foods match your filters.</p>
+              )}
+              {filteredFoods
+                .filter((food) => {
+                  if (activeTab === "Fast Foods") return food.name.toLowerCase().includes("burger") || food.name.toLowerCase().includes("pizza") || food.name.toLowerCase().includes("fast");
+                  if (activeTab === "Coffee") return food.name.toLowerCase().includes("coffee") || food.name.toLowerCase().includes("macchiato");
+                  return true;
+                })
+                .map((food) => (
+                  <FoodCard key={food.id} food={food} />
+                ))}
+            </div>
           </div>
         )}
       </main>
@@ -519,6 +611,9 @@ export default function CustomerDashboard() {
                   placeholder="Search"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') addRecentSearch(searchQuery);
+                  }}
                   className="flex-1 bg-transparent border-none outline-none px-3 text-sm text-white placeholder:text-white/80"
                   autoFocus
                 />
@@ -550,20 +645,24 @@ export default function CustomerDashboard() {
                   Recent Searches
                 </h3>
                 <div className="flex flex-wrap gap-2">
-                  {[
-                    "Soya Rekey",
-                    "Special Firfir",
-                    "Tegabino",
-                    "Aynet",
-                    "Ertib",
-                    "Oromen",
-                  ].map((tag) => (
+                  {recentSearches.length === 0 && (
+                    <p className="text-xs text-gray-400">No recent searches</p>
+                  )}
+                  {recentSearches.map((tag) => (
                     <span
                       key={tag}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 text-[11px] font-semibold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-900 shadow-sm active:scale-95 transition-transform"
+                      onClick={() => setSearchQuery(tag)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 text-[11px] font-semibold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-900 shadow-sm active:scale-95 transition-transform cursor-pointer"
                     >
                       {tag}{" "}
-                      <X size={12} className="text-gray-400 cursor-pointer" />
+                      <X 
+                        size={12} 
+                        className="text-gray-400 cursor-pointer hover:text-red-500" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeRecentSearch(tag);
+                        }}
+                      />
                     </span>
                   ))}
                 </div>
@@ -587,11 +686,10 @@ export default function CustomerDashboard() {
                     <button
                       key={price}
                       onClick={() => setSelectedPrice(price)}
-                      className={`px-4 py-2 rounded-[10px] text-[12px] font-bold transition-colors active:scale-95 ${
-                        selectedPrice === price
-                          ? "bg-[#F26A1C] text-white shadow-md"
-                          : "bg-[#FFF4ED] dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-orange-100 dark:border-gray-700"
-                      }`}
+                      className={`px-4 py-2 rounded-[10px] text-[12px] font-bold transition-colors active:scale-95 ${selectedPrice === price
+                        ? "bg-[#F26A1C] text-white shadow-md"
+                        : "bg-[#FFF4ED] dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-orange-100 dark:border-gray-700"
+                        }`}
                     >
                       {price}
                     </button>
@@ -617,11 +715,10 @@ export default function CustomerDashboard() {
                     <button
                       key={loc}
                       onClick={() => setSelectedLocation(loc)}
-                      className={`px-4 py-2 rounded-[10px] text-[12px] font-bold transition-colors active:scale-95 ${
-                        selectedLocation === loc
-                          ? "bg-[#F26A1C] text-white shadow-md"
-                          : "bg-[#FFF4ED] dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-orange-100 dark:border-gray-700"
-                      }`}
+                      className={`px-4 py-2 rounded-[10px] text-[12px] font-bold transition-colors active:scale-95 ${selectedLocation === loc
+                        ? "bg-[#F26A1C] text-white shadow-md"
+                        : "bg-[#FFF4ED] dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-orange-100 dark:border-gray-700"
+                        }`}
                     >
                       {loc}
                     </button>
@@ -630,10 +727,19 @@ export default function CustomerDashboard() {
               </div>
 
               {/* Bottom Action Button */}
-              <div className="mt-auto pt-2">
+              <div className="mt-auto pt-2 flex gap-3">
                 <button
-                  onClick={() => setIsFilterModalOpen(false)}
-                  className="w-full bg-[#F26A1C] hover:bg-[#e05d15] text-white rounded-[20px] font-bold text-[15px] py-4 shadow-[0_8px_20px_rgba(242,106,28,0.25)] active:scale-[0.98] transition-transform"
+                  onClick={() => clearFilters()}
+                  className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-[20px] font-bold text-[15px] px-6 py-4 active:scale-[0.98] transition-transform"
+                >
+                  Clear
+                </button>
+                <button
+                  onClick={() => {
+                    addRecentSearch(searchQuery);
+                    setIsFilterModalOpen(false);
+                  }}
+                  className="flex-1 bg-[#F26A1C] hover:bg-[#e05d15] text-white rounded-[20px] font-bold text-[15px] py-4 shadow-[0_8px_20px_rgba(242,106,28,0.25)] active:scale-[0.98] transition-transform"
                 >
                   Apply Changes
                 </button>

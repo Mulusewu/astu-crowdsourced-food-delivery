@@ -542,8 +542,6 @@ export const useOrderStore = create<OrderStore>()(
       partialize: (s) => ({
         selectedCafe: s.selectedCafe,
         secondaryFilter: s.secondaryFilter,
-        activeOrders: s.activeOrders,
-        orderHistory: s.orderHistory,
       }),
     },
   ),

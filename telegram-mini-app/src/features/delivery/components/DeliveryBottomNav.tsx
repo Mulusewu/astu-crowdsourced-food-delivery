@@ -1,99 +1,99 @@
-import { Home, Bookmark, Package, Newspaper, User } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { cn } from "@/lib/utils";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Home, Bookmark, Package, ClipboardList, User } from "lucide-react";
 import { ROUTES } from "@/routes/routePaths";
+import { cn } from "@/lib/utils";
 
-export default function BottomNav() {
+function DeliveryBottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
   const path = location.pathname;
 
   // Robust active state calculation
-  const isHomeActive = path === ROUTES.DELIVERY.DASHBOARD || path === "/delivery";
-  const isSavedActive = path.startsWith(ROUTES.DELIVERY.SAVED);
-  const isHistoryActive = path.startsWith(ROUTES.DELIVERY.HISTORY.LIST);
-  const isProfileActive = path.startsWith("/delivery/profile");
-  const isActiveDeliveries = path.startsWith("/delivery/active");
+  const isActive = (route: string) => path.startsWith(route) || path === route;
+
+  // Whitelist of primary top-level routes where DeliveryBottomNav should be visible
+  const primaryRoutes = [
+    ROUTES.DELIVERY.DASHBOARD,
+    ROUTES.DELIVERY.SAVED,
+    ROUTES.DELIVERY.HISTORY.LIST,
+    ROUTES.DELIVERY.ACTIVE.LIST,
+    ROUTES.DELIVERY.PROFILE,
+  ];
+
+  // Check if current path matches any of the primary routes (exact or base path)
+  const shouldShow = primaryRoutes.some(
+    (route) => path === route || path === `${route}/`,
+  );
+
+  if (!shouldShow) {
+    return null;
+  }
 
   return (
-    <nav className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-md">
-      <div className="relative w-full h-[65px]">
-        {/* Wavy SVG Background (Brand Orange) */}
+    <nav className="fixed bottom-6 left-[100px] right-[100px] z-50 mx-auto max-w-sm">
+      <div className="relative w-full h-[70px]">
+        {/* Wavy SVG Background (Brand Orange Solid) */}
         <svg
           className="absolute inset-0 w-full h-full drop-shadow-[0_8px_16px_rgba(242,106,28,0.3)]"
           viewBox="0 0 375 70"
           preserveAspectRatio="none"
         >
           <path
-            d="M24,0 H132 C145,0 152,38 187.5,38 C223,38 230,0 243,0 H351 C364.25,0 375,10.75 375,24 V46 C375,59.25 364.25,70 351,70 H24 C10.75,70 0,59.25 0,46 V24 C0,10.75 10.75,0 24,0 Z"
+            d="M30,0 H135 C150,0 155,42 187.5,42 C220,42 225,0 240,0 H345 C361.5,0 375,13.5 375,35 V35 C375,56.5 361.5,70 345,70 H30 C13.5,70 0,56.5 0,35 V35 C0,13.5 13.5,0 30,0 Z"
             fill="#F26A1C"
           />
         </svg>
 
         {/* Navigation Items */}
-        <div className="absolute inset-0 flex justify-between items-center px-6">
+        <div className="absolute inset-0 flex items-center justify-around px-1 pt-1">
           <NavIconButton
             icon={Home}
-            isActive={isHomeActive}
+            active={isActive(ROUTES.DELIVERY.DASHBOARD)}
             onClick={() => navigate(ROUTES.DELIVERY.DASHBOARD)}
           />
-
           <NavIconButton
             icon={Bookmark}
-            isActive={isSavedActive}
+            active={isActive(ROUTES.DELIVERY.SAVED)}
             onClick={() => navigate(ROUTES.DELIVERY.SAVED)}
           />
 
-          {/* Invisible spacer for the center button */}
-          <div className="w-[60px]" />
+          {/* Spacer for the center floating button */}
+          <div className="w-10" />
 
           <NavIconButton
-            icon={Newspaper}
-            isActive={isHistoryActive}
+            icon={ClipboardList}
+            active={isActive(ROUTES.DELIVERY.HISTORY.LIST)}
             onClick={() => navigate(ROUTES.DELIVERY.HISTORY.LIST)}
           />
-
-          {/* Profile (Uses the Shared route!) */}
-          <button
+          <NavIconButton
+            icon={User}
+            active={isActive(ROUTES.DELIVERY.PROFILE)}
             onClick={() => navigate(ROUTES.DELIVERY.PROFILE)}
-            className="relative flex items-center justify-center p-1 transition-transform active:scale-95"
+          />
+        </div>
+
+        {/* Floating Center Action Button (Active Deliveries) */}
+        <div className="absolute left-1/2 top-[-28px] z-20 -translate-x-1/2">
+          <button
+            type="button"
+            onClick={() => navigate(ROUTES.DELIVERY.ACTIVE.LIST)}
+            className="relative flex h-[66px] w-[66px] items-center justify-center rounded-full bg-white shadow-xl transition-transform active:scale-90"
           >
             <div
               className={cn(
-                "flex items-center justify-center rounded-full border-[2.5px] transition-colors p-1",
-                isProfileActive
-                  ? "border-white bg-white/20"
-                  : "border-white/80",
+                "flex h-[54px] w-[54px] items-center justify-center rounded-full border-[2.5px] border-[#F26A1C] bg-white transition-all",
+                isActive(ROUTES.DELIVERY.ACTIVE.LIST) && "bg-orange-50",
               )}
             >
-              <User
-                size={20}
-                className={cn(
-                  "transition-colors",
-                  isProfileActive
-                    ? "fill-white text-white"
-                    : "fill-white/80 text-white/80",
-                )}
-              />
-            </div>
-          </button>
-        </div>
-
-        {/* Floating Center Action Button (Active Orders) */}
-        <div className="absolute top-[-24px] left-1/2 -translate-x-1/2 z-20">
-          <button
-            onClick={() => navigate(ROUTES.DELIVERY.ACTIVE.LIST)}
-            className="flex h-[64px] w-[64px] items-center justify-center rounded-full bg-white shadow-[0_4px_12px_rgba(0,0,0,0.15)] transition-transform active:scale-95"
-          >
-            <div className="flex h-[48px] w-[48px] items-center justify-center rounded-full border-[2px] border-[#F26A1C] bg-orange-50">
               <Package
-                size={24}
-                className={cn(
-                  "text-[#F26A1C] transition-transform duration-300",
-                  isActiveDeliveries
-                    ? "scale-110 fill-[#F26A1C]/20"
-                    : "scale-100",
-                )}
+                size={30}
+                className="text-[#F26A1C]"
+                strokeWidth={2.5}
+                fill={
+                  isActive(ROUTES.DELIVERY.ACTIVE.LIST)
+                    ? "currentColor"
+                    : "none"
+                }
               />
             </div>
           </button>
@@ -105,30 +105,35 @@ export default function BottomNav() {
 
 function NavIconButton({
   icon: Icon,
-  isActive,
+  active,
   onClick,
 }: {
   icon: React.ElementType;
-  isActive: boolean;
+  active: boolean;
   onClick: () => void;
 }) {
   return (
     <button
       onClick={onClick}
-      className="relative flex flex-col items-center justify-center p-2 transition-transform active:scale-95"
+      className={cn(
+        "relative flex h-[52px] w-[52px] items-center justify-center transition-all duration-300 active:scale-95",
+        active
+          ? "bg-white rounded-full shadow-md scale-105"
+          : "bg-transparent scale-100",
+      )}
     >
       <Icon
-        size={26}
+        size={24}
+        strokeWidth={2.5}
         className={cn(
           "transition-all duration-300",
-          isActive
-            ? "fill-white text-white drop-shadow-md"
-            : "fill-white/80 text-white/80",
+          active
+            ? "text-[#F26A1C] fill-[#F26A1C]"
+            : "text-white fill-none opacity-80",
         )}
       />
-      {isActive && (
-        <span className="absolute -bottom-1 h-1 w-1 rounded-full bg-white" />
-      )}
     </button>
   );
 }
+
+export default DeliveryBottomNav;

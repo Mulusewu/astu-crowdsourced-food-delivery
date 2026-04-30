@@ -74,6 +74,10 @@ const DeliveryProfilePage = lazy(
   () => import("../../features/delivery/pages/ProfilePage"),
 );
 
+const DeliveryEditProfilePage = lazy(
+  () => import("../../features/delivery/pages/EditProfilePage"),
+);
+
 // ================= DELIVERY ACTIONS =================
 const AcceptDeliveryPage = lazy(
   () => import("../../features/delivery/pages/AcceptDeliveryPage"),
@@ -135,5 +139,6 @@ export const deliveryRoutes: RouteGroup[] = [
 
   // ================= PROFILE & SETTINGS =================
   { path: ROUTES.DELIVERY.PROFILE, element: <DeliveryProfilePage />, roles: [DELIVERER] },
+  { path: ROUTES.DELIVERY.EDIT_PROFILE, element: <DeliveryEditProfilePage />, roles: [DELIVERER] },
   { path: ROUTES.DELIVERY.COMMUNICATION.REPORT, element: <ReportIssuePage />, roles: [DELIVERER] },
 ];

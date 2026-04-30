@@ -169,13 +169,20 @@ export default function AvailableDeliveryDetailsPage() {
 
           {/* Breakdown Rows */}
           <div className="mb-6">
-            <SummaryRow label="Sub Total" value={`${subtotal} ETB`} />
-            <SummaryRow label="Delivery Fee" value={`${order.deliveryFee} ETB`} />
+            <SummaryRow label="Food Price" value={`${order.foodPrice} ETB`} />
+            <SummaryRow label="Delivery Fee (Your Earning)" value={`${order.deliveryFee} ETB`} />
+            {order.tip > 0 && (
+              <SummaryRow label="Tip" value={`${order.tip} ETB`} />
+            )}
             <SummaryRow label="Pickup Location" value={order.restaurant.location} />
             <SummaryRow
               label="Ready At"
               value={order.estimatedReadyAt ? new Date(order.estimatedReadyAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}
             />
+            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800 flex justify-between items-center">
+              <span className="text-[15px] font-black text-gray-900 dark:text-white">Customer Total</span>
+              <span className="text-[16px] font-black text-[#F26A1C]">{order.totalAmount} ETB</span>
+            </div>
           </div>
 
           {/* Action Buttons */}

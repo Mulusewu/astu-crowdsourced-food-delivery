@@ -40,6 +40,7 @@ export const ROUTES = {
     CART: "/customer/cart",
     CHECKOUT: "/customer/checkout",
     CHECKOUT_SUCCESS: "/customer/checkout/success/:orderId",
+    HISTORY: "/customer/history",
     ORDERS: {
       LIST: "/customer/orders",
       DETAILS: "/customer/orders/:orderId",
@@ -235,6 +236,7 @@ export const ROUTES = {
 
     // Profile & Settings
     PROFILE: "/delivery/profile",
+    EDIT_PROFILE: "/delivery/profile/edit",
     DOCUMENTS: "/delivery/documents",
     SETTINGS: "/delivery/settings",
     NOTIFICATIONS: "/delivery/notifications",

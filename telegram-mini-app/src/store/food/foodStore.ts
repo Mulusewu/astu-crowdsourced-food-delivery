@@ -19,6 +19,7 @@ export interface FoodDetails {
   calories?: number;
   isAvailable: boolean;
   isPopular: boolean;
+  isFasting?: boolean;
   category?: string;
   categoryName?: string;
   spicyLevel?: string;
@@ -92,6 +93,13 @@ export const useFoodStore = create<FoodState>((set) => ({
         throw new Error("Food item not found");
       }
 
+      // Helper to find category name from category ID
+      const getCategoryName = (categoryId?: string): string | undefined => {
+        if (!categoryId) return undefined;
+        const category = db.categories.find(c => c.id === categoryId);
+        return category?.name;
+      };
+
       // Build the food details object
       const foodDetails: FoodDetails = {
         id: foundFood.id,
@@ -103,17 +111,18 @@ export const useFoodStore = create<FoodState>((set) => ({
         discount: foundFood.discountPrice 
           ? Math.round(((foundFood.price - foundFood.discountPrice) / foundFood.price) * 100)
           : foundFood.discount,
-        image: foundFood.image,
+        image: foundFood.imageUrl || foundFood.image,
         restaurantId: foundRestaurantId,
         restaurantName: getRestaurantName(foundRestaurantId),
         rating: foundFood.rating || getRestaurantRating(foundRestaurantId),
         totalReviews: foundFood.totalReviews || getRestaurantReviews(foundRestaurantId),
-        preparationTime: foundFood.preparationTime || 15,
+        preparationTime: foundFood.prepTimeMins || foundFood.preparationTime || 15,
         calories: foundFood.calories,
         isAvailable: foundFood.isAvailable !== false,
         isPopular: foundFood.isPopular || false,
-        category: foundFood.category,
-        categoryName: foundFood.categoryName,
+        isFasting: foundFood.isFasting || false,
+        category: foundFood.category || foundFood.categoryId,
+        categoryName: getCategoryName(foundFood.categoryId) || foundFood.categoryName,
         spicyLevel: foundFood.spicyLevel,
         serves: foundFood.serves,
         options: foundFood.options,

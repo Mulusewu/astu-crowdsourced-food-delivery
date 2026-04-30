@@ -9,7 +9,7 @@ import { useAuthStore } from "@/store/auth/authStore";
 import CustomerLayout from "@/features/layouts/CustomerLayout";
 import DeliveryLayout from "@/features/layouts/DeliveryLayout";
 import VendorLayout from "@/features/layouts/VendorLayout";
-import AppLayout from "@/components/layout/AppLayout";
+// import AppLayout from "@/components/layout/AppLayout";
 
 // Import Route Groups
 import { authRoutes } from "./routeGroups/authRoutes";
@@ -52,40 +52,28 @@ export default function AppRoutes() {
         ))}
 
         {/* ====================== AUTHENTICATED ZONE ====================== */}
-        <Route element={<AppLayout />}>
-          {/* ====================== CUSTOMER ZONE ====================== */}
-          <Route element={<CustomerLayout />}>
-            {customerRoutes.map((route) => (
-              <Route
-                key={route.path}
-                path={route.path}
-                element={route.element}
-              />
-            ))}
-          </Route>
-
-          {/* ====================== DELIVERY ROUTES ====================== */}
-          <Route element={<DeliveryLayout />}>
-            {deliveryRoutes.map((route) => (
-              <Route
-                key={route.path}
-                path={route.path}
-                element={route.element}
-              />
-            ))}
-          </Route>
-
-          {/* ====================== VENDOR ROUTES ====================== */}
-          <Route element={<VendorLayout />}>
-            {vendorRoutes.map((route) => (
-              <Route
-                key={route.path}
-                path={route.path}
-                element={route.element}
-              />
-            ))}
-          </Route>
+        {/* <Route element={<AppLayout />}> */}
+        {/* ====================== CUSTOMER ZONE ====================== */}
+        <Route element={<CustomerLayout />}>
+          {customerRoutes.map((route) => (
+            <Route key={route.path} path={route.path} element={route.element} />
+          ))}
         </Route>
+
+        {/* ====================== DELIVERY ROUTES ====================== */}
+        <Route element={<DeliveryLayout />}>
+          {deliveryRoutes.map((route) => (
+            <Route key={route.path} path={route.path} element={route.element} />
+          ))}
+        </Route>
+
+        {/* ====================== VENDOR ROUTES ====================== */}
+        <Route element={<VendorLayout />}>
+          {vendorRoutes.map((route) => (
+            <Route key={route.path} path={route.path} element={route.element} />
+          ))}
+        </Route>
+        {/* </Route> */}
 
         {/* ====================== FALLBACK ROUTES ====================== */}
         <Route path="*" element={<FallbackRoute />} />

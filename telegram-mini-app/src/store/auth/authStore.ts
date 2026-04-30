@@ -2,8 +2,20 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import db from "@/data/database.json";
-import type { User, UserRole } from "@/types/user.types";
+import type { User, UserRole, CustomerProfile, DelivererProfile } from "@/types/user.types";
 import { getRoleRedirectPath } from "@/types/user.types";
+
+export interface UpdateProfileData {
+  // User-level fields
+  fullName?: string;
+  phoneNumber?: string | null;
+  email?: string | null;
+  astuEmail?: string | null;
+  avatarUrl?: string | null;
+  // Nested profile patches
+  customerProfile?: Partial<CustomerProfile>;
+  delivererProfile?: Partial<DelivererProfile>;
+}
 
 interface SignupData {
   fullName: string;
@@ -27,6 +39,7 @@ interface AuthState {
   signin: (data: SigninData, navigate?: (path: string) => void) => Promise<void>;
   logout: () => void;
   updatePassword: (oldPw: string, newPw: string) => Promise<void>;
+  updateProfile: (data: UpdateProfileData) => Promise<void>;
   clearError: () => void;
 }
 
@@ -124,6 +137,34 @@ export const useAuthStore = create<AuthState>()(
           set({ isLoading: false });
         } catch (e) {
           set({ isLoading: false, error: "Failed to update password." });
+          throw e;
+        }
+      },
+
+      updateProfile: async (data) => {
+        set({ isLoading: true, error: null });
+        try {
+          await delay(600);
+          const { customerProfile: cpPatch, delivererProfile: dpPatch, ...userFields } = data;
+          set((s) => {
+            if (!s.user) return { isLoading: false };
+            return {
+              user: {
+                ...s.user,
+                ...userFields,
+                updatedAt: new Date().toISOString(),
+                ...(cpPatch && s.user.customerProfile
+                  ? { customerProfile: { ...s.user.customerProfile, ...cpPatch } }
+                  : {}),
+                ...(dpPatch && s.user.delivererProfile
+                  ? { delivererProfile: { ...s.user.delivererProfile, ...dpPatch } }
+                  : {}),
+              },
+              isLoading: false,
+            };
+          });
+        } catch (e) {
+          set({ isLoading: false, error: "Failed to update profile." });
           throw e;
         }
       },

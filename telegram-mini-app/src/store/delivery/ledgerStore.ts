@@ -23,7 +23,7 @@ interface LedgerState {
   requestWithdrawal: (amount: number, method: string) => Promise<void>;
 }
 
-export const useLedgerStore = create<LedgerState>((set, get) => ({
+export const useLedgerStore = create<LedgerState>((set) => ({
   entries: [],
   isLoading: false,
   error: null,

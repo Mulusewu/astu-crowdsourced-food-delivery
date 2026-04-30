@@ -6,20 +6,19 @@ import {
   Phone,
   Mail,
   MapPin,
-  CreditCard,
-  BookOpen,
+  Wallet,
   CheckCircle,
   Info,
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth/authStore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Header, SoftInput, ActionButton } from "../components/profileShared";
+import { Header, SoftInput, ActionButton } from "@/features/shared/components/ProfileShared";
 import { ROUTES } from "@/routes/routePaths";
 
-const PAYMENT_METHODS = [
-  { id: "card", label: "Card" },
+const PAYOUT_PROVIDERS = [
   { id: "telebirr", label: "Telebirr" },
   { id: "cbe", label: "CBE Birr" },
+  { id: "awash", label: "Awash Birr" },
   { id: "amole", label: "Amole" },
 ];
 
@@ -32,20 +31,20 @@ function ReadOnlyField({ label, value }: { label: string; value: string }) {
   );
 }
 
-export default function CustomerEditProfilePage() {
+export default function DeliveryEditProfilePage() {
   const navigate = useNavigate();
   const { user, updateProfile, isLoading } = useAuthStore();
-  const cp = user?.customerProfile;
+  const dp = user?.delivererProfile;
 
   // User-level fields
   const [fullName, setFullName] = useState(user?.fullName ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
-  const [astuEmail, setAstuEmail] = useState(user?.astuEmail ?? "");
   const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber ?? "");
 
-  // CustomerProfile fields
-  const [defaultLocation, setDefaultLocation] = useState(cp?.defaultLocation ?? "");
-  const [preferredPayment, setPreferredPayment] = useState(cp?.prefferedPaymentMethod ?? "card");
+  // DelivererProfile fields
+  const [currentLocation, setCurrentLocation] = useState(dp?.currentLocation ?? "");
+  const [payoutProvider, setPayoutProvider] = useState(dp?.payoutProvider ?? "telebirr");
+  const [payoutAccount, setPayoutAccount] = useState(dp?.payoutAccount ?? "");
 
   const [success, setSuccess] = useState(false);
 
@@ -55,15 +54,15 @@ export default function CustomerEditProfilePage() {
       await updateProfile({
         fullName: fullName.trim(),
         email: email.trim() || null,
-        astuEmail: astuEmail.trim() || null,
         phoneNumber: phoneNumber.trim() || null,
-        customerProfile: {
-          defaultLocation: defaultLocation.trim() || null,
-          prefferedPaymentMethod: preferredPayment || null,
+        delivererProfile: {
+          currentLocation: currentLocation.trim() || null,
+          payoutProvider: payoutProvider || null,
+          payoutAccount: payoutAccount.trim() || null,
         },
       });
       setSuccess(true);
-      setTimeout(() => navigate(ROUTES.CUSTOMER.PROFILE), 1200);
+      setTimeout(() => navigate(ROUTES.DELIVERY.PROFILE), 1200);
     } catch {
       // error stored in authStore.error
     }
@@ -83,16 +82,16 @@ export default function CustomerEditProfilePage() {
 
   return (
     <div className="bg-[#FDFDFD] dark:bg-gray-950 font-sans flex flex-col pb-10">
-      <Header title="Edit Profile" showBack />
+      <Header title="Edit Profile" showBack onBackClick={() => navigate(ROUTES.DELIVERY.PROFILE)} />
 
       {/* Avatar */}
-      <div className="flex flex-col items-center mt-4 mb-6 px-5">
+      <div className="flex flex-col items-center mt-4 mb-6">
         <div className="relative">
           <div className="absolute inset-0 bg-[#F26A1C] rounded-full scale-105" />
           <Avatar className="relative w-24 h-24 border-[3px] border-white dark:border-gray-900 shadow-md">
             <AvatarImage src={user?.avatarUrl || undefined} className="object-cover" />
             <AvatarFallback className="bg-[#F26A1C] text-white text-2xl font-bold">
-              {user?.fullName?.[0] ?? "C"}
+              {user?.fullName?.[0] ?? "D"}
             </AvatarFallback>
           </Avatar>
           <button className="absolute bottom-0 right-0 bg-[#F26A1C] p-2 rounded-full text-white border-2 border-white dark:border-gray-900 shadow-sm active:scale-95 transition-transform">
@@ -110,7 +109,6 @@ export default function CustomerEditProfilePage() {
           <p className="text-[11px] font-black uppercase tracking-widest text-[#F26A1C]">
             Personal Information
           </p>
-
           <div className="flex flex-col gap-1">
             <label className="text-[11px] font-bold text-gray-500 uppercase px-1 flex items-center gap-1">
               <User size={10} /> Full Name
@@ -121,19 +119,6 @@ export default function CustomerEditProfilePage() {
               placeholder="Your full name"
             />
           </div>
-
-          <div className="flex flex-col gap-1">
-            <label className="text-[11px] font-bold text-gray-500 uppercase px-1 flex items-center gap-1">
-              <Phone size={10} /> Phone Number
-            </label>
-            <SoftInput
-              value={phoneNumber}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPhoneNumber(e.target.value)}
-              type="tel"
-              placeholder="+251 9XX XXX XXX"
-            />
-          </div>
-
           <div className="flex flex-col gap-1">
             <label className="text-[11px] font-bold text-gray-500 uppercase px-1 flex items-center gap-1">
               <Mail size={10} /> Email
@@ -145,64 +130,73 @@ export default function CustomerEditProfilePage() {
               placeholder="your@email.com"
             />
           </div>
-
           <div className="flex flex-col gap-1">
             <label className="text-[11px] font-bold text-gray-500 uppercase px-1 flex items-center gap-1">
-              <BookOpen size={10} /> ASTU Email
-              <span className="text-[9px] font-normal text-gray-400 normal-case ml-1">(optional – for ASTU students)</span>
+              <Phone size={10} /> Phone Number
             </label>
             <SoftInput
-              value={astuEmail}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAstuEmail(e.target.value)}
-              type="email"
-              placeholder="your.name@astu.edu.et"
+              value={phoneNumber}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPhoneNumber(e.target.value)}
+              type="tel"
+              placeholder="+251 9XX XXX XXX"
             />
           </div>
         </div>
 
-        {/* ─── Preferences ─── */}
+        {/* ─── Delivery Settings ─── */}
         <div className="bg-white dark:bg-gray-900 rounded-[24px] shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:border dark:border-gray-800 p-4 space-y-4">
           <p className="text-[11px] font-black uppercase tracking-widest text-[#F26A1C]">
-            Preferences
+            Delivery Settings
           </p>
-
           <div className="flex flex-col gap-1">
             <label className="text-[11px] font-bold text-gray-500 uppercase px-1 flex items-center gap-1">
-              <MapPin size={10} /> Default Delivery Location
+              <MapPin size={10} /> Current Location
             </label>
             <SoftInput
-              value={defaultLocation}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDefaultLocation(e.target.value)}
-              placeholder="e.g. Bole Atlas, Addis Ababa"
+              value={currentLocation}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCurrentLocation(e.target.value)}
+              placeholder="e.g. Bole, Addis Ababa"
             />
           </div>
 
-          {/* Preferred Payment Method */}
+          {/* Payout Provider */}
           <div className="flex flex-col gap-2">
             <label className="text-[11px] font-bold text-gray-500 uppercase px-1 flex items-center gap-1">
-              <CreditCard size={10} /> Preferred Payment Method
+              <Wallet size={10} /> Payout Provider
             </label>
             <div className="grid grid-cols-2 gap-2">
-              {PAYMENT_METHODS.map((pm) => (
+              {PAYOUT_PROVIDERS.map((p) => (
                 <button
-                  key={pm.id}
+                  key={p.id}
                   type="button"
-                  onClick={() => setPreferredPayment(pm.id)}
+                  onClick={() => setPayoutProvider(p.id)}
                   className={`py-3 rounded-[16px] text-[13px] font-bold transition-all active:scale-[0.98] border ${
-                    preferredPayment === pm.id
+                    payoutProvider === p.id
                       ? "bg-[#FFF1E8] border-[#F26A1C] text-[#F26A1C]"
                       : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-500"
                   }`}
                 >
-                  {pm.label}
+                  {p.label}
                 </button>
               ))}
             </div>
           </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] font-bold text-gray-500 uppercase px-1">
+              Payout Account Number / Phone
+            </label>
+            <SoftInput
+              value={payoutAccount}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPayoutAccount(e.target.value)}
+              placeholder="e.g. +251912345678 or 1000123456"
+              type="tel"
+            />
+          </div>
         </div>
 
-        {/* ─── Read-only Account Stats ─── */}
-        {cp && (
+        {/* ─── Read-only Stats ─── */}
+        {dp && (
           <div className="bg-white dark:bg-gray-900 rounded-[24px] shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:border dark:border-gray-800 p-4 space-y-3">
             <div className="flex items-center gap-2 mb-1">
               <p className="text-[11px] font-black uppercase tracking-widest text-gray-400">
@@ -211,15 +205,15 @@ export default function CustomerEditProfilePage() {
               <Info size={12} className="text-gray-400" />
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <ReadOnlyField label="Total Orders" value={String(cp.totalOrders)} />
-              <ReadOnlyField label="Rating" value={cp.rating.toFixed(1) + " ★"} />
+              <ReadOnlyField label="Total Deliveries" value={String(dp.totalDeliveries)} />
+              <ReadOnlyField label="Rating" value={dp.rating.toFixed(1) + " ★"} />
               <ReadOnlyField
-                label="Saved Restaurants"
-                value={String(cp.bookmarkRestaurants?.length ?? 0)}
+                label="Total Earnings"
+                value={"ETB " + dp.totalEarnings.toLocaleString()}
               />
               <ReadOnlyField
-                label="Saved Meals"
-                value={String(cp.bookmarkMeals?.length ?? 0)}
+                label="Verification"
+                value={dp.verificationStatus}
               />
             </div>
             <p className="text-[11px] text-gray-400 px-1">

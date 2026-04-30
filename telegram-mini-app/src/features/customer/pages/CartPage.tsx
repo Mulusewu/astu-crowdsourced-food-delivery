@@ -33,7 +33,7 @@ export default function CartPage() {
   const discount = useCartStore((state) => state.getDiscountAmount());
 
   useEffect(() => {
-    if (user?.role !== "CUSTOMER") {
+    if (user?.activeMode !== "CUSTOMER") {
       navigate("/", { replace: true });
     }
   }, [user, navigate]);
@@ -57,7 +57,7 @@ export default function CartPage() {
     }
   }, [cartItems, selectedItemForMod]);
 
-  if (user?.role !== "CUSTOMER") {
+  if (user?.activeMode !== "CUSTOMER") {
     return null;
   }
 

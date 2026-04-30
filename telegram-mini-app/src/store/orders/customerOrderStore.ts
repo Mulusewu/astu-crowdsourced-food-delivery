@@ -87,7 +87,6 @@ interface CustomerOrderState {
   orders: CustomerOrder[];
   isLoading: boolean;
   error: string | null;
-
   fetchCustomerOrders: () => Promise<void>;
   getOrderById: (id: string) => CustomerOrder | undefined;
   placeOrder: (params: {
@@ -101,6 +100,9 @@ interface CustomerOrderState {
     totalAmount: number;
     deliveryAddress: string;
   }) => Promise<CustomerOrder>;
+  updateOrderStatus: (orderId: string, status: OrderStatus) => Promise<void>;
+  cancelOrder: (orderId: string) => Promise<void>;
+  confirmPayment: (orderId: string) => Promise<void>;
   clearError: () => void;
 }
 
@@ -198,9 +200,6 @@ export const useCustomerOrderStore = create<CustomerOrderState>()(
         try {
           await delay(500);
           const { user } = useAuthStore.getState();
-          // In the schema: Order.customerId = CustomerProfile.id
-          // But in database.json: Order.customerId = User.id (for simplicity)
-          // We try both: match by user.id or by customerProfile.id
           const userId = user?.id ?? "";
           const customerProfileId =
             (db.customerProfiles as any[]).find((cp: any) => cp.userId === userId)?.id ?? "";
@@ -269,6 +268,79 @@ export const useCustomerOrderStore = create<CustomerOrderState>()(
           set({ error: e instanceof Error ? e.message : "Failed to place order", isLoading: false });
           throw e;
         }
+      },
+
+      updateOrderStatus: async (orderId, status) => {
+        set((s) => ({
+          orders: s.orders.map((o) => {
+            if (o.id === orderId) {
+              const now = new Date().toISOString();
+              // Simulate deliverer assignment if transitioning to ASSIGNED
+              let deliverer = o.deliverer;
+              if (status === "ASSIGNED" && !deliverer) {
+                deliverer = {
+                  name: "Biruk Wondimu",
+                  phone: "+251914567890",
+                  avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Biruk",
+                  rating: 4.8,
+                };
+              }
+              return {
+                ...o,
+                status,
+                deliverer,
+                updatedAt: now,
+                statusHistory: [
+                  ...o.statusHistory,
+                  { oldStatus: o.status, newStatus: status, createdAt: now },
+                ],
+              };
+            }
+            return o;
+          }),
+        }));
+      },
+
+      confirmPayment: async (orderId) => {
+        set((s) => ({
+          orders: s.orders.map((o) => {
+            if (o.id === orderId) {
+              const now = new Date().toISOString();
+              return {
+                ...o,
+                status: "PAYMENT_RECEIVED",
+                paymentStatus: "CAPTURED",
+                updatedAt: now,
+                statusHistory: [
+                  ...o.statusHistory,
+                  { oldStatus: o.status, newStatus: "PAYMENT_RECEIVED", createdAt: now },
+                ],
+              };
+            }
+            return o;
+          }),
+        }));
+      },
+
+      cancelOrder: async (orderId) => {
+        set((s) => ({
+          orders: s.orders.map((o) => {
+            if (o.id === orderId) {
+              const now = new Date().toISOString();
+              return {
+                ...o,
+                status: "CANCELLED",
+                paymentStatus: o.paymentStatus === "CAPTURED" ? "REFUNDED" : o.paymentStatus,
+                updatedAt: now,
+                statusHistory: [
+                  ...o.statusHistory,
+                  { oldStatus: o.status, newStatus: "CANCELLED", createdAt: now },
+                ],
+              };
+            }
+            return o;
+          }),
+        }));
       },
 
       clearError: () => set({ error: null }),

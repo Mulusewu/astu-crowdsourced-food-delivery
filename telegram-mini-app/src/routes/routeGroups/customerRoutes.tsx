@@ -237,7 +237,7 @@ export const customerRoutes: RouteGroup[] = [
     roles: [UserRoles.CUSTOMER],
   },
   {
-    path: ROUTES.CUSTOMER.ORDERS.HISTORY,
+    path: ROUTES.CUSTOMER.HISTORY,
     element: <OrderHistoryPage />,
     roles: [UserRoles.CUSTOMER],
   },

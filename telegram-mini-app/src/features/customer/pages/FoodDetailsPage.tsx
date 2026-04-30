@@ -11,6 +11,7 @@ import {
   Tag,
   Flame,
   AlertCircle,
+  Leaf,
 } from "lucide-react";
 import { useFoodStore } from "@/store/food/foodStore";
 import { useCartStore } from "@/store/cart/cartStore";
@@ -19,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 export default function FoodDetailsPage() {
-  const { id } = useParams<{ id: string }>();
+  const { foodId } = useParams<{ foodId: string }>();
   const navigate = useNavigate();
 
   // Stores
@@ -33,14 +34,14 @@ export default function FoodDetailsPage() {
   const [specialInstructions, setSpecialInstructions] = useState("");
 
   // Universal check: Is this ID in our savedItems array?
-  const isFavorite = id ? savedItems.some((item) => item.id === id) : false;
+  const isFavorite = foodId ? savedItems.some((item) => item.id === foodId) : false;
 
   useEffect(() => {
-    if (id) {
-      fetchFoodDetails(id);
+    if (foodId) {
+      fetchFoodDetails(foodId);
     }
     return () => clearCurrentFood();
-  }, [id, fetchFoodDetails, clearCurrentFood]);
+  }, [foodId, fetchFoodDetails, clearCurrentFood]);
 
   const handleDecrease = () => {
     if (quantity > 1) setQuantity((prev) => prev - 1);
@@ -51,10 +52,10 @@ export default function FoodDetailsPage() {
   };
 
   const handleBookmark = () => {
-    if (!id || !currentFood) return;
+    if (!foodId || !currentFood) return;
 
     if (isFavorite) {
-      removeItem(id);
+      removeItem(foodId);
     } else {
       addItem({
         id: currentFood.id,
@@ -149,7 +150,7 @@ export default function FoodDetailsPage() {
       {/* 1. HERO IMAGE & FLOATING HEADER */}
       <div className="relative h-[280px] w-full">
         <img
-          src={currentFood.image}
+          src={currentFood.image.replace("w=200", "w=800")}
           alt={currentFood.name}
           className="w-full h-full object-cover"
         />
@@ -163,13 +164,18 @@ export default function FoodDetailsPage() {
           </div>
         )}
 
-        {currentFood.isPopular && (
-          <div className="absolute top-20 left-4 z-10">
-            <Badge className="bg-primary/90 text-white border-0 px-3 py-1.5 text-sm font-bold">
+        <div className="absolute top-20 left-4 z-10 flex flex-col gap-2">
+          {currentFood.isPopular && (
+            <Badge className="bg-primary/90 text-white border-0 px-3 py-1.5 text-sm font-bold shadow-lg">
               <Flame size={14} className="mr-1" /> Popular
             </Badge>
-          </div>
-        )}
+          )}
+          {currentFood.isFasting && (
+            <Badge className="bg-green-600/90 text-white border-0 px-3 py-1.5 text-sm font-bold shadow-lg">
+              <Leaf size={14} className="mr-1" /> Fasting
+            </Badge>
+          )}
+        </div>
 
         <div className="absolute top-0 left-0 right-0 px-4 pt-4 pb-2 flex justify-between items-center z-10">
           <button
@@ -203,9 +209,14 @@ export default function FoodDetailsPage() {
           <h2 className="text-2xl font-bold text-foreground tracking-tight mb-1">
             {currentFood.name}
           </h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground font-medium">
             {currentFood.restaurantName}
           </p>
+          {currentFood.categoryName && (
+            <Badge variant="secondary" className="mt-2 text-[10px] font-bold uppercase tracking-wider bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-none">
+              {currentFood.categoryName}
+            </Badge>
+          )}
         </div>
 
         <div className="w-16 h-[2px] bg-primary/30 mb-5" />
