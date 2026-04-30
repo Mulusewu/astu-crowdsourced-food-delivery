@@ -8,7 +8,6 @@ import {
   Search,
   SlidersHorizontal,
   LogOut,
-  Settings,
   Package,
   ChevronDown,
 } from "lucide-react";
@@ -19,6 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useDeliveryDashboardStore } from "@/store/deliveryDashboardStore";
 import { useAuthStore } from "@/store/auth/authStore";
+import { useSavedItemsStore } from "@/store/savedItemsStore";
 
 function firstName(fullName: string) {
   return fullName.split(/\s+/)[0] ?? fullName;
@@ -39,9 +39,9 @@ export default function DeliveryDashboard() {
     isLoading,
     fetchDashboardData,
     toggleActiveStatus,
-    toggleBookmark,
   } = useDeliveryDashboardStore();
-  const { logout } = useAuthStore();
+  const { user, logout } = useAuthStore();
+  const { toggleItem, isSaved } = useSavedItemsStore();
 
   // Local UI-only states
   const [locationValue, setLocationValue] = useState("all");
@@ -59,7 +59,7 @@ export default function DeliveryDashboard() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen flex-col bg-white">
+      <div className="flex min-h-screen flex-col bg-white animate-in fade-in duration-500">
         <div className="sticky top-0 z-10 bg-white px-4 pb-3 pt-4">
           <div className="flex items-start justify-between">
             <div className="space-y-2">
@@ -88,18 +88,18 @@ export default function DeliveryDashboard() {
     );
   }
 
-  const name = deliveryPerson?.name ?? "";
+  const name = user?.name || deliveryPerson?.name || "";
   const online = deliveryPerson?.isActive ?? false;
 
   const filteredCafes =
     locationValue === "all"
       ? cafes
       : cafes.filter((cafe) =>
-          cafe.location.toLowerCase().includes(locationValue.toLowerCase()),
-        );
+        cafe.location.toLowerCase().includes(locationValue.toLowerCase()),
+      );
 
   return (
-    <>
+    <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
       <header className="sticky top-0 z-20 bg-white px-4 pb-3 pt-4 shadow-[0_1px_0_rgba(0,0,0,0.06)]">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -122,9 +122,9 @@ export default function DeliveryDashboard() {
               className="relative z-[101] flex h-11 w-11 items-center justify-center rounded-full bg-primary text-lg font-semibold text-white shadow-sm transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               aria-label="Account menu"
             >
-              {deliveryPerson?.avatar ? (
+              {user?.avatar || deliveryPerson?.avatar ? (
                 <img
-                  src={deliveryPerson.avatar}
+                  src={user?.avatar || deliveryPerson?.avatar}
                   alt=""
                   className="h-full w-full rounded-full object-cover"
                 />
@@ -137,7 +137,7 @@ export default function DeliveryDashboard() {
                 <div className="border-b border-gray-100 px-4 py-3">
                   <p className="text-sm font-medium text-gray-900">{name}</p>
                   <p className="text-xs text-gray-500">
-                    {deliveryPerson?.email}
+                    {user?.email || deliveryPerson?.email}
                   </p>
                 </div>
                 <button
@@ -150,16 +150,7 @@ export default function DeliveryDashboard() {
                 >
                   <User size={16} /> View Profile
                 </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    navigate(ROUTES.DELIVERY.SETTINGS);
-                    setShowProfileMenu(false);
-                  }}
-                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors"
-                >
-                  <Settings size={16} /> Settings
-                </button>
+
                 <button
                   type="button"
                   onClick={() => {
@@ -232,7 +223,7 @@ export default function DeliveryDashboard() {
             {isLocationOpen && (
               <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-[140px] rounded-xl border border-gray-100 bg-white shadow-xl animate-in fade-in zoom-in-95 duration-150">
                 <div className="flex flex-col p-1.5">
-                  {["All Locations", "Bole Gate", "Gedagate", "Main Gate"].map(
+                  {["All Locations", "Bole Gate", "Geda gate", "Main Gate"].map(
                     (loc) => {
                       const val = loc === "All Locations" ? "all" : loc;
                       const isSelected = locationValue === val;
@@ -368,16 +359,21 @@ export default function DeliveryDashboard() {
                   />
                   <button
                     type="button"
-                    onClick={() => toggleBookmark(cafe.id)}
+                    onClick={() => toggleItem({
+                      id: cafe.id,
+                      name: cafe.name,
+                      location: cafe.location,
+                      image: cafe.image
+                    })}
                     className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white shadow-md transition hover:bg-primary/90"
                     aria-label={
-                      cafe.isBookmarked ? "Remove bookmark" : "Bookmark"
+                      isSaved(cafe.id) ? "Remove bookmark" : "Bookmark"
                     }
                   >
                     <Bookmark
                       className={cn(
                         "h-5 w-5",
-                        cafe.isBookmarked
+                        isSaved(cafe.id)
                           ? "fill-white text-white"
                           : "text-white",
                       )}
@@ -409,7 +405,7 @@ export default function DeliveryDashboard() {
                   <Button
                     type="button"
                     size="sm"
-                    onClick={() => navigate(ROUTES.DELIVERY.AVAILABLE.LIST)}
+                    onClick={() => navigate(`${ROUTES.DELIVERY.AVAILABLE.LIST}?cafe=${cafe.id}`)}
                     className="mt-3 h-9 w-25 rounded-full bg-primary text-xs font-semibold text-white hover:bg-primary/90"
                   >
                     View orders
@@ -420,6 +416,6 @@ export default function DeliveryDashboard() {
           </div>
         </section>
       </main>
-    </>
+    </div>
   );
 }

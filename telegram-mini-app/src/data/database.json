@@ -9,7 +9,6 @@
     "totalCategories": 15,
     "lastUpdated": "2025-01-15T00:00:00Z"
   },
-
   "deliveryDashboard": {
     "deliveryPerson": {
       "id": "1",
@@ -59,7 +58,7 @@
     ],
     "cafes": [
       {
-        "id": "1",
+        "id": "rest_004",
         "name": "Helen Cafe",
         "description": "Coffee • Breakfast • Local favorites",
         "image": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800",
@@ -71,11 +70,14 @@
         "acceptsCash": true,
         "acceptsCard": true,
         "minimumOrder": 50,
-        "cuisine": ["Coffee", "Breakfast"],
+        "cuisine": [
+          "Coffee",
+          "Breakfast"
+        ],
         "activeOrders": 3
       },
       {
-        "id": "2",
+        "id": "rest_002",
         "name": "Yod Abyssinia",
         "description": "Traditional Ethiopian • Live music",
         "image": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800",
@@ -87,11 +89,13 @@
         "acceptsCash": true,
         "acceptsCard": false,
         "minimumOrder": 100,
-        "cuisine": ["Ethiopian"],
+        "cuisine": [
+          "Ethiopian"
+        ],
         "activeOrders": 5
       },
       {
-        "id": "3",
+        "id": "rest_001",
         "name": "Kaldi's Coffee",
         "description": "Coffee • Pastries",
         "image": "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800",
@@ -103,12 +107,13 @@
         "acceptsCash": true,
         "acceptsCard": true,
         "minimumOrder": 30,
-        "cuisine": ["Coffee"],
+        "cuisine": [
+          "Coffee"
+        ],
         "activeOrders": 2
       }
     ]
   },
-
   "users": {
     "customers": [
       {
@@ -118,7 +123,9 @@
         "password": "customer1234",
         "phone": "+251911123456",
         "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Abebe",
-        "roles": ["customer"],
+        "roles": [
+          "customer"
+        ],
         "activeRole": "customer",
         "createdAt": "2024-01-15T08:30:00Z",
         "isVerified": true,
@@ -198,7 +205,12 @@
             "rest_005",
             "rest_008"
           ],
-          "favoriteFoods": ["prod_001", "prod_101", "prod_201", "prod_301"],
+          "favoriteFoods": [
+            "prod_001",
+            "prod_101",
+            "prod_201",
+            "prod_301"
+          ],
           "recentSearches": [
             "coffee",
             "ethiopian food",
@@ -215,7 +227,9 @@
         "password": "customer1234",
         "phone": "+251912987654",
         "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Sara",
-        "roles": ["customer"],
+        "roles": [
+          "customer"
+        ],
         "activeRole": "customer",
         "createdAt": "2024-02-10T14:20:00Z",
         "isVerified": true,
@@ -274,9 +288,23 @@
           "totalOrders": 18,
           "totalSpent": 14200,
           "averageRating": 4.9,
-          "favoriteRestaurants": ["rest_002", "rest_004", "rest_007"],
-          "favoriteFoods": ["prod_102", "prod_202", "prod_302", "prod_401"],
-          "recentSearches": ["vegetarian", "ethiopian", "vegan", "salad"]
+          "favoriteRestaurants": [
+            "rest_002",
+            "rest_004",
+            "rest_007"
+          ],
+          "favoriteFoods": [
+            "prod_102",
+            "prod_202",
+            "prod_302",
+            "prod_401"
+          ],
+          "recentSearches": [
+            "vegetarian",
+            "ethiopian",
+            "vegan",
+            "salad"
+          ]
         }
       }
     ],
@@ -289,7 +317,9 @@
         "password": "vendor1234",
         "phone": "+251911789012",
         "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Tigist",
-        "roles": ["vendor"],
+        "roles": [
+          "vendor"
+        ],
         "activeRole": "vendor",
         "createdAt": "2023-12-01T09:00:00Z",
         "isVerified": true,
@@ -324,7 +354,9 @@
         "password": "vendor1234",
         "phone": "+251913456789",
         "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Dawit",
-        "roles": ["vendor"],
+        "roles": [
+          "vendor"
+        ],
         "activeRole": "vendor",
         "createdAt": "2023-11-15T10:30:00Z",
         "isVerified": true,
@@ -355,12 +387,14 @@
     "delivery": [
       {
         "id": "del_001",
-        "name": "Biruk Wondimu",
-        "email": "biruk.w@example.com",
+        "name": "Nati Wondimu",
+        "email": "nati.w@example.com",
         "password": "delivery1234",
         "phone": "+251914567890",
         "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Biruk",
-        "roles": ["delivery"],
+        "roles": [
+          "delivery"
+        ],
         "activeRole": "delivery",
         "createdAt": "2024-01-20T11:00:00Z",
         "isVerified": true,
@@ -403,7 +437,11 @@
         "password": "multi1234",
         "phone": "+251911999888",
         "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Multi",
-        "roles": ["customer", "vendor", "delivery"],
+        "roles": [
+          "customer",
+          "vendor",
+          "delivery"
+        ],
         "activeRole": "customer",
         "createdAt": "2024-06-01T10:00:00Z",
         "isVerified": true,
@@ -428,7 +466,12 @@
       "name": "Kaldi's Coffee",
       "description": "ቡና ቤት | Coffee Shop • Traditional coffee • Pastries",
       "shortDescription": "Ethiopia's finest coffee since 1957",
-      "cuisine": ["Coffee", "Pastries", "Traditional", "Breakfast"],
+      "cuisine": [
+        "Coffee",
+        "Pastries",
+        "Traditional",
+        "Breakfast"
+      ],
       "image": "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=500",
       "coverImage": "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=1200",
       "logo": "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=200",
@@ -520,7 +563,12 @@
           "validUntil": "2024-12-31"
         }
       ],
-      "deliveryZones": ["Bole", "CMC", "Kazanchis", "Ayat"],
+      "deliveryZones": [
+        "Bole",
+        "CMC",
+        "Kazanchis",
+        "Ayat"
+      ],
       "estimatedDeliveryTime": {
         "min": 15,
         "max": 25
@@ -533,7 +581,12 @@
       "name": "Yod Abyssinia",
       "description": "ባህላዊ ምግብ | Traditional Ethiopian • Live music • Cultural food",
       "shortDescription": "Experience authentic Ethiopian cuisine",
-      "cuisine": ["Ethiopian", "Traditional", "Vegetarian", "Vegan"],
+      "cuisine": [
+        "Ethiopian",
+        "Traditional",
+        "Vegetarian",
+        "Vegan"
+      ],
       "image": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500",
       "coverImage": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200",
       "logo": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=200",
@@ -610,7 +663,12 @@
           "validUntil": "2024-12-31"
         }
       ],
-      "deliveryZones": ["Bole", "Kazanchis", "Megenagna", "CMC"],
+      "deliveryZones": [
+        "Bole",
+        "Kazanchis",
+        "Megenagna",
+        "CMC"
+      ],
       "estimatedDeliveryTime": {
         "min": 25,
         "max": 35
@@ -623,7 +681,12 @@
       "name": "Tomoca Coffee",
       "description": "ቡና ቤት | Iconic Coffee • Italian style • Roastery",
       "shortDescription": "Addis Ababa's oldest coffee shop since 1953",
-      "cuisine": ["Coffee", "Italian", "Pastries", "Breakfast"],
+      "cuisine": [
+        "Coffee",
+        "Italian",
+        "Pastries",
+        "Breakfast"
+      ],
       "image": "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=500",
       "coverImage": "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=1200",
       "logo": "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=200",
@@ -684,7 +747,11 @@
         }
       ],
       "offers": [],
-      "deliveryZones": ["Bole", "CMC", "Kazanchis"],
+      "deliveryZones": [
+        "Bole",
+        "CMC",
+        "Kazanchis"
+      ],
       "estimatedDeliveryTime": {
         "min": 12,
         "max": 20
@@ -697,7 +764,10 @@
       "name": "Helen",
       "description": "ባህላዊ ምግብ | Traditional Ethiopian • Cultural food",
       "shortDescription": "Authentic traditional dishes",
-      "cuisine": ["Traditional", "Ethiopian"],
+      "cuisine": [
+        "Traditional",
+        "Ethiopian"
+      ],
       "image": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500",
       "coverImage": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200",
       "logo": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=200",
@@ -749,7 +819,9 @@
         }
       ],
       "offers": [],
-      "deliveryZones": ["Bole"],
+      "deliveryZones": [
+        "Bole"
+      ],
       "estimatedDeliveryTime": {
         "min": 15,
         "max": 25
@@ -762,7 +834,11 @@
       "name": "Mami",
       "description": "ፋስት ፉድ | Fast Food • Burgers • Pizza",
       "shortDescription": "Quick and tasty fast food",
-      "cuisine": ["Fast Food", "Burgers", "Pizza"],
+      "cuisine": [
+        "Fast Food",
+        "Burgers",
+        "Pizza"
+      ],
       "image": "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=500",
       "coverImage": "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=1200",
       "logo": "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=200",
@@ -813,7 +889,9 @@
         }
       ],
       "offers": [],
-      "deliveryZones": ["Geda"],
+      "deliveryZones": [
+        "Geda"
+      ],
       "estimatedDeliveryTime": {
         "min": 15,
         "max": 25
@@ -826,7 +904,9 @@
       "name": "Etu",
       "description": "ቡና ቤት | Coffee Shop • Specialty coffee",
       "shortDescription": "Premium coffee experience",
-      "cuisine": ["Coffee"],
+      "cuisine": [
+        "Coffee"
+      ],
       "image": "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=500",
       "coverImage": "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=1200",
       "logo": "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=200",
@@ -878,7 +958,9 @@
         }
       ],
       "offers": [],
-      "deliveryZones": ["Geda"],
+      "deliveryZones": [
+        "Geda"
+      ],
       "estimatedDeliveryTime": {
         "min": 10,
         "max": 20
@@ -891,7 +973,9 @@
       "name": "Barch",
       "description": "ፋስት ፉድ | Fast Food • Local favorites",
       "shortDescription": "Delicious fast food options",
-      "cuisine": ["Fast Food"],
+      "cuisine": [
+        "Fast Food"
+      ],
       "image": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500",
       "coverImage": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200",
       "logo": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=200",
@@ -942,7 +1026,9 @@
         }
       ],
       "offers": [],
-      "deliveryZones": ["Bole"],
+      "deliveryZones": [
+        "Bole"
+      ],
       "estimatedDeliveryTime": {
         "min": 20,
         "max": 30
@@ -955,7 +1041,10 @@
       "name": "Mesi",
       "description": "ባህላዊ ምግብ | Traditional Ethiopian • Campus favorite",
       "shortDescription": "Traditional food for students",
-      "cuisine": ["Traditional", "Ethiopian"],
+      "cuisine": [
+        "Traditional",
+        "Ethiopian"
+      ],
       "image": "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=500",
       "coverImage": "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=1200",
       "logo": "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=200",
@@ -1007,7 +1096,9 @@
         }
       ],
       "offers": [],
-      "deliveryZones": ["ASTU Campus"],
+      "deliveryZones": [
+        "ASTU Campus"
+      ],
       "estimatedDeliveryTime": {
         "min": 5,
         "max": 15
@@ -1037,17 +1128,35 @@
           {
             "name": "Size",
             "choices": [
-              { "name": "Small", "price": 0 },
-              { "name": "Medium", "price": 5 },
-              { "name": "Large", "price": 10 }
+              {
+                "name": "Small",
+                "price": 0
+              },
+              {
+                "name": "Medium",
+                "price": 5
+              },
+              {
+                "name": "Large",
+                "price": 10
+              }
             ]
           },
           {
             "name": "Milk Type",
             "choices": [
-              { "name": "Whole Milk", "price": 0 },
-              { "name": "Oat Milk", "price": 10 },
-              { "name": "Almond Milk", "price": 15 }
+              {
+                "name": "Whole Milk",
+                "price": 0
+              },
+              {
+                "name": "Oat Milk",
+                "price": 10
+              },
+              {
+                "name": "Almond Milk",
+                "price": 15
+              }
             ]
           }
         ]
@@ -1064,7 +1173,7 @@
         "isPopular": true,
         "preparationTime": 30,
         "serves": 4,
-        "rating": 5.0,
+        "rating": 5,
         "totalReviews": 89,
         "ordersCount": 120
       },
@@ -1339,6 +1448,75 @@
         "isBookmarked": true,
         "priority": true,
         "specialInstructions": "Extra spicy for doro wat"
+      },
+      {
+        "id": "ord_helen_0",
+        "orderNumber": "ORD-HLN-17774696419490",
+        "cafeId": "rest_004",
+        "cafeName": "Helen Cafe",
+        "customer": {
+          "id": "cust_000",
+          "name": "Student 0",
+          "phone": "+251911111110",
+          "address": "Dorm 0"
+        },
+        "totalAmount": 150,
+        "status": "pending",
+        "items": [
+          {
+            "id": "item_0",
+            "name": "Special Item 0",
+            "price": 150,
+            "quantity": 1,
+            "image": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&h=200&fit=crop"
+          }
+        ]
+      },
+      {
+        "id": "ord_helen_1",
+        "orderNumber": "ORD-HLN-17774696419491",
+        "cafeId": "rest_004",
+        "cafeName": "Helen Cafe",
+        "customer": {
+          "id": "cust_001",
+          "name": "Student 1",
+          "phone": "+251911111111",
+          "address": "Dorm 1"
+        },
+        "totalAmount": 200,
+        "status": "pending",
+        "items": [
+          {
+            "id": "item_1",
+            "name": "Special Item 1",
+            "price": 200,
+            "quantity": 1,
+            "image": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&h=200&fit=crop"
+          }
+        ]
+      },
+      {
+        "id": "ord_helen_2",
+        "orderNumber": "ORD-HLN-17774696419492",
+        "cafeId": "rest_004",
+        "cafeName": "Helen Cafe",
+        "customer": {
+          "id": "cust_002",
+          "name": "Student 2",
+          "phone": "+251911111112",
+          "address": "Dorm 2"
+        },
+        "totalAmount": 250,
+        "status": "pending",
+        "items": [
+          {
+            "id": "item_2",
+            "name": "Special Item 2",
+            "price": 250,
+            "quantity": 1,
+            "image": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&h=200&fit=crop"
+          }
+        ]
       }
     ],
     "active": [
@@ -1426,9 +1604,21 @@
         "deliveries": 8,
         "amount": 850,
         "breakdown": [
-          { "orderId": "ord_003", "amount": 75, "time": "11:30" },
-          { "orderId": "ord_006", "amount": 110, "time": "10:15" },
-          { "orderId": "ord_007", "amount": 95, "time": "09:00" }
+          {
+            "orderId": "ord_003",
+            "amount": 75,
+            "time": "11:30"
+          },
+          {
+            "orderId": "ord_006",
+            "amount": 110,
+            "time": "10:15"
+          },
+          {
+            "orderId": "ord_007",
+            "amount": 95,
+            "time": "09:00"
+          }
         ]
       },
       "weekly": {
@@ -1454,7 +1644,9 @@
       "type": "order_update",
       "title": "Order Update",
       "message": "Your order from Kaldi's Coffee has been confirmed",
-      "data": { "orderId": "ord_001" },
+      "data": {
+        "orderId": "ord_001"
+      },
       "isRead": false,
       "createdAt": "2024-04-04T09:35:00Z"
     },
@@ -1464,7 +1656,9 @@
       "type": "promotion",
       "title": "Special Offer",
       "message": "Get 20% off on your next order over ETB 200",
-      "data": { "promoCode": "WELCOME20" },
+      "data": {
+        "promoCode": "WELCOME20"
+      },
       "isRead": false,
       "createdAt": "2024-04-04T08:00:00Z"
     }
@@ -1515,29 +1709,85 @@
         "orders": 345,
         "trend": "+15%"
       },
-      { "id": "prod_101", "name": "Doro Wat", "orders": 567, "trend": "+22%" },
-      { "id": "prod_201", "name": "Espresso", "orders": 890, "trend": "+8%" },
-      { "id": "prod_301", "name": "Beyaynet", "orders": 678, "trend": "+18%" }
+      {
+        "id": "prod_101",
+        "name": "Doro Wat",
+        "orders": 567,
+        "trend": "+22%"
+      },
+      {
+        "id": "prod_201",
+        "name": "Espresso",
+        "orders": 890,
+        "trend": "+8%"
+      },
+      {
+        "id": "prod_301",
+        "name": "Beyaynet",
+        "orders": 678,
+        "trend": "+18%"
+      }
     ],
     "mostOrdered": [
-      { "id": "prod_201", "name": "Espresso", "count": 890 },
-      { "id": "prod_301", "name": "Beyaynet", "count": 678 },
-      { "id": "prod_101", "name": "Doro Wat", "count": 567 },
-      { "id": "prod_202", "name": "Cappuccino", "count": 567 },
-      { "id": "prod_001", "name": "Ethiopian Macchiato", "count": 345 }
+      {
+        "id": "prod_201",
+        "name": "Espresso",
+        "count": 890
+      },
+      {
+        "id": "prod_301",
+        "name": "Beyaynet",
+        "count": 678
+      },
+      {
+        "id": "prod_101",
+        "name": "Doro Wat",
+        "count": 567
+      },
+      {
+        "id": "prod_202",
+        "name": "Cappuccino",
+        "count": 567
+      },
+      {
+        "id": "prod_001",
+        "name": "Ethiopian Macchiato",
+        "count": 345
+      }
     ]
   },
   "customerAnalytics": {
     "peakOrderTimes": [
-      { "hour": "12:00-13:00", "orders": 245 },
-      { "hour": "18:00-20:00", "orders": 389 },
-      { "hour": "08:00-09:00", "orders": 156 }
+      {
+        "hour": "12:00-13:00",
+        "orders": 245
+      },
+      {
+        "hour": "18:00-20:00",
+        "orders": 389
+      },
+      {
+        "hour": "08:00-09:00",
+        "orders": 156
+      }
     ],
     "popularCuisines": [
-      { "name": "Ethiopian", "orders": 5678 },
-      { "name": "Coffee", "orders": 3456 },
-      { "name": "Fast Food", "orders": 2345 },
-      { "name": "International", "orders": 1234 }
+      {
+        "name": "Ethiopian",
+        "orders": 5678
+      },
+      {
+        "name": "Coffee",
+        "orders": 3456
+      },
+      {
+        "name": "Fast Food",
+        "orders": 2345
+      },
+      {
+        "name": "International",
+        "orders": 1234
+      }
     ]
   }
 }

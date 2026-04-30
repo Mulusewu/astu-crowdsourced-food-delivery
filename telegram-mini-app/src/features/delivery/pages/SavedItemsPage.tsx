@@ -10,15 +10,19 @@ const ORANGE_SOFT = "#FFF0E6";
 function SavedItemCard({
   item,
   onDelete,
+  onClick,
 }: {
   item: SavedItem;
-  onDelete: (id: string) => void;
+  onDelete: (item: SavedItem) => void;
+  onClick: () => void;
 }) {
   return (
-    <article className="flex items-center gap-4 rounded-2xl bg-white px-4 py-3.5 shadow-[0_2px_16px_rgba(0,0,0,0.07)] ring-1 ring-gray-100">
+    <article 
+      onClick={onClick}
+      className="flex items-center gap-4 rounded-2xl bg-white px-4 py-3.5 shadow-[0_2px_16px_rgba(0,0,0,0.07)] ring-1 ring-gray-100 cursor-pointer active:scale-[0.99] transition-transform"
+    >
       {/* Circular image */}
       <div className="relative shrink-0">
-        {/* Outer grey ring */}
         <div className="flex h-[62px] w-[62px] items-center justify-center rounded-full bg-gray-100 ring-4 ring-gray-200/70">
           <div className="h-[54px] w-[54px] overflow-hidden rounded-full">
             <img
@@ -51,9 +55,12 @@ function SavedItemCard({
       {/* Delete button */}
       <button
         type="button"
-        onClick={() => onDelete(item.id)}
+        onClick={(e) => {
+          e.stopPropagation();
+          onDelete(item);
+        }}
         className="shrink-0 rounded-xl p-2 transition hover:bg-orange-50 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F27420]/40"
-        aria-label={`Remove ${item.name} from saved items`}
+        aria-label={`Remove ${item.name} from saved restaurants`}
       >
         <Trash2
           className="h-6 w-6"
@@ -80,7 +87,7 @@ function Separator() {
 // ─── SavedItemsPage ───────────────────────────────────────────────────────────
 export default function SavedItemsPage() {
   const navigate = useNavigate();
-  const { items, removeItem } = useSavedItemsStore();
+  const { items, toggleItem } = useSavedItemsStore();
 
   return (
     <div className="flex flex-col bg-white">
@@ -103,7 +110,7 @@ export default function SavedItemsPage() {
           </button>
 
           {/* Title */}
-          <h1 className="text-xl font-bold text-gray-900">Saved Items</h1>
+          <h1 className="text-xl font-bold text-gray-900">Saved Restaurants</h1>
         </div>
       </header>
 
@@ -119,16 +126,20 @@ export default function SavedItemsPage() {
                 <Trash2 className="h-8 w-8" style={{ color: ORANGE }} />
               </div>
               <p className="text-base font-semibold text-gray-700">
-                No saved items yet
+                No saved restaurants yet
               </p>
               <p className="mt-1 text-sm text-gray-400">
-                Items you save will appear here.
+                Restaurants you save will appear here.
               </p>
             </div>
           ) : (
             items.map((item, index) => (
               <div key={item.id}>
-                <SavedItemCard item={item} onDelete={removeItem} />
+                <SavedItemCard 
+                  item={item} 
+                  onDelete={toggleItem} 
+                  onClick={() => navigate(`/delivery/available?cafe=${item.id}`)}
+                />
                 {index < items.length - 1 && <Separator />}
               </div>
             ))

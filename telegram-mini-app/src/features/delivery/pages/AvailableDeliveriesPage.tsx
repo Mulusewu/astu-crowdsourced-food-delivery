@@ -4,35 +4,17 @@ import {
   SlidersHorizontal,
   ArrowLeft,
   ChevronDown,
-  Bookmark,
+  Package,
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useInView } from "react-intersection-observer";
 
 import { useOrderStore } from "@/store/orders/orderStore";
 import { useCafeStore } from "@/store/cafeStore";
+import { ROUTES } from "@/routes/routePaths";
+import { Button } from "@/components/ui/button";
 
-// Custom fast food icon (Drink + Burger matching the image)
-const FoodPlateIcon = () => (
-  <svg
-    width="18"
-    height="18"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="text-[#F26A1C] mr-1 shrink-0"
-  >
-    <path d="M12 11h8" />
-    <path d="M4 11h4" />
-    <path d="M12 15h8" />
-    <path d="M4 15h4" />
-    <path d="M8 8V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-    <path d="M4 19h16v1a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-1z" />
-  </svg>
-);
+
 
 const sortOptions = [
   { label: "Nearby First", value: "nearby" },
@@ -59,7 +41,6 @@ export default function AvailableDeliveriesPage() {
     setSelectedCafe,
     secondaryFilter,
     setSecondaryFilter,
-    toggleBookmark,
   } = useOrderStore();
 
   const { fetchCafes } = useCafeStore();
@@ -78,6 +59,8 @@ export default function AvailableDeliveriesPage() {
   useEffect(() => {
     if (cafeFromUrl) {
       setSelectedCafe(cafeFromUrl);
+    } else {
+      setSelectedCafe("all");
     }
   }, [cafeFromUrl, setSelectedCafe]);
 
@@ -121,7 +104,13 @@ export default function AvailableDeliveriesPage() {
 
         {/* Filters */}
         <div className="flex gap-3 mt-6">
-          <button className="bg-[#F26A1C] hover:bg-[#e05d15] text-white font-bold text-[15px] px-7 h-[44px] rounded-[14px] shadow-sm transition-colors">
+          <button 
+            onClick={() => {
+              setSelectedCafe("all");
+              navigate(ROUTES.DELIVERY.AVAILABLE.LIST, { replace: true });
+            }}
+            className="bg-[#F26A1C] hover:bg-[#e05d15] text-white font-bold text-[15px] px-7 h-[44px] rounded-[14px] shadow-sm transition-colors"
+          >
             ALL
           </button>
 
@@ -186,57 +175,51 @@ export default function AvailableDeliveriesPage() {
                 "https://images.unsplash.com/photo-1544025162-831e5088eb7e?q=80&w=200&auto=format&fit=crop";
 
               return (
-                <div
+                <article
                   key={`${order.id}-${idx}`}
-                  className="relative bg-white border border-[#f5f5f5] rounded-[24px] pt-[65px] pb-5 px-3 flex flex-col items-center shadow-[0_8px_30px_rgba(0,0,0,0.06)]"
+                  className="relative flex w-full flex-col items-center overflow-visible rounded-2xl bg-white px-3 pb-3 pt-2 shadow-[0_4px_20px_rgba(0,0,0,0.08)] ring-1 ring-gray-100"
                 >
-                  {/* Product Image Overflow */}
-                  <div className="absolute -top-[45px] w-[110px] h-[110px] rounded-full shadow-[0_4px_15px_rgba(0,0,0,0.1)] border-[4px] border-white">
-                    <img
-                      src={firstImage}
-                      alt={`Order #${orderId}`}
-                      className="w-full h-full object-cover rounded-full"
-                    />
+                  {/* Primary dot status indicator matching cheap orders on dashboard */}
+                  <span
+                    className="absolute right-3 top-3 z-[1] h-2 w-2 rounded-sm bg-primary"
+                    aria-hidden
+                  />
+
+                  <div className="z-[1] -mt-10 mb-1 flex justify-center">
+                    <div className="h-[5rem] w-[5rem] shrink-0 overflow-hidden rounded-full border-[3px] border-white bg-gray-50 shadow-md ring-1 ring-black/5">
+                      <img
+                        src={firstImage}
+                        alt={`Order #${orderId}`}
+                        className="h-full w-full object-cover object-center"
+                      />
+                    </div>
                   </div>
 
-                  {/* Bookmark Icon */}
-                  <button
-                    onClick={() => toggleBookmark(order.id)}
-                    className="absolute top-4 right-4 text-[#F26A1C] transition-transform active:scale-95"
-                  >
-                    <Bookmark
-                      size={20}
-                      strokeWidth={3}
-                      className={
-                        order.isBookmarked
-                          ? "fill-[#F26A1C]"
-                          : "fill-transparent"
-                      }
-                    />
-                  </button>
-
-                  <h2 className="text-[17px] font-black text-black tracking-tight mt-2">
+                  <p className="mt-1 text-center text-sm font-semibold text-gray-900">
                     Order #{orderId}
-                  </h2>
+                  </p>
 
-                  <div className="flex items-center justify-center mt-1">
-                    <FoodPlateIcon />
-                    <span className="text-[14px] font-semibold text-black leading-tight">
-                      {itemCount} Items
-                    </span>
+                  <div className="mt-1 flex items-center justify-center gap-1 text-xs text-gray-600">
+                    <Package
+                      className="h-3.5 w-3.5 text-primary"
+                      strokeWidth={2}
+                    />
+                    <span>{itemCount} items</span>
                   </div>
 
-                  <div className="text-[15px] font-bold text-[#F26A1C] mt-0.5">
+                  <p className="mt-1 text-center text-sm font-bold text-gray-900">
                     {order.totalAmount} ETB
-                  </div>
+                  </p>
 
-                  <button
+                  <Button
+                    type="button"
+                    size="sm"
                     onClick={() => navigate(`/delivery/available/${order.id}`)}
-                    className="w-[85%] h-[38px] mt-4 bg-[#F26A1C] hover:bg-[#e05d15] text-white font-bold text-[13px] rounded-[19px] shadow-[0_4px_12px_rgba(242,106,28,0.3)] transition-all active:scale-95"
+                    className="mt-3 h-9 w-full rounded-full bg-primary text-xs font-semibold text-white hover:bg-primary/90 shadow-md transition-all active:scale-95"
                   >
                     View Detail
-                  </button>
-                </div>
+                  </Button>
+                </article>
               );
             })}
           </div>

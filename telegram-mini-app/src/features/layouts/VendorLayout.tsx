@@ -1,28 +1,32 @@
-import { Outlet, Navigate } from "react-router-dom";
-import { useAuthStore } from "@/store/auth/authStore";
-// import { TMAStatusBar } from "@/components/layout/TMAStatusBar"; // Optional: Add if using a custom status bar
+import { Outlet } from "react-router-dom";
+import VendorBottomNav from "@/features/vendor/components/VendorBottomNav";
 
 export default function VendorLayout() {
-  const { user, activeRole } = useAuthStore();
+  // Authentication check currently bypassed for development
 
-  // 1. Authentication Guard
-  if (!user) {
-    return <Navigate to="/" replace />;
-  }
+  // 1. Authentication Guard (Bypassed for development)
+  // if (!user) {
+  //   return <Navigate to="/" replace />;
+  // }
 
-  // 2. Role Guard
-  if (activeRole !== "vendor") {
-    const dashboardPath = activeRole === "customer" ? "/customer/dashboard" : `/${activeRole}/dashboard`;
-    return <Navigate to={dashboardPath} replace />;
-  }
+  // 2. Role Guard - Allow vendor role to pass (Bypassed for development)
+  // if (activeRole !== "vendor") {
+  //   const dashboardPath = activeRole === "customer" ? "/customer/dashboard" : `/${activeRole}/dashboard`;
+  //   return <Navigate to={dashboardPath} replace />;
+  // }
 
   return (
-    <div className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 font-sans relative flex flex-col antialiased">
-      {/* <TMAStatusBar /> */}
-
-      <main className="flex-1 pb-28">
+    <div className="min-h-screen bg-[#FDFDFD] relative flex flex-col font-outfit antialiased">
+      <main className="flex-1 pb-32">
         <Outlet />
       </main>
+
+      {/* Fixed Vendor Bottom Navigation */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-6 pointer-events-none">
+        <div className="pointer-events-auto mx-auto max-w-md">
+          <VendorBottomNav />
+        </div>
+      </div>
     </div>
   );
 }

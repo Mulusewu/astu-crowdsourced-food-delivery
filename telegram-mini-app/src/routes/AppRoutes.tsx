@@ -8,13 +8,13 @@ import { useAuthStore } from "@/store/auth/authStore";
 // Import Layouts
 import CustomerLayout from "@/features/layouts/CustomerLayout";
 import DeliveryLayout from "@/features/layouts/DeliveryLayout";
-import VendorLayout from "@/features/layouts/VendorLayout";
+// import VendorLayout from "@/features/layouts/VendorLayout";
 import AppLayout from "@/components/layout/AppLayout";
 
 // Import Route Groups
 import { authRoutes } from "./routeGroups/authRoutes";
 import { customerRoutes } from "./routeGroups/customerRoutes";
-import { vendorRoutes } from "./routeGroups/vendorRoutes";
+// import { vendorRoutes } from "./routeGroups/vendorRoutes";
 import { deliveryRoutes } from "./routeGroups/deliveryRoutes";
 import { sharedRoutes } from "./routeGroups/sharedRoutes";
 
@@ -25,9 +25,9 @@ function FallbackRoute() {
     if (activeRole === "delivery") {
       return <Navigate to={ROUTES.DELIVERY.DASHBOARD} replace />;
     }
-    if (activeRole === "vendor") {
-      return <Navigate to={ROUTES.VENDOR.DASHBOARD} replace />;
-    }
+    // if (activeRole === "vendor") {
+    //   return <Navigate to={ROUTES.VENDOR.DASHBOARD} replace />;
+    // }
     return <Navigate to={ROUTES.CUSTOMER.HOME} replace />;
   }
 
@@ -72,17 +72,19 @@ export default function AppRoutes() {
             ))}
           </Route>
 
-          {/* ====================== VENDOR ROUTES ====================== */}
-          <Route element={<VendorLayout />}>
-            {vendorRoutes.map((route) => (
-              <Route
-                key={route.path}
-                path={route.path}
-                element={route.element}
-              />
-            ))}
-          </Route>
         </Route>
+
+        {/* ====================== VENDOR ROUTES ====================== */}
+        {/* Vendor has its own layout and navigation, so it stays outside AppLayout */}
+        {/* <Route element={<VendorLayout />}>
+          {vendorRoutes.map((route) => (
+            <Route
+              key={route.path}
+              path={route.path}
+              element={route.element}
+            />
+          ))}
+        </Route> */}
 
         {/* ====================== FALLBACK ROUTES ====================== */}
         <Route path="*" element={<FallbackRoute />} />
