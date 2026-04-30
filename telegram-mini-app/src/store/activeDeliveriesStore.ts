@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import db from "@/data/database.json";
+import { db } from "@/data";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -81,21 +81,79 @@ export const useActiveDeliveriesStore = create<ActiveDeliveriesState>(
 
       await delay(650);
 
-      // Use real data from database.json (active orders that are assigned to delivery person)
-      const deliveries =
-        db.orders.active?.map((order: any) => ({
-          ...order,
-          timeRemaining: Math.floor(Math.random() * 40) + 10,
-          restaurant: db.restaurants.find(
-            (r: any) => r.id === order.cafeId,
-          ) || {
-            id: order.cafeId,
-            name: order.cafeName,
-            phone: "+251-911-123-456",
-            address: "Bole Atlas",
-            image: order.cafeImage,
-          },
-        })) || [];
+      const deliveries = db.orders
+        .filter(
+          (order) =>
+            Boolean(order.delivererId) &&
+            ["ASSIGNED", "PICKED_UP", "EN_ROUTE", "ARRIVED"].includes(
+              order.status,
+            ),
+        )
+        .map((order) => {
+          const restaurant =
+            db.restaurants.find((r) => r.id === order.restaurantId) || null;
+          const customer =
+            db.users.find((u) => u.id === order.customerId) || null;
+
+          const items = db.orderItems
+            .filter((oi) => oi.orderId === order.id)
+            .map((oi) => {
+              const menu = db.menuItems.find((m) => m.id === oi.menuId) || null;
+              return {
+                id: oi.id,
+                name: menu?.name || "Item",
+                quantity: oi.quantity,
+                price: oi.unitPrice,
+                image: menu?.imageUrl || undefined,
+              };
+            });
+
+          const subtotal = items.reduce(
+            (sum, item) => sum + item.price * item.quantity,
+            0,
+          );
+
+          const uiStatus: ActiveDelivery["status"] =
+            order.status === "ASSIGNED"
+              ? "assigned"
+              : order.status === "PICKED_UP"
+                ? "picked_up"
+                : order.status === "EN_ROUTE" || order.status === "ARRIVED"
+                  ? "in_transit"
+                  : "assigned";
+
+          return {
+            id: order.id,
+            orderNumber: order.shortId,
+            status: uiStatus,
+            priority: false,
+            createdAt: order.createdAt,
+            estimatedDeliveryTime: order.estimatedDeliveryTime || "—",
+            timeRemaining: Math.floor(Math.random() * 40) + 10,
+            distance: "—",
+            restaurant: {
+              id: restaurant?.id || order.restaurantId,
+              name: restaurant?.name || "Restaurant",
+              phone: restaurant?.phone || "",
+              address: restaurant?.location || "",
+              image: restaurant?.imageUrl || "",
+            },
+            customer: {
+              id: customer?.id || order.customerId,
+              name: customer?.fullName || "Customer",
+              phone: customer?.phoneNumber || "",
+              address:
+                db.customerProfiles.find((p) => p.userId === order.customerId)
+                  ?.defaultLocation || "",
+              avatar: customer?.avatarUrl || undefined,
+            },
+            items,
+            subtotal,
+            deliveryFee: order.deliveryFee,
+            totalAmount: order.totalAmount,
+            paymentMethod: "cash",
+          };
+        });
 
       set({
         activeDeliveries: deliveries,

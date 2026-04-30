@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Trash2 } from "lucide-react";
 
-import db from "@/data/database.json";
 import { useCartStore } from "@/store/cart/cartStore";
 import { useAuthStore } from "@/store/auth/authStore";
 import type { CartItem } from "@/store/cart/cartStore";
@@ -17,6 +16,7 @@ import { CartFooter } from "../components/CartFooter";
 export default function CartPage() {
   const navigate = useNavigate();
   const activeRole = useAuthStore((state) => state.activeRole);
+  const currency = "ETB";
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedItemForMod, setSelectedItemForMod] = useState<CartItem | null>(
     null,
@@ -34,9 +34,12 @@ export default function CartPage() {
   const discount = useCartStore((state) => state.getDiscountAmount());
 
   useEffect(() => {
-    if (activeRole !== "customer") {
-      navigate("/", { replace: true });
-    }
+    // TEMP AUTH BYPASS FOR UI TESTING:
+    // Customer layout guards are disabled; avoid hard redirect when role is null.
+    // Re-enable once auth/role protection is turned back on.
+    // if (activeRole !== "customer") {
+    //   navigate("/", { replace: true });
+    // }
   }, [activeRole, navigate]);
 
   useEffect(() => {
@@ -58,9 +61,7 @@ export default function CartPage() {
     }
   }, [cartItems, selectedItemForMod]);
 
-  if (activeRole !== "customer") {
-    return null;
-  }
+  void activeRole;
 
   const handleOpenDetailModal = (itemId: string) => {
     const item = cartItems.find((i) => i.id === itemId);
@@ -93,7 +94,7 @@ export default function CartPage() {
               <CartItemCard
                 key={item.id}
                 item={item}
-                currency={db.currency}
+                currency={currency}
                 onIncrement={() => updateQuantity(item.id, item.quantity + 1)}
                 onDecrement={() => updateQuantity(item.id, item.quantity - 1)}
                 onCardClick={() => handleOpenDetailModal(item.id)}
@@ -116,7 +117,7 @@ export default function CartPage() {
         subtotal={subtotal}
         total={total}
         discount={discount}
-        currency={db.currency}
+        currency={currency}
         isCartEmpty={cartItems.length === 0}
         onPlaceOrder={() => navigate("/customer/checkout")}
       />

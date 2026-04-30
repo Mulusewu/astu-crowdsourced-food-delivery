@@ -43,7 +43,7 @@ export const ROUTES = {
     ORDERS: {
       LIST: "/customer/orders",
       DETAILS: "/order/:orderId",
-      TRACK: "customer/order/track/:orderId",
+      TRACK: "/customer/order/track/:orderId",
       HISTORY: "/orders/history",
       REVIEW: "/order/:orderId/review",
     },

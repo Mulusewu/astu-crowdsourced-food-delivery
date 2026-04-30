@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import db from "@/data/database.json"; // Import your JSON database
-import deliveryDb from "@/data/users/delivery.json";
+import { db } from "@/data";
+import { useAuthStore } from "@/store/auth/authStore";
 
 export type OrderStatus = "placed" | "preparing" | "in_transit" | "delivered";
 
@@ -9,8 +9,13 @@ export interface Order {
   status: OrderStatus;
   estimatedDelivery: string;
   restaurant: string;
+  // Backwards-compatible fields used by some pages
+  restaurantName?: string;
   items: { name: string; qty: number }[];
+  itemCount?: number;
   total: number;
+  totalAmount?: number;
+  date?: string;
   deliveryPerson?: {
     name: string;
     phone: string;
@@ -21,90 +26,107 @@ export interface Order {
 
 interface CustomerOrderState {
   orders: Order[];
+  isLoading: boolean;
+  error: string | null;
   getOrderById: (id: string) => Order | undefined;
   setOrders: (orders: Order[]) => void;
+  fetchOrders: () => Promise<void>;
 }
-
-interface DbOrderItem {
-  name: string;
-  quantity: number;
-}
-
-interface DbOrder {
-  id: string;
-  status: string;
-  estimatedDeliveryTime?: string;
-  deliveredAt?: string;
-  cafeName: string;
-  items: DbOrderItem[];
-  totalAmount: number;
-}
-
-interface DeliveryPersonRecord {
-  name: string;
-  phone: string;
-  avatar: string;
-  stats?: {
-    averageRating?: number;
-  };
-}
-
-const firstDeliveryPerson = deliveryDb.delivery[0] as
-  | DeliveryPersonRecord
-  | undefined;
 
 const mapOrderStatus = (status: string): OrderStatus => {
   switch (status) {
-    case "pending":
+    case "CREATED":
+    case "AWAITING_ACCEPT":
+    case "AWAITING_PAYMENT":
       return "placed";
-    case "preparing":
+    case "VENDOR_BEING_PREPARED":
+    case "VENDOR_FINISHED":
+    case "VENDOR_READY_FOR_PICKUP":
       return "preparing";
-    case "in_transit":
+    case "PICKED_UP":
+    case "EN_ROUTE":
+    case "ARRIVED":
       return "in_transit";
-    case "delivered":
+    case "DELIVERED":
+    case "COMPLETED":
       return "delivered";
     default:
       return "placed";
   }
 };
 
-const assignedDeliveryPerson = firstDeliveryPerson
-  ? {
-      name: firstDeliveryPerson.name,
-      phone: firstDeliveryPerson.phone,
-      avatar: firstDeliveryPerson.avatar,
-      rating: firstDeliveryPerson.stats?.averageRating ?? 4.8,
-    }
-  : undefined;
-
-const rawOrders = [
-  ...(db.orders?.available || []),
-  ...(db.orders?.active || []),
-  ...(db.orders?.history || []),
-] as DbOrder[];
-
-const dbOrders: Order[] = rawOrders.map((order) => ({
-  id: order.id,
-  status: mapOrderStatus(order.status),
-  estimatedDelivery:
-    order.estimatedDeliveryTime || order.deliveredAt || "Updating soon",
-  restaurant: order.cafeName,
-  items: order.items.map((item) => ({
-    name: item.name,
-    qty: item.quantity,
-  })),
-  total: order.totalAmount,
-  deliveryPerson:
-    order.status === "in_transit" ? assignedDeliveryPerson : undefined,
-}));
+const delay = (ms: number = 350) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
 
 export const useCustomerOrderStore = create<CustomerOrderState>((set, get) => ({
-  // Set the initial state using the data from database.json
-  orders: dbOrders,
+  orders: [],
+  isLoading: false,
+  error: null,
 
   // Find a specific order by ID (used by the Tracking Page)
   getOrderById: (id) => get().orders.find((o) => o.id === id),
 
   // Allow updating orders later
   setOrders: (orders) => set({ orders }),
+
+  fetchOrders: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      await delay();
+
+      const authUser = useAuthStore.getState().user;
+      const customerId =
+        authUser?.id || db.users.find((u) => u.role === "CUSTOMER")?.id;
+
+      const orders = db.orders
+        .filter((o) => o.customerId === customerId)
+        .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
+        .map((o) => {
+          const restaurant =
+            db.restaurants.find((r) => r.id === o.restaurantId) || null;
+          const items = db.orderItems
+            .filter((oi) => oi.orderId === o.id)
+            .map((oi) => {
+              const menu = db.menuItems.find((m) => m.id === oi.menuId) || null;
+              return { name: menu?.name || "Item", qty: oi.quantity };
+            });
+
+          const delivererUser = o.delivererId
+            ? db.users.find((u) => u.id === o.delivererId) || null
+            : null;
+          const delivererProfile = o.delivererId
+            ? db.delivererProfiles.find((p) => p.userId === o.delivererId) || null
+            : null;
+
+          return {
+            id: o.id,
+            status: mapOrderStatus(o.status),
+            estimatedDelivery: o.estimatedDeliveryTime || "Updating soon",
+            restaurant: restaurant?.name || "Restaurant",
+            restaurantName: restaurant?.name || "Restaurant",
+            items,
+            itemCount: items.reduce((sum, it) => sum + it.qty, 0),
+            total: o.totalAmount,
+            totalAmount: o.totalAmount,
+            date: o.createdAt,
+            deliveryPerson:
+              delivererUser && delivererProfile && mapOrderStatus(o.status) === "in_transit"
+                ? {
+                    name: delivererUser.fullName,
+                    phone: delivererUser.phoneNumber || "",
+                    avatar: delivererUser.avatarUrl || "",
+                    rating: delivererProfile.rating,
+                  }
+                : undefined,
+          } as Order;
+        });
+
+      set({ orders, isLoading: false });
+    } catch (e) {
+      set({
+        isLoading: false,
+        error: e instanceof Error ? e.message : "Failed to fetch orders",
+      });
+    }
+  },
 }));

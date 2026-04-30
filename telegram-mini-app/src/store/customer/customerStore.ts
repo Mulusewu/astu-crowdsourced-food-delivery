@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import db from "@/data/database.json";
+import { db } from "@/data";
 
 export interface Address {
   id: string;
@@ -174,67 +174,56 @@ export const useCustomerStore = create<CustomerState>()(
       favoriteFoods: [],
       recentSearches: [],
 
-      fetchUserData: async (userId = "cust_001") => {
+      fetchUserData: async (userId) => {
         set({ isLoading: true, error: null });
         try {
           await delay(600);
-          
-          // Find customer in database.json
-          const customer = db.users.customers.find((c: any) => c.id === userId);
-          
-          if (!customer) {
-            throw new Error("Customer not found");
-          }
-          
-          // Extract addresses from savedAddresses and defaultAddress
-          const addresses: Address[] = [];
-          
-          // Add default address
-          if (customer.defaultAddress) {
-            addresses.push(normalizeAddress(customer.defaultAddress, true));
-          }
-          
-          // Add saved addresses
-          if (customer.savedAddresses && customer.savedAddresses.length > 0) {
-            addresses.push(...customer.savedAddresses.map((addr: any) => 
-              normalizeAddress(addr, false)
-            ));
-          }
-          
-          // Extract and normalize payment methods
-          const paymentMethods: PaymentMethod[] = (customer.paymentMethods || []).map(normalizePaymentMethod);
-          
-          // Extract favorites from stats
-          const favorites = customer.stats?.favoriteRestaurants || [];
-          const favoriteFoods = customer.stats?.favoriteFoods || [];
-          const recentSearches = customer.stats?.recentSearches || [];
-          
+
+          const resolvedUserId =
+            userId ||
+            db.users.find((u) => u.role === "CUSTOMER")?.id ||
+            db.users[0]?.id;
+
+          const schemaUser = resolvedUserId
+            ? db.users.find((u) => u.id === resolvedUserId)
+            : undefined;
+
+          if (!schemaUser) throw new Error("Customer not found");
+
+          const profile = db.customerProfiles.find(
+            (p) => p.userId === schemaUser.id,
+          );
+
+          const favorites = profile?.bookmarkRestaurants || [];
+          const favoriteFoods = profile?.bookmarkMeals || [];
+
           const user: CustomerUser = {
-            id: customer.id,
-            name: customer.name,
-            email: customer.email,
-            phone: customer.phone,
-            avatar: customer.avatar,
+            id: schemaUser.id,
+            name: schemaUser.fullName,
+            email: schemaUser.email || "",
+            phone: schemaUser.phoneNumber || "",
+            avatar: schemaUser.avatarUrl || undefined,
             role: "customer",
-            createdAt: customer.createdAt,
-            isVerified: customer.isVerified,
-            defaultAddressId: customer.defaultAddress?.id,
-            preferences: customer.preferences ? {
-              language: customer.preferences.language as "am" | "en",
-              notifications: customer.preferences.notifications,
-              theme: customer.preferences.theme as "light" | "dark",
-              defaultSortBy: customer.preferences.defaultSortBy as "rating" | "distance" | "price",
-            } : defaultPreferences,
-            stats: customer.stats,
+            createdAt: schemaUser.createdAt,
+            isVerified: schemaUser.isEmailVerified || schemaUser.isPhoneVerified,
+            preferences: defaultPreferences,
+            stats: {
+              totalOrders: profile?.totalOrders || 0,
+              totalSpent: 0,
+              averageRating: profile?.rating || 5,
+              favoriteRestaurants: favorites,
+              favoriteFoods: favoriteFoods,
+              recentSearches: [],
+            },
           };
           
           set({
             user,
-            addresses,
-            paymentMethods,
+            addresses: [],
+            paymentMethods: [],
             favorites,
             favoriteFoods,
-            recentSearches,
+            recentSearches: [],
             isLoading: false,
           });
         } catch (error) {

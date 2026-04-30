@@ -18,26 +18,26 @@ const ACCENT_SOFT = "#FFF0E6";
 
 type ProfileMenuItem =
   | {
-      id: string;
-      icon: typeof Mail;
-      label: string;
-      value: string;
-      variant?: "default";
-    }
+    id: string;
+    icon: typeof Mail;
+    label: string;
+    value: string;
+    variant?: "default";
+  }
   | {
-      id: string;
-      icon: typeof Sun;
-      label: string;
-      value: string;
-      variant: "theme";
-    }
+    id: string;
+    icon: typeof Sun;
+    label: string;
+    value: string;
+    variant: "theme";
+  }
   | {
-      id: string;
-      icon: typeof Lock;
-      label: string;
-      value?: undefined;
-      variant?: "default";
-    };
+    id: string;
+    icon: typeof Lock;
+    label: string;
+    value?: undefined;
+    variant?: "default";
+  };
 
 const MENU_ITEMS: ProfileMenuItem[] = [
   {

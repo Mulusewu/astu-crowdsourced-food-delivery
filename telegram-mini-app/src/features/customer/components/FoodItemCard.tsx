@@ -1,3 +1,4 @@
+import React from "react";
 // src/features/customer/components/FoodItemCard.tsx
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";

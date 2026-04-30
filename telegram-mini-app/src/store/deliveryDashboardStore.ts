@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import db from "@/data/database.json";
+import { db } from "@/data";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -98,15 +98,86 @@ export const useDeliveryDashboardStore = create<DeliveryDashboardState>()(
         try {
           await delay(800);
 
-          const data = db.deliveryDashboard;
-          if (data) {
-            set({
-              deliveryPerson: data.deliveryPerson as DeliveryPerson,
-              cheapOrders: data.cheapOrders as CheapOrder[],
-              cafes: data.cafes as Cafe[],
-              isLoading: false,
+          const delivererProfile = db.delivererProfiles[0] || null;
+          const delivererUser = delivererProfile
+            ? db.users.find((u) => u.id === delivererProfile.userId) || null
+            : null;
+
+          const deliveryPerson: DeliveryPerson | null =
+            delivererProfile && delivererUser
+              ? {
+                  id: delivererUser.id,
+                  name: delivererUser.fullName,
+                  email: delivererUser.email || "",
+                  avatar: delivererUser.avatarUrl || undefined,
+                  isActive: delivererProfile.isOnline,
+                  currentLocation: delivererProfile.lat
+                    ? {
+                        lat: delivererProfile.lat,
+                        lng: delivererProfile.lng || 0,
+                        address: delivererProfile.currentLocation || "",
+                      }
+                    : undefined,
+                  stats: {
+                    deliveriesToday: Math.min(
+                      delivererProfile.totalDeliveries,
+                      12,
+                    ),
+                    earningsToday: 0,
+                    rating: delivererProfile.rating,
+                  },
+                }
+              : null;
+
+          const cafes: Cafe[] = db.restaurants.map((r) => ({
+            id: r.id,
+            name: r.name,
+            description: "",
+            image:
+              r.imageUrl ||
+              "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&fit=crop",
+            location: r.location,
+            distance: "—",
+            estimatedTime: 25,
+            rating: r.avgRating,
+            isBookmarked: false,
+            acceptsCash: true,
+            acceptsCard: false,
+            minimumOrder: Number(r.minOrderValue) || 0,
+            cuisine: r.tags,
+            activeOrders: db.orders.filter(
+              (o) =>
+                o.restaurantId === r.id &&
+                !["DELIVERED", "COMPLETED", "CANCELLED"].includes(o.status),
+            ).length,
+          }));
+
+          const cheapOrders: CheapOrder[] = db.orders
+            .filter((o) => o.delivererId == null && o.status === "AWAITING_ACCEPT")
+            .slice(0, 6)
+            .map((o) => {
+              const restaurant =
+                db.restaurants.find((r) => r.id === o.restaurantId) || null;
+              const itemCount = db.orderItems.filter(
+                (oi) => oi.orderId === o.id,
+              ).length;
+              return {
+                id: o.id,
+                orderNo: o.shortId,
+                items: itemCount || 1,
+                priceEtb: o.totalAmount,
+                image:
+                  restaurant?.imageUrl ||
+                  "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&h=200&fit=crop",
+              };
             });
-          }
+
+          set({
+            deliveryPerson,
+            cheapOrders,
+            cafes,
+            isLoading: false,
+          });
         } catch (error) {
           console.error("Failed to fetch dashboard data:", error);
           set({ isLoading: false });

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -19,10 +20,27 @@ export default function OrderTrackingPage() {
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
   const getOrderById = useCustomerOrderStore((state) => state.getOrderById);
+  const fetchOrders = useCustomerOrderStore((state) => state.fetchOrders);
+  const isLoading = useCustomerOrderStore((state) => state.isLoading);
 
   const order = getOrderById(orderId || "");
 
+  useEffect(() => {
+    // Makes deep links / refresh robust: ensure store is populated.
+    if (!order && orderId) {
+      fetchOrders();
+    }
+  }, [order, orderId, fetchOrders]);
+
   // If order is not found (e.g., hard refresh with bad ID)
+  if (!order && isLoading) {
+    return (
+      <div className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 flex flex-col items-center justify-center px-5 text-center">
+        <p className="text-gray-500">Loading order...</p>
+      </div>
+    );
+  }
+
   if (!order) {
     return (
       <div className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 flex flex-col items-center justify-center px-5 text-center">

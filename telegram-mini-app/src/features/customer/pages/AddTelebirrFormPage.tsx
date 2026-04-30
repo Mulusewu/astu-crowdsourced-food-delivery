@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check } from "lucide-react";
+import { ROUTES } from "@/routes/routePaths";
 import {
   Header,
   BorderedInput,
@@ -39,7 +40,7 @@ export default function AddTelebirrFormPage() {
         </div>
 
         <div className="mt-8 mb-4">
-          <ActionButton onClick={() => navigate("/customer/profile/payment")}>
+          <ActionButton onClick={() => navigate(ROUTES.CUSTOMER.PAYMENT.METHODS)}>
             Return to Payment Methods
           </ActionButton>
         </div>

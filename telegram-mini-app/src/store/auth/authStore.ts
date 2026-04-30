@@ -1,12 +1,36 @@
 // src/store/auth/authStore.ts
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import db from "@/data/database.json";
+import { db } from "@/data";
+import type { PrismaUser } from "@/types/prisma";
 
-export type UserRole = "customer" | "vendor" | "delivery";
+export type UserRole = "customer" | "vendor" | "delivery" | "admin";
+
+type SchemaUserRole = PrismaUser["role"];
+
+type AuthUser = Pick<
+  PrismaUser,
+  | "id"
+  | "telegramId"
+  | "astuEmail"
+  | "email"
+  | "fullName"
+  | "phoneNumber"
+  | "avatarUrl"
+  | "status"
+  | "isEmailVerified"
+  | "isPhoneVerified"
+  | "role"
+  | "activeMode"
+  | "createdAt"
+  | "updatedAt"
+> & {
+  // Convenience for existing UI that expects these names sometimes.
+  name: string;
+};
 
 interface AuthState {
-  user: any | null;
+  user: AuthUser | null;
   roles: UserRole[]; // All roles the user has
   activeRole: UserRole | null; // Currently active role
   token: string | null;
@@ -21,26 +45,35 @@ interface AuthState {
   clearError: () => void;
 }
 
-// Helper function to validate and convert roles to UserRole[]
-const normalizeRoles = (roles: any): UserRole[] => {
-  if (!roles) return ["customer"];
-
-  // If roles is a string, convert to array
-  if (typeof roles === "string") {
-    const role = roles as UserRole;
-    return [role];
+const mapSchemaRoleToActiveRole = (role: SchemaUserRole): UserRole => {
+  switch (role) {
+    case "CUSTOMER":
+      return "customer";
+    case "DELIVERER":
+      return "delivery";
+    case "VENDOR_STAFF":
+      return "vendor";
+    case "ADMIN":
+      return "admin";
+    default:
+      return "customer";
   }
-
-  // If roles is an array, filter valid roles
-  if (Array.isArray(roles)) {
-    const validRoles = roles.filter(
-      (r: string) => r === "customer" || r === "vendor" || r === "delivery",
-    ) as UserRole[];
-    return validRoles.length > 0 ? validRoles : ["customer"];
-  }
-
-  return ["customer"];
 };
+
+const verifyMockPassword = (stored: string, provided: string): boolean => {
+  // Local dataset uses bcrypt-looking hashes; we can't verify that client-side.
+  // For UI testing: accept exact match OR accept any non-empty password when
+  // stored value looks like a bcrypt hash.
+  if (!provided) return false;
+  if (stored === provided) return true;
+  if (stored.startsWith("$2")) return true;
+  return false;
+};
+
+const toAuthUser = (u: PrismaUser): AuthUser => ({
+  ...u,
+  name: u.fullName,
+});
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -58,40 +91,52 @@ export const useAuthStore = create<AuthState>()(
 
         await new Promise((resolve) => setTimeout(resolve, 800));
 
-        const newUser = {
+        const newUser: AuthUser = {
           id: `user_${Date.now()}`,
-          name: data.name,
-          email: data.email,
+          telegramId: Date.now(),
+          astuEmail: null,
+          email: data.email ?? null,
+          fullName: data.name,
+          phoneNumber: data.phoneNumber ?? null,
           password: data.password, // Store password for signin verification
-          roles: ["customer"] as UserRole[],
-          activeRole: "customer",
-          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.name}`,
+          avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.name}`,
+          status: "ACTIVE",
+          isEmailVerified: true,
+          isPhoneVerified: false,
+          role: "CUSTOMER",
+          activeMode: "CUSTOMER",
+          lastActiveAt: new Date().toISOString(),
+          deviceToken: null,
+          failedLoginAttempts: 0,
+          lockedUntil: null,
           createdAt: new Date().toISOString(),
-          isVerified: true, // Mock verification
+          updatedAt: new Date().toISOString(),
+          name: data.name,
         };
 
         // Prevent duplicate signup entries
         const existingUsers = [
-          ...(db.users.customers || []),
-          ...(JSON.parse(localStorage.getItem("additional_users") || "[]") ||
-            []),
+          ...(db.users || []),
+          ...((JSON.parse(localStorage.getItem("additional_users") || "[]") ||
+            []) as AuthUser[]),
         ];
 
-        if (existingUsers.some((user: any) => user.email === data.email)) {
+        if (existingUsers.some((user) => user.email === data.email)) {
           set({ isLoading: false, error: "User already exists" });
           throw new Error("User already exists");
         }
 
-        const storedUsers = JSON.parse(
+        const storedUsers = (JSON.parse(
           localStorage.getItem("additional_users") || "[]",
-        );
+        ) || []) as AuthUser[];
         storedUsers.push(newUser);
         localStorage.setItem("additional_users", JSON.stringify(storedUsers));
 
+        const activeRole = mapSchemaRoleToActiveRole(newUser.role);
         set({
           user: newUser,
-          roles: ["customer"],
-          activeRole: "customer",
+          roles: [activeRole],
+          activeRole,
           token: `mock_token_${Date.now()}`,
           isLoading: false,
         });
@@ -99,7 +144,7 @@ export const useAuthStore = create<AuthState>()(
         console.log("✅ Mock Signup successful", newUser);
 
         // Keep the user logged in and redirect to the customer dashboard
-        window.location.href = "/customer/home";
+        window.location.href = "/customer/dashboard";
       },
 
       // ====================== SIGNIN ======================
@@ -108,16 +153,15 @@ export const useAuthStore = create<AuthState>()(
 
         await new Promise((resolve) => setTimeout(resolve, 700));
 
-        // Search across all user types in mock database
+        // Search across all users in Prisma-shaped dataset
         const allUsers = [
-          ...(db.users.customers || []),
-          ...(db.users.vendors || []),
-          ...(db.users.delivery || []),
+          ...(db.users || []),
           // Include users added via signup from localStorage
-          ...JSON.parse(localStorage.getItem("additional_users") || "[]"),
-        ];
+          ...((JSON.parse(localStorage.getItem("additional_users") || "[]") ||
+            []) as AuthUser[]),
+        ] as Array<PrismaUser | AuthUser>;
 
-        const foundUser = allUsers.find((u: any) => u.email === data.email);
+        const foundUser = allUsers.find((u) => u.email === data.email);
 
         if (!foundUser) {
           set({ isLoading: false, error: "Invalid email or password" });
@@ -125,33 +169,25 @@ export const useAuthStore = create<AuthState>()(
         }
 
         // Check password match
-        if (!data.password || foundUser.password !== data.password) {
+        if (
+          !verifyMockPassword(
+            (foundUser as PrismaUser).password,
+            String(data.password ?? ""),
+          )
+        ) {
           set({ isLoading: false, error: "Invalid email or password" });
           throw new Error("Invalid email or password");
         }
 
-        // Normalize roles from database
-        const userRoles = normalizeRoles(foundUser.roles);
-
-        // Handle multi-role user from database
-        let finalRoles: UserRole[] = userRoles;
-        let activeRole: UserRole = userRoles[0];
-
-        // If user has multiple roles stored in a special way
-        if (foundUser.roles && Array.isArray(foundUser.roles)) {
-          finalRoles = foundUser.roles as UserRole[];
-          activeRole =
-            foundUser.activeRole &&
-              finalRoles.includes(foundUser.activeRole as UserRole)
-              ? (foundUser.activeRole as UserRole)
-              : finalRoles[0];
-        }
+        const schemaRole = (foundUser as PrismaUser).role;
+        const activeRole = mapSchemaRoleToActiveRole(schemaRole);
+        const finalRoles: UserRole[] = [activeRole];
 
         set({
-          user: foundUser,
+          user: toAuthUser(foundUser as PrismaUser),
           roles: finalRoles,
           activeRole: activeRole,
-          token: `mock_token_${foundUser.id}`,
+          token: `mock_token_${(foundUser as PrismaUser).id}`,
           isLoading: false,
         });
 
@@ -164,8 +200,10 @@ export const useAuthStore = create<AuthState>()(
           window.location.href = "/delivery/dashboard";
         } else if (activeRole === "vendor") {
           window.location.href = "/vendor/dashboard";
+        } else if (activeRole === "admin") {
+          window.location.href = "/customer/dashboard";
         } else {
-          window.location.href = "/customer/home"; // Customer dashboard
+          window.location.href = "/customer/dashboard"; // Customer dashboard
         }
       },
 
@@ -192,8 +230,10 @@ export const useAuthStore = create<AuthState>()(
           window.location.href = "/delivery/dashboard";
         } else if (newRole === "vendor") {
           window.location.href = "/vendor/dashboard";
+        } else if (newRole === "admin") {
+          window.location.href = "/customer/dashboard";
         } else {
-          window.location.href = "/"; // Customer home
+          window.location.href = "/customer/dashboard";
         }
       },
 

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import db from "@/data/database.json";
+import { db } from "@/data";
 
 export interface Cafe {
   id: string;
@@ -7,8 +7,8 @@ export interface Cafe {
   image?: string;
   cuisine?: string[];
   rating?: number;
-  deliveryTime?: string;
-  deliveryFee?: number;
+  deliveryTime?: string; // UI-only estimate
+  deliveryFee?: number; // UI-only (order-dependent in schema)
   minimumOrder?: number;
 }
 
@@ -43,16 +43,18 @@ export const useCafeStore = create<CafeStore>((set) => ({
     try {
       await delay(400);
 
-      // Extract cafes from restaurants in db.json
+      // Extract cafes from Prisma restaurants
       const cafes = db.restaurants.map((rest) => ({
         id: rest.id,
         name: rest.name,
-        image: rest.image,
-        cuisine: rest.cuisine,
-        rating: rest.rating,
-        deliveryTime: rest.deliveryTime,
-        deliveryFee: rest.deliveryFee,
-        minimumOrder: rest.minimumOrder,
+        image:
+          rest.imageUrl ||
+          "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&fit=crop",
+        cuisine: rest.tags || [],
+        rating: rest.avgRating,
+        deliveryTime: "15-25 min",
+        deliveryFee: 0,
+        minimumOrder: Number(rest.minOrderValue) || 0,
       }));
 
       set({
@@ -82,12 +84,14 @@ export const useCafeStore = create<CafeStore>((set) => ({
       const cafe = {
         id: restaurant.id,
         name: restaurant.name,
-        image: restaurant.image,
-        cuisine: restaurant.cuisine,
-        rating: restaurant.rating,
-        deliveryTime: restaurant.deliveryTime,
-        deliveryFee: restaurant.deliveryFee,
-        minimumOrder: restaurant.minimumOrder,
+        image:
+          restaurant.imageUrl ||
+          "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&fit=crop",
+        cuisine: restaurant.tags || [],
+        rating: restaurant.avgRating,
+        deliveryTime: "15-25 min",
+        deliveryFee: 0,
+        minimumOrder: Number(restaurant.minOrderValue) || 0,
       };
 
       set({

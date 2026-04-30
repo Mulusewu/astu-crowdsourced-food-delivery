@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import db from "@/data/database.json";
+import { db } from "@/data";
+import type { Order as SchemaOrder, PaymentStatus as SchemaPaymentStatus } from "@/types/prisma";
 
 // Types
 export interface OrderItem {
@@ -156,6 +157,95 @@ const filterOrders = (
 const delay = (ms: number = 500) =>
   new Promise((resolve) => setTimeout(resolve, ms));
 
+const mapPaymentStatus = (status: SchemaPaymentStatus): Order["paymentStatus"] => {
+  switch (status) {
+    case "CAPTURED":
+    case "AUTHORIZED":
+      return "paid";
+    case "FAILED":
+    case "REFUNDED":
+      return "failed";
+    case "AWAITING_PAYMENT":
+    case "PENDING":
+    default:
+      return "pending";
+  }
+};
+
+const mapSchemaStatusToUi = (status: SchemaOrder["status"]): Order["status"] => {
+  switch (status) {
+    case "AWAITING_ACCEPT":
+    case "CREATED":
+      return "pending";
+    case "ASSIGNED":
+      return "confirmed";
+    case "VENDOR_BEING_PREPARED":
+      return "preparing";
+    case "VENDOR_READY_FOR_PICKUP":
+      return "ready";
+    case "PICKED_UP":
+      return "picked_up";
+    case "EN_ROUTE":
+    case "ARRIVED":
+      return "in_transit";
+    case "DELIVERED":
+    case "COMPLETED":
+      return "delivered";
+    case "CANCELLED":
+    case "NO_DELIVERER_FOUND":
+    case "DISPUTED":
+    default:
+      return "cancelled";
+  }
+};
+
+const mapSchemaOrderToUiOrder = (order: SchemaOrder): Order => {
+  const restaurant = db.restaurants.find((r) => r.id === order.restaurantId);
+  const customerUser = db.users.find((u) => u.id === order.customerId);
+  const customerProfile = db.customerProfiles.find((p) => p.userId === order.customerId);
+
+  const items: OrderItem[] = db.orderItems
+    .filter((oi) => oi.orderId === order.id)
+    .map((oi) => {
+      const menu = db.menuItems.find((m) => m.id === oi.menuId);
+      return {
+        id: oi.id,
+        name: menu?.name || "Item",
+        quantity: oi.quantity,
+        price: oi.unitPrice,
+        image: menu?.imageUrl || "",
+      };
+    });
+
+  return {
+    id: order.id,
+    orderNumber: order.shortId,
+    cafeId: order.restaurantId,
+    cafeName: restaurant?.name || "Restaurant",
+    cafeImage:
+      restaurant?.imageUrl ||
+      "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=100",
+    customer: {
+      id: order.customerId,
+      name: customerUser?.fullName || "Customer",
+      avatar: customerUser?.avatarUrl || undefined,
+      phone: customerUser?.phoneNumber || undefined,
+      address: customerProfile?.defaultLocation || "",
+    },
+    items,
+    totalAmount: order.totalAmount,
+    status: mapSchemaStatusToUi(order.status),
+    paymentMethod: "cash",
+    paymentStatus: mapPaymentStatus(order.paymentStatus),
+    createdAt: order.createdAt,
+    estimatedDeliveryTime: order.estimatedDeliveryTime || undefined,
+    distance: "—",
+    isBookmarked: false,
+    priority: false,
+    specialInstructions: null,
+  };
+};
+
 export const useOrderStore = create<OrderStore>()(
   persist(
     (set, get) => ({
@@ -179,8 +269,9 @@ export const useOrderStore = create<OrderStore>()(
         try {
           await delay(800);
 
-          // Get available orders from db.json
-          const availableOrders = db.orders.available as Order[];
+          const availableOrders = db.orders
+            .filter((o) => o.delivererId == null && o.status === "AWAITING_ACCEPT")
+            .map(mapSchemaOrderToUiOrder);
 
           // Ensure all orders have required fields with defaults
           const normalizedOrders = availableOrders.map((order) => ({
@@ -217,7 +308,13 @@ export const useOrderStore = create<OrderStore>()(
         try {
           await delay(600);
 
-          const activeOrders = db.orders.active as Order[];
+          const activeOrders = db.orders
+            .filter(
+              (o) =>
+                o.delivererId != null &&
+                ["ASSIGNED", "PICKED_UP", "EN_ROUTE", "ARRIVED"].includes(o.status),
+            )
+            .map(mapSchemaOrderToUiOrder);
 
           const normalizedOrders = activeOrders.map((order) => ({
             ...order,
@@ -247,7 +344,9 @@ export const useOrderStore = create<OrderStore>()(
         try {
           await delay(600);
 
-          const historyOrders = db.orders.history;
+          const historyOrders = db.orders
+            .filter((o) => ["DELIVERED", "COMPLETED", "CANCELLED"].includes(o.status))
+            .map(mapSchemaOrderToUiOrder);
 
           const mappedOrders = historyOrders.map((order: any) => ({
             id: order.id,
@@ -285,21 +384,14 @@ export const useOrderStore = create<OrderStore>()(
         try {
           await delay(400);
 
-          // Search in all order collections
-          const allOrders = [
-            ...(db.orders.available || []),
-            ...(db.orders.active || []),
-            ...(db.orders.history || []),
-          ] as Order[];
+          const schemaOrder = db.orders.find((o) => o.id === orderId);
 
-          const order = allOrders.find((o) => o.id === orderId);
-
-          if (!order) {
+          if (!schemaOrder) {
             throw new Error("Order not found");
           }
 
           set({
-            currentOrder: order,
+            currentOrder: mapSchemaOrderToUiOrder(schemaOrder),
             isLoading: false,
           });
         } catch (error) {

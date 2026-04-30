@@ -288,7 +288,7 @@ export const useCartStore = create<CartState>()(
       getSubtotal: () => {
         let subtotal = 0;
         get().items.forEach((item) => {
-          let itemPrice = item.discountPrice || item.price;
+          const itemPrice = item.discountPrice || item.price;
           let itemTotal = itemPrice * item.quantity;
 
           // Add modifier prices

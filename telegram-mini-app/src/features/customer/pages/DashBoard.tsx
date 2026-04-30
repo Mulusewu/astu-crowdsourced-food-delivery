@@ -358,11 +358,10 @@ export default function CustomerDashboard() {
                 key={tab}
                 onClick={() => setActiveTab(tab as any)}
                 className={`whitespace-nowrap px-5 py-2 rounded-[14px] text-[13px] font-bold transition-all shadow-sm border
-              ${
-                activeTab === tab
-                  ? "bg-[#F26A1C] text-white border-[#F26A1C]"
-                  : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
-              }`}
+              ${activeTab === tab
+                    ? "bg-[#F26A1C] text-white border-[#F26A1C]"
+                    : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  }`}
               >
                 {tab}
               </button>
@@ -624,11 +623,10 @@ export default function CustomerDashboard() {
                     <button
                       key={price}
                       onClick={() => setSelectedPrice(price)}
-                      className={`px-4 py-2 rounded-[10px] text-[12px] font-bold transition-colors active:scale-95 ${
-                        selectedPrice === price
-                          ? "bg-[#F26A1C] text-white shadow-md"
-                          : "bg-[#FFF4ED] dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-orange-100 dark:border-gray-700"
-                      }`}
+                      className={`px-4 py-2 rounded-[10px] text-[12px] font-bold transition-colors active:scale-95 ${selectedPrice === price
+                        ? "bg-[#F26A1C] text-white shadow-md"
+                        : "bg-[#FFF4ED] dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-orange-100 dark:border-gray-700"
+                        }`}
                     >
                       {price}
                     </button>
@@ -654,11 +652,10 @@ export default function CustomerDashboard() {
                     <button
                       key={loc}
                       onClick={() => setSelectedLocation(loc)}
-                      className={`px-4 py-2 rounded-[10px] text-[12px] font-bold transition-colors active:scale-95 ${
-                        selectedLocation === loc
-                          ? "bg-[#F26A1C] text-white shadow-md"
-                          : "bg-[#FFF4ED] dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-orange-100 dark:border-gray-700"
-                      }`}
+                      className={`px-4 py-2 rounded-[10px] text-[12px] font-bold transition-colors active:scale-95 ${selectedLocation === loc
+                        ? "bg-[#F26A1C] text-white shadow-md"
+                        : "bg-[#FFF4ED] dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-orange-100 dark:border-gray-700"
+                        }`}
                     >
                       {loc}
                     </button>

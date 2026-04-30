@@ -1,3 +1,4 @@
+import React from "react";
 import * as React from "react"
 import { Progress as ProgressPrimitive } from "radix-ui"
 

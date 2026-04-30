@@ -64,10 +64,10 @@ export default function AppRoutes() {
           {/* ====================== DELIVERY ROUTES ====================== */}
           <Route element={<DeliveryLayout />}>
             {deliveryRoutes.map((route) => (
-              <Route 
-                key={route.path} 
-                path={route.path} 
-                element={route.element} 
+              <Route
+                key={route.path}
+                path={route.path}
+                element={route.element}
               />
             ))}
           </Route>

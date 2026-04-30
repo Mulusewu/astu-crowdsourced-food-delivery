@@ -58,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const isAuthenticated = !!user;
-  const role = user?.role || null;
+  const role = user?.roles?.[0] || null;
 
   const value: AuthContextType = {
     user,

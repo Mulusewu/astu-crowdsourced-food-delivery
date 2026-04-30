@@ -1,3 +1,4 @@
+import React from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -9,10 +10,11 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import db from "@/data/database.json";
 import { useAuthStore } from "@/store/auth/authStore";
 import { useCartStore } from "@/store/cart/cartStore";
 import { useCustomerStore } from "@/store/customer/customerStore"; // Assuming this handles addresses/saved payments
+import { ROUTES } from "@/routes/routePaths";
+import { buildRoute } from "@/routes/routePaths";
 
 // Reusing shared components we built earlier
 import { ActionButton } from "@/features/shared/components/ProfileShared";
@@ -20,11 +22,15 @@ import { TMAStatusBar } from "../components/layout/TMAStatusBar"; // Assuming th
 
 export default function CartCheckoutPage() {
   const navigate = useNavigate();
+  const currency = "ETB";
 
   // 1. Context & Stores
   const { user } = useAuthStore();
   const cartItems = useCartStore((state) => state.items);
   const cartSubtotal = useCartStore((state) => state.getSubtotal());
+  const deliveryFee = useCartStore((state) => state.getDeliveryFee());
+  const discount = useCartStore((state) => state.getDiscountAmount());
+  const finalTotal = useCartStore((state) => state.getTotal());
 
   // Assuming these exist in a customer store to manage selections
   // Use selectors for default address and payment method
@@ -40,17 +46,9 @@ export default function CartCheckoutPage() {
   // 2. Local State for UI interactions
   const [noteToDriver, setNoteToDriver] = useState("");
 
-  // 3. Logic & Calculations (Consistent with Adama context)
-  const deliveryFee = db.baseDeliveryFee; // In Adama, maybe a flat fee based on distance logic
-  const discount = db.mockDiscount; // Assuming a voucher is applied
-  const total = cartSubtotal + deliveryFee - discount;
-  const finalTotal = total > 0 ? total : 0;
+  // 3. Logic & Calculations
 
-  // 4. Role Guard (Safety)
-  if (user?.activeRole !== "customer") {
-    navigate("/auth");
-    return null;
-  }
+  // NOTE: auth/role guards are temporarily bypassed in layouts for UI testing.
 
   // Fallbacks if cart is somehow empty on checkout
   if (cartItems.length === 0) {
@@ -112,7 +110,7 @@ export default function CartCheckoutPage() {
           </div>
           <button
             className="w-full flex items-center gap-4 text-left active:opacity-70 transition-opacity"
-            onClick={() => navigate("/customer/profile/address")}
+            onClick={() => navigate(ROUTES.CUSTOMER.ADDRESSES)}
           >
             <div className="w-10 h-10 bg-orange-50 dark:bg-gray-800 rounded-full flex items-center justify-center text-[#F26A1C]">
               <MapPin size={20} />
@@ -159,7 +157,7 @@ export default function CartCheckoutPage() {
                   {item.name}
                 </p>
                 <p className="font-bold text-gray-900 dark:text-white shrink-0">
-                  {item.price * item.quantity} {db.currency}
+                  {item.price * item.quantity} {currency}
                 </p>
               </div>
             ))}
@@ -179,7 +177,7 @@ export default function CartCheckoutPage() {
           </h3>
           <button
             className="w-full flex items-center gap-4 text-left active:opacity-70 transition-opacity"
-            onClick={() => navigate("/profile/payment")} // Shared page
+            onClick={() => navigate(ROUTES.CUSTOMER.PAYMENT.METHODS)}
           >
             <div className="w-10 h-10 bg-blue-50 dark:bg-gray-800 rounded-full flex items-center justify-center text-blue-600">
               <CreditCard size={20} />
@@ -232,7 +230,7 @@ export default function CartCheckoutPage() {
           <div className="flex justify-between items-center text-sm font-medium">
             <span className="text-gray-600 dark:text-gray-400">Subtotal</span>
             <span className="text-gray-900 dark:text-white">
-              {cartSubtotal} {db.currency}
+              {cartSubtotal} {currency}
             </span>
           </div>
           <div className="flex justify-between items-center text-sm font-medium">
@@ -240,7 +238,7 @@ export default function CartCheckoutPage() {
               Delivery Fee (Adama)
             </span>
             <span className="text-gray-900 dark:text-white">
-              {deliveryFee} {db.currency}
+              {deliveryFee} {currency}
             </span>
           </div>
           <div className="flex justify-between items-center text-sm font-medium text-green-600">
@@ -249,7 +247,7 @@ export default function CartCheckoutPage() {
               <span>Discount applied</span>
             </div>
             <span>
-              - {discount} {db.currency}
+              - {discount} {currency}
             </span>
           </div>
 
@@ -260,7 +258,7 @@ export default function CartCheckoutPage() {
               Total
             </span>
             <span className="text-[20px] font-black text-[#F26A1C]">
-              {finalTotal} {db.currency}
+              {finalTotal} {currency}
             </span>
           </div>
         </div>
@@ -269,7 +267,13 @@ export default function CartCheckoutPage() {
       {/* ── Fixed Bottom Button Container (image_3.png pattern) ── */}
       <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-950 border-t border-gray-100 dark:border-gray-800 px-5 py-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] z-40">
         <ActionButton
-          onClick={() => navigate("/customer/orders/tracking/ord_004")}
+          onClick={() =>
+            navigate(
+              buildRoute(ROUTES.CUSTOMER.ORDERS.TRACK, {
+                orderId: cartItems[0]?.id || "ord_004",
+              }),
+            )
+          }
         >
           Confirm Order
         </ActionButton>

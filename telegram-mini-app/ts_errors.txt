@@ -1,0 +1,107 @@
+src/api/client/axiosInstance.ts(3,3): error TS1484: 'AxiosInstance' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/api/client/axiosInstance.ts(4,3): error TS1484: 'InternalAxiosRequestConfig' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/api/client/axiosInstance.ts(6,10): error TS1484: 'ApiError' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/api/endpoints/auth.ts(3,3): error TS1484: 'LoginRequest' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/api/endpoints/auth.ts(4,3): error TS1484: 'LoginResponse' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/api/endpoints/auth.ts(5,3): error TS1484: 'SignupRequest' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/api/endpoints/auth.ts(6,3): error TS1484: 'SignupResponse' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/components/brand/BrandCard.tsx(2,1): error TS6133: 'Bike' is declared but its value is never read.
+src/components/common/ThemeToggle.tsx(11,17): error TS2339: Property 'toggleMode' does not exist on type 'ThemeState'.
+src/contexts/AuthContext.tsx(61,22): error TS2551: Property 'role' does not exist on type 'User'. Did you mean 'roles'?
+src/features/auth/components/SigninForm.tsx(16,30): error TS6133: 'error' is declared but its value is never read.
+src/features/auth/components/auth-tabs.tsx(7,1): error TS6133: 'BrandCard' is declared but its value is never read.
+src/features/auth/pages/ForgotPasswordPage.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/features/auth/pages/OtpPage.tsx(48,3): error TS6133: 'role' is declared but its value is never read.
+src/features/auth/pages/OtpPage.tsx(61,9): error TS6133: 'location' is declared but its value is never read.
+src/features/auth/pages/ResetPasswordPage.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/features/customer/components/EmptyCartView.tsx(3,1): error TS6133: 'Button' is declared but its value is never read.
+src/features/customer/components/FoodItemCard.tsx(29,15): error TS2345: Argument of type '{ id: string; name: string; price: number; quantity: number; image: string; restaurantId: string; }' is not assignable to parameter of type 'Omit<CartItem, "quantity"> & { quantity?: number | undefined; }'.
+  Property 'restaurantName' is missing in type '{ id: string; name: string; price: number; quantity: number; image: string; restaurantId: string; }' but required in type 'Omit<CartItem, "quantity">'.
+src/features/customer/components/RestaurantCard.tsx(15,3): error TS6133: 'id' is declared but its value is never read.
+src/features/customer/pages/CheckoutPage.tsx(27,9): error TS6133: 'user' is declared but its value is never read.
+src/features/customer/pages/DashBoard.tsx(53,44): error TS2345: Argument of type 'AuthUser | null' is not assignable to parameter of type 'User | null'.
+  Type 'AuthUser' is not assignable to type 'User | null'.
+    Type 'AuthUser' is missing the following properties from type 'User': roles, isVerified
+src/features/customer/pages/EditProfilePage.tsx(24,26): error TS2339: Property 'avatar' does not exist on type 'AuthUser'.
+src/features/customer/pages/NotificationsPage.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/features/customer/pages/OffersDetailsPage.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/features/customer/pages/OrderHistoryPage.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/features/customer/pages/OrderListPage.tsx(5,3): error TS6133: 'ChevronRight' is declared but its value is never read.
+src/features/customer/pages/OrderListPage.tsx(7,3): error TS6133: 'MapPin' is declared but its value is never read.
+src/features/customer/pages/OrderListPage.tsx(17,8): error TS6133: 'OrderStatus' is declared but its value is never read.
+src/features/customer/pages/ProfilePage.tsx(24,24): error TS2339: Property 'avatar' does not exist on type 'AuthUser'.
+src/features/customer/pages/SupportPage.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/features/delivery/pages/DeliveryOrderDetailPage.tsx(145,53): error TS2339: Property 'ORDERS' does not exist on type '{ readonly DASHBOARD: "/delivery/dashboard"; readonly STATUS: "/delivery/status"; readonly AVAILABILITY: "/delivery/availability"; readonly SAVED: "/delivery/saved"; readonly OFFLINE: "/delivery/offline"; ... 14 more ...; readonly PAYMENT_ADD: "/delivery/profile/payment/add"; }'.
+src/features/delivery/pages/ProfilePage.tsx(32,23): error TS2339: Property 'avatar' does not exist on type 'AuthUser'.
+src/features/delivery/pages/ProfilePage.tsx(67,22): error TS2339: Property 'phone' does not exist on type 'AuthUser'.
+src/features/layouts/CustomerLayout.tsx(2,1): error TS6133: 'useAuthStore' is declared but its value is never read.
+src/features/layouts/DeliveryLayout.tsx(2,1): error TS6133: 'useAuthStore' is declared but its value is never read.
+src/features/layouts/VendorLayout.tsx(2,1): error TS6133: 'useAuthStore' is declared but its value is never read.
+src/features/payment/pages/PaymentPage.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/features/profiles/DelivererProfilePage.tsx(12,23): error TS2307: Cannot find module '@/components/common/BottomNav1' or its corresponding type declarations.
+src/features/profiles/DelivererProfilePage.tsx(124,7): error TS2322: Type '{ readonly LIST: "/delivery/available"; readonly DETAILS: "/delivery/available/:orderId"; readonly FILTERS: "/delivery/available/filters"; }' is not assignable to type 'string'.
+src/features/profiles/DelivererProfilePage.tsx(125,31): error TS2339: Property 'ORDERS' does not exist on type '{ readonly DASHBOARD: "/delivery/dashboard"; readonly STATUS: "/delivery/status"; readonly AVAILABILITY: "/delivery/availability"; readonly SAVED: "/delivery/saved"; readonly OFFLINE: "/delivery/offline"; ... 14 more ...; readonly PAYMENT_ADD: "/delivery/profile/payment/add"; }'.
+src/features/profiles/DelivererProfilePage.tsx(126,7): error TS2322: Type '{ readonly SUMMARY: "/delivery/earnings"; readonly DETAILS: "/delivery/earnings/details"; readonly HISTORY: "/delivery/earnings/history"; readonly WITHDRAW: "/delivery/earnings/withdraw"; readonly STATEMENT: "/delivery/earnings/statement/:month"; }' is not assignable to type 'string'.
+src/features/shared/ProfilePage.tsx(5,3): error TS6133: 'Camera' is declared but its value is never read.
+src/features/shared/ProfilePage.tsx(6,3): error TS6133: 'Mail' is declared but its value is never read.
+src/features/shared/ProfilePage.tsx(7,3): error TS6133: 'Phone' is declared but its value is never read.
+src/features/shared/ProfilePage.tsx(8,3): error TS6133: 'ClipboardList' is declared but its value is never read.
+src/features/shared/ProfilePage.tsx(15,30): error TS2307: Cannot find module '@/components/common/DynamicBottomNav' or its corresponding type declarations.
+src/features/shared/ProfilePage.tsx(16,26): error TS2307: Cannot find module '@/components/profile/RoleDropdown' or its corresponding type declarations.
+src/features/shared/ProfilePage.tsx(50,37): error TS2339: Property 'avatar' does not exist on type 'AuthUser'.
+src/features/shared/components/RoleSwitcher.tsx(15,7): error TS6133: 'roleColors' is declared but its value is never read.
+src/features/shared/pages/ProfilePage.tsx(44,37): error TS2339: Property 'avatar' does not exist on type 'AuthUser'.
+src/features/shared/pages/ProfilePage.tsx(89,22): error TS2339: Property 'phone' does not exist on type 'AuthUser'.
+src/features/vendor/pages/EarningsPage.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/features/vendor/pages/MenuPage.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/features/vendor/pages/OrdersPage.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/features/vendor/pages/SettingsPage.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/hooks/useAuth.ts(2,10): error TS2459: Module '"../contexts/AuthContext"' declares 'AuthContext' locally, but it is not exported.
+src/hooks/useTelegram.ts(1,10): error TS6133: 'useEffect' is declared but its value is never read.
+src/routes/ProtectedRoute.tsx(2,10): error TS6133: 'Navigate' is declared but its value is never read.
+src/routes/ProtectedRoute.tsx(2,28): error TS6133: 'useLocation' is declared but its value is never read.
+src/routes/ProtectedRoute.tsx(3,10): error TS6133: 'useAuthStore' is declared but its value is never read.
+src/routes/ProtectedRoute.tsx(11,40): error TS6198: All destructured elements are unused.
+src/routes/routeGroups/sharedRoutes.tsx(4,26): error TS6133: 'UserRole' is declared but its value is never read.
+src/routes/routeGroups/sharedRoutes.tsx(21,7): error TS6133: 'sharedProfilePage' is declared but its value is never read.
+src/routes/routeGroups/sharedRoutes.tsx(72,7): error TS6133: 'customerVendorRoles' is declared but its value is never read.
+src/routes/routeGroups/vendorRoutes.tsx(4,15): error TS6133: 'UserRole' is declared but its value is never read.
+src/routes/routeGroups/vendorRoutes.tsx(13,7): error TS6133: 'VendorEarningsPage' is declared but its value is never read.
+src/store/activeDeliveriesStore.ts(67,9): error TS6133: 'get' is declared but its value is never read.
+src/store/activeDeliveriesStore.ts(159,9): error TS2322: Type '{ id: string; orderNumber: string; status: "in_transit" | "picked_up" | "assigned"; priority: boolean; createdAt: string; estimatedDeliveryTime: string; timeRemaining: number; distance: string; ... 6 more ...; paymentMethod: string; }[]' is not assignable to type 'ActiveDelivery[]'.
+  Type '{ id: string; orderNumber: string; status: "in_transit" | "picked_up" | "assigned"; priority: boolean; createdAt: string; estimatedDeliveryTime: string; timeRemaining: number; distance: string; ... 6 more ...; paymentMethod: string; }' is not assignable to type 'ActiveDelivery'.
+    Types of property 'paymentMethod' are incompatible.
+      Type 'string' is not assignable to type '"card" | "cash" | "telegram_stars"'.
+src/store/auth/authStore.ts(116,11): error TS2353: Object literal may only specify known properties, and 'password' does not exist in type 'AuthUser'.
+src/store/auth/authStore.ts(240,30): error TS2561: Object literal may only specify known properties, but 'activeRole' does not exist in type 'AuthUser'. Did you mean to write 'activeMode'?
+src/store/cart/cartStore.ts(98,17): error TS6133: 'items' is declared but its value is never read.
+src/store/cart/cartStore.ts(121,15): error TS6133: 'modifiersTotal' is declared but its value is never read.
+src/store/cart/cartStore.ts(236,17): error TS6133: 'restaurant' is declared but its value is never read.
+src/store/customer/customerStore.ts(130,7): error TS6133: 'normalizePaymentMethod' is declared but its value is never read.
+src/store/customer/customerStore.ts(145,7): error TS6133: 'normalizeAddress' is declared but its value is never read.
+src/store/customer/savedItemsStore.ts(19,26): error TS2339: Property 'savedItems' does not exist on type '{ version: string; timestamp: string; prismaCompatible: boolean; metadata: { totalUsers: number; totalRestaurants: number; totalOrders: number; totalMenuItems: number; totalCategories: number; ... 5 more ...; lastUpdated: string; }; ... 21 more ...; systemConfigs: { ...; }[]; }'.
+src/store/food/foodStore.ts(69,53): error TS6133: 'get' is declared but its value is never read.
+src/store/index.ts(6,10): error TS2305: Module '"./auth/authStore"' has no exported member 'createAuthSlice'.
+src/store/index.ts(6,27): error TS2305: Module '"./auth/authStore"' has no exported member 'AuthSlice'.
+src/store/index.ts(7,44): error TS2307: Cannot find module './user/userStore' or its corresponding type declarations.
+src/store/index.ts(8,10): error TS2305: Module '"./customer/customerStore"' has no exported member 'createCustomerSlice'.
+src/store/index.ts(8,31): error TS2724: '"./customer/customerStore"' has no exported member named 'CustomerSlice'. Did you mean 'CustomerUser'?
+src/store/index.ts(9,10): error TS2305: Module '"./vendor/vendorStore"' has no exported member 'createVendorSlice'.
+src/store/index.ts(9,29): error TS2305: Module '"./vendor/vendorStore"' has no exported member 'VendorSlice'.
+src/store/index.ts(10,52): error TS2307: Cannot find module './delivery/deliveryStore' or its corresponding type declarations.
+src/store/index.ts(11,10): error TS2305: Module '"./orders/orderStore"' has no exported member 'createOrderSlice'.
+src/store/index.ts(11,28): error TS2305: Module '"./orders/orderStore"' has no exported member 'OrderSlice'.
+src/store/index.ts(12,10): error TS2305: Module '"./cart/cartStore"' has no exported member 'createCartSlice'.
+src/store/index.ts(12,27): error TS2305: Module '"./cart/cartStore"' has no exported member 'CartSlice'.
+src/store/index.ts(13,50): error TS2307: Cannot find module './payment/paymentStore' or its corresponding type declarations.
+src/store/index.ts(14,52): error TS2307: Cannot find module './location/locationStore' or its corresponding type declarations.
+src/store/index.ts(18,8): error TS2307: Cannot find module './notifications/notificationStore' or its corresponding type declarations.
+src/store/index.ts(19,40): error TS2307: Cannot find module './ui/uiStore' or its corresponding type declarations.
+src/store/orderDetailsStore.ts(55,69): error TS6133: 'get' is declared but its value is never read.
+src/store/orders/orderStore.ts(530,44): error TS6133: 'reason' is declared but its value is never read.
+src/store/orders/orderStore.ts(591,44): error TS6133: 'reason' is declared but its value is never read.
+src/types/database.ts(1,22): error TS6196: 'Customer' is declared but never used.
+testTimeFolder/TestPage.tsx(1,30): error TS2307: Cannot find module '@/features/delivery/pages/OrderDetailsPage' or its corresponding type declarations.
+testTimeFolder/TestPage.tsx(2,1): error TS6133: 'OrdersPage' is declared but its value is never read.
+testTimeFolder/TestPage.tsx(2,24): error TS2307: Cannot find module '@/features/delivery/pages/Orders' or its corresponding type declarations.
+testTimeFolder/TestPage.tsx(3,1): error TS6133: 'React' is declared but its value is never read.

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import db from "@/data/database.json";
+import { db } from "@/data";
 
 export interface FoodItem {
   id: string;
@@ -79,12 +79,71 @@ interface RestaurantState {
 const delay = (ms: number = 500) =>
   new Promise((resolve) => setTimeout(resolve, ms));
 
-// Safe location parser
-const parseLocation = (loc: any): string => {
-  if (typeof loc === "string") return loc;
-  if (loc && typeof loc === "object" && loc.area) return loc.area;
-  return "Adama";
+const FALLBACK_REST_IMAGE =
+  "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&fit=crop";
+const FALLBACK_MENU_IMAGE =
+  "https://images.unsplash.com/photo-1544025162-831e5088eb7e?q=80&w=200&auto=format&fit=crop";
+
+const priceLevelFromMin = (minOrderValue: number): string => {
+  if (minOrderValue >= 200) return "$$$";
+  if (minOrderValue >= 80) return "$$";
+  return "$";
 };
+
+const toUiRestaurant = (rest: (typeof db.restaurants)[number]): Restaurant => ({
+  id: rest.id,
+  name: rest.name,
+  description: "A wonderful place to eat.",
+  shortDescription: "",
+  cuisine: rest.tags || [],
+  image: rest.imageUrl || FALLBACK_REST_IMAGE,
+  coverImage: rest.imageUrl || "",
+  logo: "",
+  rating: Number(rest.avgRating) || 4.5,
+  totalReviews: Number(rest.totalReviews) || 0,
+  reviews: Number(rest.totalReviews) || 0,
+  priceLevel: priceLevelFromMin(Number(rest.minOrderValue) || 0),
+  deliveryTime: "15-25 min",
+  avgDeliveryTime: 25,
+  deliveryFee: 0,
+  minimumOrder: Number(rest.minOrderValue) || 0,
+  freeDeliveryThreshold: 0,
+  isOpen: rest.isOpen !== false,
+  location: rest.location || "Adama",
+  contact: { phone: rest.phone, email: rest.phone },
+  hours: {},
+  features: {
+    acceptsCash: true,
+    acceptsCard: false,
+    acceptsTelegramStars: false,
+    hasDelivery: true,
+    hasPickup: false,
+    hasDineIn: false,
+  },
+  categories: db.categories.filter((c) => c.restaurantId === rest.id),
+  offers: [],
+  deliveryZones: [],
+  estimatedDeliveryTime: { min: 15, max: 25 },
+  popularityScore: 0,
+  isFeatured: false,
+  menu: [],
+});
+
+const toUiFoodItem = (
+  menu: (typeof db.menuItems)[number],
+  restaurant: (typeof db.restaurants)[number],
+): FoodItem => ({
+  id: menu.id,
+  name: menu.name,
+  restaurant: restaurant.name,
+  restaurantId: restaurant.id,
+  location: restaurant.location || "Adama",
+  price: Number(menu.price) || 0,
+  rating: Number(restaurant.avgRating) || 4.5,
+  image: menu.imageUrl || FALLBACK_MENU_IMAGE,
+  imageUrl: menu.imageUrl || FALLBACK_MENU_IMAGE,
+  description: menu.description || "",
+});
 
 export const useRestaurantStore = create<RestaurantState>((set) => ({
   restaurants: [],
@@ -98,51 +157,7 @@ export const useRestaurantStore = create<RestaurantState>((set) => ({
     try {
       await delay(400);
 
-      const restaurants: Restaurant[] = (db.restaurants || []).map(
-        (rest: any) => ({
-          ...rest,
-          description: rest.description || "A wonderful place to eat.",
-          shortDescription: rest.shortDescription || "",
-          cuisine: rest.cuisine || [],
-          image:
-            rest.image ||
-            rest.coverImage ||
-            "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&fit=crop",
-          coverImage: rest.coverImage || "",
-          logo: rest.logo || "",
-          rating: Number(rest.rating) || 4.0,
-          totalReviews: Number(rest.totalReviews) || Number(rest.reviews) || 0,
-          reviews: Number(rest.totalReviews) || Number(rest.reviews) || 0,
-          priceLevel: rest.priceLevel || "$$",
-          deliveryTime: rest.deliveryTime || "15-25 min",
-          avgDeliveryTime: rest.estimatedDeliveryTime?.max || 25,
-          deliveryFee: Number(rest.deliveryFee) || 0,
-          minimumOrder: Number(rest.minimumOrder) || 0,
-          freeDeliveryThreshold: Number(rest.freeDeliveryThreshold) || 0,
-          isOpen: rest.isOpen !== false,
-          location: parseLocation(rest.location),
-          contact: rest.contact || { phone: "", email: "" },
-          hours: rest.hours || {},
-          features: rest.features || {
-            acceptsCash: true,
-            acceptsCard: false,
-            acceptsTelegramStars: false,
-            hasDelivery: true,
-            hasPickup: false,
-            hasDineIn: false,
-          },
-          categories: rest.categories || [],
-          offers: rest.offers || [],
-          deliveryZones: rest.deliveryZones || [],
-          estimatedDeliveryTime: rest.estimatedDeliveryTime || {
-            min: 15,
-            max: 25,
-          },
-          popularityScore: rest.popularityScore || 0,
-          isFeatured: rest.isFeatured || false,
-          menu: [],
-        }),
-      );
+      const restaurants: Restaurant[] = (db.restaurants || []).map(toUiRestaurant);
 
       set({ restaurants, isLoading: false });
     } catch (error) {
@@ -158,35 +173,13 @@ export const useRestaurantStore = create<RestaurantState>((set) => ({
     try {
       await delay(400);
 
-      // Safety check: if popularFoods doesn't exist, return empty array instead of crashing
-      const popularRefs = Array.isArray(db.popularFoods) ? db.popularFoods : [];
-
-      const popularFoods: FoodItem[] = popularRefs
-        .map((ref: any) => {
-          let product: any = null;
-
-          // Hunt for the product in db.menu depending on how it's structured
-          if (db.menu && !Array.isArray(db.menu)) {
-            const restMenu = (db.menu as any)[ref.restaurantId] || [];
-            product = restMenu.find((item: any) => item.id === ref.id);
-          } else if (Array.isArray(db.menu)) {
-            product = db.menu.find((item: any) => item.id === ref.id);
-          }
-
-          if (!product) return null;
-
-          return {
-            id: product.id,
-            name: product.name,
-            restaurant: ref.restaurant,
-            restaurantId: ref.restaurantId,
-            location: parseLocation(ref.location),
-            price: Number(product.price) || 0,
-            rating: Number(product.rating) || 4.0,
-            image: product.image || product.imageUrl || "",
-            imageUrl: product.imageUrl || product.image || "",
-            description: product.description || "",
-          };
+      // Prisma dataset doesn't include popularFoods. Derive a reasonable list from menuItems.
+      const popularFoods: FoodItem[] = db.menuItems
+        .slice(0, 10)
+        .map((m) => {
+          const rest = db.restaurants.find((r) => r.id === m.restaurantId);
+          if (!rest) return null;
+          return toUiFoodItem(m, rest);
         })
         .filter(Boolean) as FoodItem[];
 
@@ -201,9 +194,7 @@ export const useRestaurantStore = create<RestaurantState>((set) => ({
     try {
       await delay(400);
 
-      const restBase = ((db.restaurants as any[]) || []).find(
-        (r) => r.id === id,
-      );
+      const restBase = (db.restaurants || []).find((r) => r.id === id);
 
       if (!restBase) {
         set({
@@ -214,50 +205,15 @@ export const useRestaurantStore = create<RestaurantState>((set) => ({
         return;
       }
 
-      // ROBUST MENU FETCHING: Checks 3 different possible JSON structures
-      let rawMenu: any[] = [];
-      if (Array.isArray(restBase.menu)) {
-        rawMenu = restBase.menu; // Nested inside restaurant
-      } else if (db.menu && !Array.isArray(db.menu)) {
-        rawMenu = (db.menu as any)[id] || []; // Dictionary keyed by ID
-      } else if (Array.isArray(db.menu)) {
-        rawMenu = db.menu.filter((m: any) => m.restaurantId === id); // Flat array
-      }
-
-      const menuItems: FoodItem[] = rawMenu.map((item) => ({
-        id: item.id,
-        name: item.name || "Menu Item",
-        restaurant: restBase.name,
-        restaurantId: restBase.id,
-        location: parseLocation(restBase.location),
-        price: Number(item.price) || 0,
-        rating: Number(item.rating) || 4.0,
-        image:
-          item.image ||
-          item.imageUrl ||
-          "https://images.unsplash.com/photo-1541544741938-0af808871cc0?w=200&fit=crop",
-        imageUrl:
-          item.imageUrl ||
-          item.image ||
-          "https://images.unsplash.com/photo-1541544741938-0af808871cc0?w=200&fit=crop",
-        description:
-          item.description || "Delicious special from " + restBase.name,
-      }));
+      const base = toUiRestaurant(restBase);
+      const menuItems: FoodItem[] = db.menuItems
+        .filter((m) => m.restaurantId === id && m.isArchived !== true)
+        .map((m) => toUiFoodItem(m, restBase));
 
       const fullRestaurant: Restaurant = {
-        ...restBase,
-        description:
-          restBase.description || "A wonderful place to eat in Adama.",
-        image:
-          restBase.image ||
-          restBase.coverImage ||
-          "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&fit=crop",
-        rating: Number(restBase.rating) || 4.0,
-        reviews: Number(restBase.totalReviews) || Number(restBase.reviews) || 0,
-        avgDeliveryTime: restBase.estimatedDeliveryTime?.max || 25,
-        location: parseLocation(restBase.location),
+        ...base,
         menu: menuItems,
-      } as Restaurant;
+      };
 
       set({ currentRestaurant: fullRestaurant, isLoading: false });
     } catch (error) {

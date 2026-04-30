@@ -1,5 +1,6 @@
 import { create } from "zustand";
-import db from "@/data/database.json";
+import { db } from "@/data";
+import type { Order as SchemaOrder } from "@/types/prisma";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -21,7 +22,7 @@ interface OrderDetails {
   deliveryFee: number;
   distance: string;
   estimatedDeliveryTime: string;
-  status: string;
+  status: "pending" | "confirmed" | "cancelled";
   totalAmount: number;
 }
 
@@ -35,6 +36,22 @@ interface OrderDetailsState {
   declineOrder: () => Promise<void>;
 }
 
+const mapSchemaToUiStatus = (status: SchemaOrder["status"]): OrderDetails["status"] => {
+  switch (status) {
+    case "CREATED":
+    case "AWAITING_ACCEPT":
+      return "pending";
+    case "ASSIGNED":
+      return "confirmed";
+    case "CANCELLED":
+    case "NO_DELIVERER_FOUND":
+      return "cancelled";
+    default:
+      // For detail page “accept”, we only need to know if it’s still accept-able.
+      return "confirmed";
+  }
+};
+
 export const useOrderDetailsStore = create<OrderDetailsState>((set, get) => ({
   order: null,
   isLoading: true,
@@ -45,27 +62,45 @@ export const useOrderDetailsStore = create<OrderDetailsState>((set, get) => ({
 
     await delay(650);
 
-    const found = db.orders.available.find((o: any) => o.id === orderId);
+    const foundOrder = db.orders.find((o) => o.id === orderId);
 
-    if (found) {
-      const subtotal = found.items.reduce(
-        (sum: number, item: any) => sum + item.price * item.quantity,
+    if (foundOrder) {
+      const restaurant =
+        db.restaurants.find((r) => r.id === foundOrder.restaurantId) || null;
+      const customer =
+        db.users.find((u) => u.id === foundOrder.customerId) || null;
+
+      const items = db.orderItems
+        .filter((oi) => oi.orderId === foundOrder.id)
+        .map((oi) => {
+          const menu = db.menuItems.find((m) => m.id === oi.menuId) || null;
+          return {
+            id: oi.id,
+            name: menu?.name || "Item",
+            quantity: oi.quantity,
+            price: oi.unitPrice,
+            image: menu?.imageUrl || "",
+          };
+        });
+
+      const subtotal = items.reduce(
+        (sum, item) => sum + item.price * item.quantity,
         0,
       );
 
       set({
         order: {
-          id: found.id,
-          orderNumber: found.orderNumber,
-          cafeName: found.cafeName,
-          customer: found.customer,
-          items: found.items,
+          id: foundOrder.id,
+          orderNumber: foundOrder.shortId,
+          cafeName: restaurant?.name || "Restaurant",
+          customer: { address: customer?.phoneNumber || "" },
+          items,
           subtotal,
-          deliveryFee: 50,
-          distance: found.distance,
+          deliveryFee: foundOrder.deliveryFee,
+          distance: "—",
           estimatedDeliveryTime: "30 Min",
-          status: found.status,
-          totalAmount: found.totalAmount,
+          status: mapSchemaToUiStatus(foundOrder.status),
+          totalAmount: foundOrder.totalAmount,
         },
         isLoading: false,
       });
@@ -79,13 +114,19 @@ export const useOrderDetailsStore = create<OrderDetailsState>((set, get) => ({
     await delay(800);
     // TODO: later → real API call
     console.log("Order accepted");
-    set({ isAccepting: false });
+    set((state) => ({
+      isAccepting: false,
+      order: state.order ? { ...state.order, status: "confirmed" } : state.order,
+    }));
     // navigate to active deliveries (handled in component)
   },
 
   declineOrder: async () => {
     await delay(400);
     console.log("Order declined");
+    set((state) => ({
+      order: state.order ? { ...state.order, status: "cancelled" } : state.order,
+    }));
     // TODO: later → real API + reason dialog
   },
 }));

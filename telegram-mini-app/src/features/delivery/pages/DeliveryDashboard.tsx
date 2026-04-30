@@ -153,7 +153,9 @@ export default function DeliveryDashboard() {
                 <button
                   type="button"
                   onClick={() => {
-                    navigate(ROUTES.DELIVERY.SETTINGS);
+                    // Settings route is not wired yet in deliveryRoutes.
+                    // Keep navigation within currently available delivery pages.
+                    navigate(ROUTES.DELIVERY.STATUS);
                     setShowProfileMenu(false);
                   }}
                   className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors"
