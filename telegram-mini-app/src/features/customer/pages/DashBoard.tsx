@@ -61,7 +61,7 @@ export default function CustomerDashboard() {
 
   // Advanced Filter Modal State
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  
+
   // Filter Store logic
   const {
     searchQuery,
@@ -86,7 +86,7 @@ export default function CustomerDashboard() {
   const filteredFoods = popularFoods.filter((f) => {
     if (searchQuery && !f.name.toLowerCase().includes(searchQuery.toLowerCase()) && !f.restaurant.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     if (selectedLocation !== "Any" && !f.location.toLowerCase().includes(selectedLocation.replace(" Gate", "").toLowerCase())) return false;
-    
+
     if (selectedPrice !== "Any") {
       const [minStr, maxStr] = selectedPrice.split("-");
       const min = parseInt(minStr, 10);
@@ -339,42 +339,50 @@ export default function CustomerDashboard() {
           <h3 className="font-bold text-gray-900 dark:text-white mb-3 text-[15px]">
             Ongoing Offers
           </h3>
-          <div
-            className="relative w-full h-[140px] rounded-[24px] overflow-hidden shadow-md cursor-pointer active:scale-[0.98] transition-transform"
-            onClick={() => navigate(buildRoute(ROUTES.CUSTOMER.RESTAURANT.DETAILS, { restaurantId: "rest_004" }))}
-          >
-            <img
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(buildRoute(ROUTES.CUSTOMER.FOOD.OFFER_DETAILS, { offerId: "special_combo" }));
-              }}
-              src="https://images.unsplash.com/photo-1600891964092-4316b2880328?w=800"
-              className="w-full h-full object-cover"
-              alt="Promo"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
-            <div className="absolute inset-0 p-5 flex flex-col justify-between">
-              <div>
-                <h2 className="text-white font-bold text-lg leading-tight w-[70%]">
-                  Try The Special Combo At Helen's
-                </h2>
-                <p className="text-gray-300 text-[10px] mt-1 font-medium">
-                  Enough For 5 People
-                </p>
-              </div>
-              <div className="flex justify-between items-end">
-                <div>
-                  <p className="text-white text-[11px] font-bold">Order 2,</p>
-                  <p className="text-white text-lg font-black leading-none">
-                    GET 50% OFF
-                  </p>
+          {(() => {
+            // Find a restaurant with promo items, or fallback to the first available restaurant
+            const promoRestaurant = restaurants.find(r => r.menu?.some(m => m.isPromo)) || restaurants[0];
+            const promoRestId = promoRestaurant?.id || "rest_001";
+            
+            return (
+              <div
+                className="relative w-full h-[140px] rounded-[24px] overflow-hidden shadow-md cursor-pointer active:scale-[0.98] transition-transform"
+                onClick={() => navigate(buildRoute(ROUTES.CUSTOMER.RESTAURANT.DETAILS, { restaurantId: promoRestId }) + "?promoOnly=true")}
+              >
+                <img
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(buildRoute(ROUTES.CUSTOMER.FOOD.OFFER_DETAILS, { offerId: "special_combo" }));
+                  }}
+                  src="https://images.unsplash.com/photo-1600891964092-4316b2880328?w=800"
+                  className="w-full h-full object-cover"
+                  alt="Promo"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
+                <div className="absolute inset-0 p-5 flex flex-col justify-between">
+                  <div>
+                    <h2 className="text-white font-bold text-lg leading-tight w-[70%]">
+                      Try The Special Combo At {promoRestaurant?.name || "Our Partners"}
+                    </h2>
+                    <p className="text-gray-300 text-[10px] mt-1 font-medium">
+                      Exclusive App Discounts
+                    </p>
+                  </div>
+                  <div className="flex justify-between items-end">
+                    <div>
+                      <p className="text-white text-[11px] font-bold">Limited Time,</p>
+                      <p className="text-white text-lg font-black leading-none">
+                        GET 50% OFF
+                      </p>
+                    </div>
+                    <button className="bg-[#F26A1C] text-white text-[12px] font-bold px-6 py-2 rounded-full shadow-lg hover:bg-[#e05d15] active:scale-95 transition-transform">
+                      Order Now
+                    </button>
+                  </div>
                 </div>
-                <button className="bg-[#F26A1C] text-white text-[12px] font-bold px-6 py-2 rounded-full shadow-lg hover:bg-[#e05d15] active:scale-95 transition-transform">
-                  Order Now
-                </button>
               </div>
-            </div>
-          </div>
+            );
+          })()}
         </div>
 
         {/* SCROLLABLE TABS */}
@@ -655,9 +663,9 @@ export default function CustomerDashboard() {
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 text-[11px] font-semibold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-900 shadow-sm active:scale-95 transition-transform cursor-pointer"
                     >
                       {tag}{" "}
-                      <X 
-                        size={12} 
-                        className="text-gray-400 cursor-pointer hover:text-red-500" 
+                      <X
+                        size={12}
+                        className="text-gray-400 cursor-pointer hover:text-red-500"
                         onClick={(e) => {
                           e.stopPropagation();
                           removeRecentSearch(tag);

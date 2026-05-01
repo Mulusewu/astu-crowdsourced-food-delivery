@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft,
   Bookmark,
@@ -14,10 +14,13 @@ import {
 import { useRestaurantStore } from "@/store/restaurantStore";
 import { useCartStore } from "@/store/cart/cartStore";
 import { useSavedItemsStore } from "@/store/customer/savedItemsStore";
+import { ROUTES, buildRoute } from "@/routes/routePaths";
 
 export default function RestaurantDetailsPage() {
   const { restaurantId } = useParams<{ restaurantId: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isPromoOnly = searchParams.get("promoOnly") === "true";
 
   // Stores
   const {
@@ -172,7 +175,10 @@ export default function RestaurantDetailsPage() {
             </p>
           </div>
 
-          <div className="flex flex-col items-center justify-center py-3.5 px-2">
+          <button
+            onClick={() => navigate(buildRoute(ROUTES.CUSTOMER.RESTAURANT.REVIEWS, { restaurantId: restaurant.id }))}
+            className="flex flex-col items-center justify-center py-3.5 px-2 active:bg-gray-100 transition-colors"
+          >
             <div className="flex items-center space-x-1.5 mb-0.5">
               <Heart size={16} className="text-[#F26A1C]" strokeWidth={2.5} />
               <span className="text-[16px] font-black text-gray-900">
@@ -182,7 +188,7 @@ export default function RestaurantDetailsPage() {
             <p className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">
               Reviews
             </p>
-          </div>
+          </button>
 
           <div className="flex flex-col items-center justify-center py-3.5 px-2">
             <div className="flex items-center space-x-1.5 mb-0.5">
@@ -205,11 +211,35 @@ export default function RestaurantDetailsPage() {
 
       {/* ── Menu Items ── */}
       <section className="px-4">
-        <h3 className="text-[18px] font-black mb-4 px-1">Menu Items</h3>
+        <div className="flex items-center justify-between mb-4 px-1">
+          <h3 className="text-[18px] font-black">
+            {isPromoOnly ? "Promo Offers" : "Menu Items"}
+          </h3>
+          {isPromoOnly && (
+            <span className="bg-red-100 text-red-600 text-[10px] font-bold px-2 py-1 rounded-full">
+              Limited Time Deals
+            </span>
+          )}
+        </div>
 
-        {restaurant.menu && restaurant.menu.length > 0 ? (
-          <div className="grid grid-cols-2 gap-4">
-            {restaurant.menu.map((item) => (
+        {(() => {
+          const displayedMenu = isPromoOnly 
+            ? restaurant.menu?.filter(item => item.isPromo) 
+            : restaurant.menu;
+
+          if (!displayedMenu || displayedMenu.length === 0) {
+            return (
+              <div className="py-10 text-center bg-gray-50 rounded-[24px] border border-gray-100">
+                <p className="text-gray-500 font-bold text-sm">
+                  {isPromoOnly ? "No promo items currently available." : "No menu items found."}
+                </p>
+              </div>
+            );
+          }
+
+          return (
+            <div className="grid grid-cols-2 gap-4">
+              {displayedMenu.map((item) => (
               <div
                 key={item.id}
                 className="bg-white border border-gray-100 rounded-[20px] p-3 flex flex-col items-center text-center shadow-[0_4px_16px_rgba(0,0,0,0.03)] relative overflow-hidden"
@@ -274,13 +304,8 @@ export default function RestaurantDetailsPage() {
               </div>
             ))}
           </div>
-        ) : (
-          <div className="py-10 text-center bg-gray-50 rounded-[24px] border border-gray-100">
-            <p className="text-gray-500 font-bold text-sm">
-              No menu items found.
-            </p>
-          </div>
-        )}
+          );
+        })()}
       </section>
     </div>
   );

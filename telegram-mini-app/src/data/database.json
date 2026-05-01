@@ -193,8 +193,14 @@
       "rating": 4.70,
       "totalOrders": 24,
       "prefferedPaymentMethod": "card",
-      "bookmarkRestaurants": ["rest_001", "rest_003"],
-      "bookmarkMeals": ["prod_001", "prod_101"]
+      "bookmarkRestaurants": [
+        "rest_001",
+        "rest_003"
+      ],
+      "bookmarkMeals": [
+        "prod_001",
+        "prod_101"
+      ]
     }
   ],
   "delivererProfiles": [
@@ -260,7 +266,11 @@
       "minOrderValue": 50.00,
       "avgRating": 4.50,
       "totalReviews": 328,
-      "tags": ["Coffee", "Pastries", "Breakfast"]
+      "tags": [
+        "Coffee",
+        "Pastries",
+        "Breakfast"
+      ]
     },
     {
       "id": "rest_002",
@@ -278,7 +288,10 @@
       "minOrderValue": 100.00,
       "avgRating": 4.70,
       "totalReviews": 245,
-      "tags": ["Ethiopian", "Traditional"]
+      "tags": [
+        "Ethiopian",
+        "Traditional"
+      ]
     },
     {
       "id": "rest_003",
@@ -296,7 +309,10 @@
       "minOrderValue": 30.00,
       "avgRating": 4.90,
       "totalReviews": 512,
-      "tags": ["Coffee", "Italian"]
+      "tags": [
+        "Coffee",
+        "Italian"
+      ]
     }
   ],
   "categories": [

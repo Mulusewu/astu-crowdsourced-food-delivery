@@ -5,6 +5,7 @@ import {
   useSavedItemsStore,
   type SavedItem,
 } from "@/store/customer/savedItemsStore";
+import { ROUTES, buildRoute } from "@/routes/routePaths";
 
 // ─── constants ────────────────────────────────────────────────────────────────
 const ORANGE = "#F27420";
@@ -98,7 +99,11 @@ export default function SavedItemsPage() {
   const { items, removeItem } = useSavedItemsStore();
 
   const handleNavigate = (id: string) => {
-    navigate(`/food/${id}`);
+    if (id.startsWith("rest_")) {
+      navigate(buildRoute(ROUTES.CUSTOMER.RESTAURANT.DETAILS, { restaurantId: id }));
+    } else {
+      navigate(buildRoute(ROUTES.CUSTOMER.FOOD.DETAILS, { foodId: id }));
+    }
   };
 
   return (

@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { ROUTES, buildRoute } from "@/routes/routePaths";
 import {
   Package,
   Clock,
-  RefreshCw,
-  Navigation,
   CheckCircle2,
   XCircle,
 } from "lucide-react";
@@ -76,7 +75,7 @@ export default function CustomerOrdersPage() {
   const ActiveOrderCard = ({ order }: { order: any }) => {
     const status = getStatusDisplay(order.status);
     return (
-      <div className="bg-white dark:bg-gray-900 rounded-[24px] p-5 mb-4 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100 dark:border-gray-800 transition-transform active:scale-[0.98]">
+      <div className="bg-white dark:bg-gray-900 rounded-[24px] p-5 mb-4 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100 dark:border-gray-800">
         <div className="flex justify-between items-start mb-3">
           <div>
             <h3 className="font-black text-lg text-gray-900 dark:text-white leading-tight">
@@ -110,11 +109,10 @@ export default function CustomerOrdersPage() {
         </div>
 
         <button
-          onClick={() => navigate(`/customer/orders/track/${order.id}`)}
-          className="w-full flex items-center justify-center gap-2 bg-[#F26A1C] hover:bg-[#e05d15] text-white font-bold py-3.5 rounded-[16px] transition-colors shadow-[0_4px_12px_rgba(242,106,28,0.2)]"
+          onClick={() => navigate(buildRoute(ROUTES.CUSTOMER.ORDERS.DETAILS, { orderId: order.id }))}
+          className="w-full flex items-center justify-center bg-[#F26A1C] hover:bg-[#e05d15] text-white font-bold text-[13px] py-3.5 rounded-[16px] transition-colors shadow-[0_4px_12px_rgba(242,106,28,0.2)] active:scale-[0.98]"
         >
-          <Navigation size={18} className="fill-white" />
-          Track Order
+          View Details
         </button>
       </div>
     );
@@ -145,18 +143,10 @@ export default function CustomerOrdersPage() {
           </p>
         </div>
 
-        <div className="mt-3 flex gap-2">
-          {isDelivered && (
-            <button
-              onClick={(e) => { e.stopPropagation(); }}
-              className="flex-1 flex items-center justify-center gap-1.5 bg-[#FFF4ED] dark:bg-orange-900/20 text-[#F26A1C] font-bold text-[13px] py-2.5 rounded-[12px]"
-            >
-              <RefreshCw size={14} /> Reorder
-            </button>
-          )}
+        <div className="mt-3">
           <button
-            onClick={() => navigate(`/customer/orders/track/${order.id}`)}
-            className="flex-1 flex items-center justify-center gap-1.5 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold text-[13px] py-2.5 rounded-[12px]"
+            onClick={() => navigate(buildRoute(ROUTES.CUSTOMER.ORDERS.DETAILS, { orderId: order.id }))}
+            className="w-full flex items-center justify-center gap-1.5 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold text-[13px] py-2.5 rounded-[12px] active:scale-95 transition-transform"
           >
             View Details
           </button>

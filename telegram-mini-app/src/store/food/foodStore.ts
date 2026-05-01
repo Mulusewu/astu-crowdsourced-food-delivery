@@ -90,7 +90,8 @@ export const useFoodStore = create<FoodState>((set) => ({
       }
 
       if (!foundFood || !foundRestaurantId) {
-        throw new Error("Food item not found");
+        set({ currentFood: null, isLoading: false, error: null });
+        return;
       }
 
       // Helper to find category name from category ID
@@ -133,7 +134,7 @@ export const useFoodStore = create<FoodState>((set) => ({
     } catch (error: any) {
       console.error("Error fetching food details:", error);
       set({ 
-        error: error.message || "Failed to load food details", 
+        error: "Failed to load food details. Please try again.", 
         isLoading: false 
       });
     }

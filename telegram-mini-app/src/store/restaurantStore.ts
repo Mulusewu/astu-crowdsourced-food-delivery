@@ -18,6 +18,7 @@ export interface FoodItem {
   prepTimeMins?: number;
   isAvailable?: boolean;
   availabilityReason?: string | null;
+  isPromo?: boolean;
 }
 
 export interface Restaurant {

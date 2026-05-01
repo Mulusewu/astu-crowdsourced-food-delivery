@@ -48,9 +48,9 @@ const RestaurantDetailsPage = lazy(
 // const RestaurantMenuPage = lazy(
 //   () => import("@/features/customer/pages/RestaurantMenuPage"),
 // );
-// const RestaurantReviewsPage = lazy(
-//   () => import("@/features/customer/pages/RestaurantReviewsPage"),
-// );
+const RestaurantReviewsPage = lazy(
+  () => import("@/features/customer/pages/RestaurantReviewsPage"),
+);
 const FoodDetailsPage = lazy(
   () => import("@/features/customer/pages/FoodDetailsPage"),
 );
@@ -73,17 +73,17 @@ const CheckoutPage = lazy(
 // const OrderListPage = lazy(
 //   () => import("@/features/customer/pages/OrderListPage"),
 // );
-// const OrderDetailsPage = lazy(
-//   () => import("@/features/customer/pages/OrderDetailsPage"),
-// );
+const OrderDetailsPage = lazy(
+  () => import("@/features/customer/pages/OrderDetailsPage"),
+);
 const OrderTrackingPage = lazy(
   () => import("@/features/customer/pages/OrderTrackingPage"),
 );
 const OrderHistoryPage = lazy(
   () => import("@/features/customer/pages/OrderHistoryPage"),
 );
-const OrderReviewPage = lazy(
-  () => import("@/features/customer/pages/OrderReviewPage"),
+const ReviewPage = lazy(
+  () => import("@/features/customer/pages/ReviewPage"),
 );
 
 // Payment & Wallet
@@ -157,13 +157,13 @@ export const customerRoutes: RouteGroup[] = [
   // {
   //   path: ROUTES.CUSTOMER.RESTAURANT.MENU,
   //   element: <RestaurantMenuPage />,
-  //   roles: [UserRole.CUSTOMER],
+  //   roles: [UserRoles.CUSTOMER],
   // },
-  //   {
-  //     path: ROUTES.CUSTOMER.RESTAURANT.REVIEWS,
-  //     element: <RestaurantReviewsPage />,
-  //     roles: [UserRole.CUSTOMER],
-  //   },
+  {
+    path: ROUTES.CUSTOMER.RESTAURANT.REVIEWS,
+    element: <RestaurantReviewsPage />,
+    roles: [UserRoles.CUSTOMER],
+  },
 
   // Food Items
   {
@@ -225,11 +225,11 @@ export const customerRoutes: RouteGroup[] = [
   //   element: <OrderListPage />,
   //   roles: [UserRole.CUSTOMER],
   // },
-  // {
-  //   path: ROUTES.CUSTOMER.ORDERS.DETAILS,
-  //   element: <OrderDetailsPage />,
-  //   roles: [UserRole.CUSTOMER],
-  // },
+  {
+    path: ROUTES.CUSTOMER.ORDERS.DETAILS,
+    element: <OrderDetailsPage />,
+    roles: [UserRoles.CUSTOMER],
+  },
 
   {
     path: ROUTES.CUSTOMER.ORDERS.TRACK,
@@ -243,7 +243,7 @@ export const customerRoutes: RouteGroup[] = [
   },
   {
     path: ROUTES.CUSTOMER.ORDERS.REVIEW,
-    element: <OrderReviewPage />,
+    element: <ReviewPage />,
     roles: [UserRoles.CUSTOMER],
   },
 
