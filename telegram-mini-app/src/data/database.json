@@ -114,7 +114,6 @@
       }
     ]
   },
-<<<<<<< HEAD
 
   "vendorDashboard": {
     "activeOrders": [
@@ -213,9 +212,6 @@
       ]
     }
   },
-
-=======
->>>>>>> fbad5da757228a48ada3efb6cb73c076c64fc568
   "users": {
     "customers": [
       {
