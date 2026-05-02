@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useVendorStore, type MenuItem } from "@/store/vendorStore";
 import { ArrowLeft, Plus, Pencil, EyeOff, Eye } from "lucide-react";
+import { ROUTES, buildRoute } from "@/routes/routePaths";
 
 export default function MenuPage() {
   const navigate = useNavigate();
@@ -54,7 +55,10 @@ export default function MenuPage() {
             <h2 className="text-2xl font-black text-white leading-tight">
               Manage Your<br />Food <span className="text-orange-500">Items</span>
             </h2>
-            <button className="mt-4 flex items-center gap-1.5 bg-orange-500 text-white px-4 py-2 rounded-full text-xs font-black shadow-lg shadow-orange-500/30 hover:bg-orange-600 transition-all w-fit uppercase tracking-wider">
+            <button 
+              onClick={() => navigate(ROUTES.VENDOR.MENU.ADD)}
+              className="mt-4 flex items-center gap-1.5 bg-orange-500 text-white px-4 py-2 rounded-full text-xs font-black shadow-lg shadow-orange-500/30 hover:bg-orange-600 transition-all w-fit uppercase tracking-wider"
+            >
               <Plus className="h-3.5 w-3.5 stroke-[3]" /> Add Item
             </button>
           </div>
@@ -113,7 +117,10 @@ export default function MenuPage() {
 
             {/* Bottom Row: Actions */}
             <div className="flex gap-2 mt-4 px-1">
-              <button className="flex items-center gap-1.5 bg-orange-500 text-white px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider shadow-lg shadow-orange-100 active:scale-95 transition-all">
+              <button 
+                onClick={() => navigate(buildRoute(ROUTES.VENDOR.MENU.EDIT, { foodId: item.id }))}
+                className="flex items-center gap-1.5 bg-orange-500 text-white px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider shadow-lg shadow-orange-100 active:scale-95 transition-all"
+              >
                 <Pencil className="h-3 w-3" /> Edit
               </button>
               <button 

@@ -36,6 +36,7 @@ const VendorEarningsPage = lazy(
 
 // Menu Management (CRUD)
 const VendorMenuPage = lazy(() => import("@/features/vendor/pages/MenuPage"));
+const VendorMenuFormPage = lazy(() => import("@/features/vendor/pages/MenuFormPage"));
 // const VendorAddFoodPage = lazy(
 //   () => import("@/features/vendor/pages/AddFoodPage"),
 // );
@@ -237,16 +238,16 @@ export const vendorRoutes: RouteGroup[] = [
     element: <VendorMenuPage />,
     roles: [UserRoles.VENDOR],
   },
-  //   {
-  //     path: ROUTES.VENDOR.FOOD.ADD,
-  //     element: <VendorAddFoodPage />,
-  //     roles: [UserRoles.VENDOR],
-  //   },
-  //   {
-  //     path: ROUTES.VENDOR.FOOD.EDIT,
-  //     element: <VendorEditFoodPage />,
-  //     roles: [UserRoles.VENDOR],
-  //   },
+  {
+    path: ROUTES.VENDOR.MENU.ADD,
+    element: <VendorMenuFormPage />,
+    roles: [UserRoles.VENDOR],
+  },
+  {
+    path: ROUTES.VENDOR.MENU.EDIT,
+    element: <VendorMenuFormPage isEdit />,
+    roles: [UserRoles.VENDOR],
+  },
   //   {
   //     path: ROUTES.VENDOR.FOOD.DUPLICATE,
   //     element: <VendorDuplicateFoodPage />,

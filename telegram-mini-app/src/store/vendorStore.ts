@@ -46,6 +46,7 @@ export interface MenuItem {
   id: string;
   name: string;
   price: number;
+  description?: string;
   image?: string;
   inStock: boolean;
 }
@@ -64,6 +65,8 @@ interface VendorState {
   updateOrderStatus: (orderId: string, newStatus: VendorOrder["status"]) => void;
   declineOrder: (orderId: string) => void;
   toggleMenuItemStock: (itemId: string) => void;
+  addMenuItem: (item: Omit<MenuItem, "id" | "inStock">) => void;
+  updateMenuItem: (itemId: string, item: Partial<Omit<MenuItem, "id">>) => void;
   logout: () => void;
 }
 
@@ -140,6 +143,25 @@ export const useVendorStore = create<VendorState>()(
         set((state: VendorState) => ({
           menuItems: state.menuItems.map((item: MenuItem) =>
             item.id === itemId ? { ...item, inStock: !item.inStock } : item
+          )
+        }));
+      },
+
+      addMenuItem: (item: Omit<MenuItem, "id" | "inStock">) => {
+        const newItem: MenuItem = {
+          ...item,
+          id: `m${Date.now()}`,
+          inStock: true
+        };
+        set((state: VendorState) => ({
+          menuItems: [...state.menuItems, newItem]
+        }));
+      },
+
+      updateMenuItem: (itemId: string, updatedItem: Partial<Omit<MenuItem, "id">>) => {
+        set((state: VendorState) => ({
+          menuItems: state.menuItems.map((item: MenuItem) =>
+            item.id === itemId ? { ...item, ...updatedItem } : item
           )
         }));
       },
