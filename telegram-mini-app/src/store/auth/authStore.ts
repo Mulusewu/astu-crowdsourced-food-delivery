@@ -18,6 +18,7 @@ interface AuthState {
   switchRole: (newRole: UserRole) => void;
   logout: () => void;
   updatePassword: (oldPassword: string, newPassword: string) => Promise<void>;
+  updateAvatar: (newAvatar: string) => void;
   clearError: () => void;
 }
 
@@ -147,6 +148,12 @@ export const useAuthStore = create<AuthState>()(
               : finalRoles[0];
         }
 
+        // Apply mock overrides from localStorage (like updated avatars)
+        const overrides = JSON.parse(localStorage.getItem("user_overrides") || "{}");
+        if (overrides[foundUser.email]) {
+          Object.assign(foundUser, overrides[foundUser.email]);
+        }
+
         set({
           user: foundUser,
           roles: finalRoles,
@@ -216,6 +223,20 @@ export const useAuthStore = create<AuthState>()(
         } catch (error) {
           set({ isLoading: false, error: "Failed to update password" });
           throw error;
+        }
+      },
+
+      updateAvatar: (newAvatar: string) => {
+        const { user } = get();
+        if (user) {
+          // Save to override dict in localStorage to persist across signouts
+          const overrides = JSON.parse(localStorage.getItem("user_overrides") || "{}");
+          overrides[user.email] = { ...overrides[user.email], avatar: newAvatar };
+          localStorage.setItem("user_overrides", JSON.stringify(overrides));
+
+          set({
+            user: { ...user, avatar: newAvatar }
+          });
         }
       },
 

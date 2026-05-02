@@ -4,9 +4,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useOrderStore } from "@/store/orders/orderStore";
 
 const ISSUES_LIST = [
-  "Restaurant Refused The Order",
+  "Restaurant Refused the Order",
   "Order Not Ready",
-  "Restorant Closed",
+  "Restaurant Closed",
   "Other",
 ];
 
@@ -14,7 +14,7 @@ export default function ReportIssuePage() {
   const { deliveryId } = useParams<{ deliveryId: string }>();
   const navigate = useNavigate();
   const { activeOrders, currentOrder, fetchOrderById, submitOrderIssue, isLoading } = useOrderStore();
-  
+
   const [selectedIssue, setSelectedIssue] = useState<string>(ISSUES_LIST[0]);
   const [description, setDescription] = useState("");
 
@@ -29,12 +29,12 @@ export default function ReportIssuePage() {
 
   const handleSubmit = async () => {
     if (!deliveryId) return;
-    
+
     await submitOrderIssue(deliveryId, {
       type: selectedIssue,
       description: description
     });
-    
+
     navigate(-1); // Navigate back after submission
   };
 
