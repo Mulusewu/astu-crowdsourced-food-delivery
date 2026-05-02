@@ -118,6 +118,7 @@ export const ROUTES = {
     ORDERS: {
       LIST: "/vendor/orders",
       DETAILS: "/vendor/order/:orderId",
+      STATUS: "/vendor/order/:orderId/status",
       PENDING: "/vendor/orders/pending",
       PREPARING: "/vendor/orders/preparing",
       READY: "/vendor/orders/ready",

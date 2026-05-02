@@ -40,12 +40,12 @@ function BottomNav() {
       case "vendor":
         return {
           items: [
-            { id: "home", icon: Home, path: "/vendor/dashboard", label: "Home" },
-            { id: "menu", icon: LayoutList, path: "/vendor/menu", label: "Menu" },
-            { id: "history", icon: ClipboardList, path: "/vendor/history", label: "History" },
-            { id: "profile", icon: User, path: "/profile", label: "Profile" },
+            { id: "home", icon: Home, path: ROUTES.VENDOR.DASHBOARD, label: "Home" },
+            { id: "saved", icon: Bookmark, path: ROUTES.VENDOR.RESTAURANT.PROFILE, label: "Saved" },
+            { id: "menu", icon: FileText, path: ROUTES.VENDOR.MENU.LIST, label: "Menu" },
+            { id: "profile", icon: User, path: ROUTES.VENDOR.SETTINGS.PROFILE, label: "Profile" },
           ],
-          center: { id: "orders", icon: Bell, path: "/vendor/orders/active", label: "Orders" }
+          center: { id: "orders", icon: Package, path: ROUTES.VENDOR.ORDERS.LIST, label: "Orders" }
         };
       case "customer":
       default:
