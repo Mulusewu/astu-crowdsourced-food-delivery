@@ -47,6 +47,7 @@ export const ROUTES = {
       TRACK: "/customer/orders/track/:orderId",
       HISTORY: "/customer/orders/history",
       REVIEW: "/customer/orders/:orderId/review",
+      DISPUTE: "/customer/orders/:orderId/dispute",
     },
 
     // Payment & Wallet

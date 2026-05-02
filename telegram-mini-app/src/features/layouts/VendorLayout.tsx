@@ -2,6 +2,7 @@ import { Outlet, Navigate } from "react-router-dom";
 import { useAuthStore } from "@/store/auth/authStore";
 import { ROUTES } from "@/routes/routePaths";
 import { getRoleRedirectPath } from "@/types/user.types";
+import VendorBottomNav from "../vendor/components/VendorBottomNav";
 
 export default function VendorLayout() {
   const { user, isLoading } = useAuthStore();
@@ -22,6 +23,7 @@ export default function VendorLayout() {
       <main className="flex-1 pb-28">
         <Outlet />
       </main>
+      <VendorBottomNav />
     </div>
   );
 }

@@ -7,7 +7,11 @@ import { useAuthStore } from "@/store/auth/authStore";
 import { Link } from "react-router-dom";
 
 const signinSchema = z.object({
-  email: z.string().trim().email("Please Enter A Valid Email Address!"),
+  email: z
+    .string()
+    .trim()
+    .email("Please Enter A Valid Email Address!")
+    .regex(/^[a-zA-Z0-9._%+-]+@astu\.edu\.et$/, "Please use your university provided email (@astu.edu.et)"),
   password: z.string().min(1, "Password Is Required!"),
 });
 
@@ -151,7 +155,7 @@ export default function SigninForm() {
             <input
               type="email"
               {...register("email")}
-              placeholder="Johndoe@Gmail.Com"
+              placeholder="name.surname@astu.edu.et"
               className={`w-full h-14 bg-white border ${
                 errors.email ? "border-red-500" : "border-gray-200"
               } rounded-[10px] px-5 text-[15px] font-medium text-gray-900 placeholder:text-gray-300 focus:border-[#F26A1C] focus:outline-none transition-all`}

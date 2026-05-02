@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft,
@@ -9,12 +9,16 @@ import {
   Loader2,
   AlertCircle,
   MapPin,
+  Check,
+  Trash2,
+  X,
 } from "lucide-react";
 
 import { useRestaurantStore } from "@/store/restaurantStore";
 import { useCartStore } from "@/store/cart/cartStore";
 import { useSavedItemsStore } from "@/store/customer/savedItemsStore";
 import { ROUTES, buildRoute } from "@/routes/routePaths";
+import { toast } from "sonner";
 
 export default function RestaurantDetailsPage() {
   const { restaurantId } = useParams<{ restaurantId: string }>();
@@ -38,6 +42,15 @@ export default function RestaurantDetailsPage() {
     addItem: saveItem,
     removeItem: unsaveItem,
   } = useSavedItemsStore();
+  
+  const cartRestaurant = useCartStore((state) => state.restaurant);
+  const clearCart = useCartStore((state) => state.clearCart);
+
+  // Local UI State
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showSwitchModal, setShowSwitchModal] = useState(false);
+  const [pendingItem, setPendingItem] = useState<any>(null);
+  const [addedItemName, setAddedItemName] = useState("");
 
   const isSaved = restaurantId
     ? savedItems.some((item) => item.id === restaurantId)
@@ -66,6 +79,20 @@ export default function RestaurantDetailsPage() {
 
   const handleAddToCart = (menuItem: any) => {
     if (!restaurant) return;
+
+    // Check if adding from a different restaurant
+    if (cartRestaurant && cartRestaurant.id !== restaurant.id) {
+      setPendingItem(menuItem);
+      setShowSwitchModal(true);
+      return;
+    }
+
+    executeAddToCart(menuItem);
+  };
+
+  const executeAddToCart = (menuItem: any) => {
+    if (!restaurant) return;
+    
     addToCart({
       id: menuItem.id,
       name: menuItem.name,
@@ -76,6 +103,19 @@ export default function RestaurantDetailsPage() {
       restaurantName: restaurant.name,
       quantity: 1,
     });
+
+    setAddedItemName(menuItem.name);
+    setShowSuccessModal(true);
+    setTimeout(() => setShowSuccessModal(false), 2000);
+  };
+
+  const handleConfirmSwitch = () => {
+    if (pendingItem) {
+      clearCart();
+      executeAddToCart(pendingItem);
+      setPendingItem(null);
+      setShowSwitchModal(false);
+    }
   };
 
   if (isLoading) {
@@ -306,6 +346,58 @@ export default function RestaurantDetailsPage() {
           );
         })()}
       </section>
+
+      {/* ── Success Modal ── */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center px-6 animate-in fade-in duration-300">
+          <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]" />
+          <div className="relative bg-white dark:bg-gray-900 rounded-[32px] p-8 w-full max-w-[280px] flex flex-col items-center text-center shadow-2xl border border-gray-100 dark:border-gray-800 animate-in zoom-in-95 duration-300">
+            <div className="w-16 h-16 bg-green-50 dark:bg-green-900/20 rounded-full flex items-center justify-center mb-4">
+              <Check className="text-green-500" size={32} strokeWidth={3} />
+            </div>
+            <h3 className="text-[18px] font-black text-gray-900 dark:text-white mb-1">
+              Added to Cart!
+            </h3>
+            <p className="text-[13px] font-bold text-gray-400 leading-tight">
+              {addedItemName}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ── Switch Restaurant Modal ── */}
+      {showSwitchModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center px-6 animate-in fade-in duration-300">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" onClick={() => setShowSwitchModal(false)} />
+          <div className="relative bg-white dark:bg-gray-900 rounded-[32px] p-6 w-full max-w-sm shadow-2xl animate-in zoom-in-95 duration-300">
+            <div className="flex justify-center mb-4">
+              <div className="w-14 h-14 bg-orange-50 dark:bg-orange-900/20 rounded-full flex items-center justify-center">
+                <Trash2 className="text-[#F26A1C]" size={28} />
+              </div>
+            </div>
+            <h3 className="text-[17px] font-black text-gray-900 dark:text-white mb-2 text-center leading-tight">
+              Start a New Basket?
+            </h3>
+            <p className="text-[13px] font-medium text-gray-500 dark:text-gray-400 text-center mb-8 px-2">
+              Your cart already contains items from <span className="font-bold text-gray-900 dark:text-white">{cartRestaurant?.name}</span>. Adding this will clear your current cart.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowSwitchModal(false)}
+                className="flex-1 py-3.5 border-2 border-orange-100 dark:border-gray-700 text-[#F26A1C] font-bold rounded-full text-[14px] active:scale-95 transition-transform"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmSwitch}
+                className="flex-1 py-3.5 bg-[#F26A1C] text-white font-bold rounded-full text-[14px] shadow-md active:scale-95 transition-transform"
+              >
+                Clear & Add
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

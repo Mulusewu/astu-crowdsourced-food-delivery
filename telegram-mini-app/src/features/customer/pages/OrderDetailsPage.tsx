@@ -14,6 +14,7 @@ import {
 
 import { useCustomerOrderStore } from "@/store/orders/customerOrderStore";
 import { useCartStore } from "@/store/cart/cartStore";
+import { useDisputeStore } from "@/store/orders/disputeStore";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { ROUTES, buildRoute } from "@/routes/routePaths";
@@ -37,6 +38,9 @@ export default function OrderDetailsPage() {
     const updateOrderStatus = useCustomerOrderStore((state) => state.updateOrderStatus);
     const fetchOrders = useCustomerOrderStore((state) => state.fetchCustomerOrders);
     const addToCart = useCartStore((state) => state.addToCart);
+    const existingDispute = useDisputeStore((state) =>
+        state.getDisputeByOrderId(orderId || "")
+    );
 
     // Load orders if not already present (e.g. deep-linked)
     useEffect(() => {
@@ -212,6 +216,24 @@ export default function OrderDetailsPage() {
                         </span>
                     </div>
                 </div>
+
+                {/* ── Dispute Status ── */}
+                {existingDispute && (
+                    <div className="bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-800/30 rounded-[18px] p-4 flex items-start gap-3 animate-in slide-in-from-top-2 duration-300">
+                        <AlertCircle size={18} className="text-red-500 shrink-0 mt-0.5" />
+                        <div>
+                            <p className="text-[13px] font-black text-red-600 dark:text-red-400">Dispute Raised</p>
+                            <p className="text-[11px] font-bold text-red-500/80 uppercase tracking-wide mt-0.5">
+                                Status: {existingDispute.status.replace("_", " ")}
+                            </p>
+                            {existingDispute.resolution && (
+                                <p className="text-[11px] font-medium text-gray-600 dark:text-gray-400 mt-2 bg-white/50 dark:bg-black/20 p-2 rounded-lg border border-red-100/50 dark:border-red-900/20">
+                                    Resolution: {existingDispute.resolution}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                )}
 
                 {/* ── Delivery + Time Info ── */}
                 <div className="bg-gray-50 dark:bg-gray-900/50 rounded-[18px] p-4 border border-gray-100 dark:border-gray-800 space-y-3">
@@ -411,6 +433,14 @@ export default function OrderDetailsPage() {
                             >
                                 Leave a Review
                             </button>
+                            {!existingDispute && (
+                                <button
+                                    onClick={() => navigate(buildRoute(ROUTES.CUSTOMER.ORDERS.DISPUTE, { orderId: order.id }))}
+                                    className="w-full py-4 bg-white dark:bg-gray-900 border-2 border-red-50 dark:border-red-900/20 text-red-500 font-bold rounded-[20px] text-[15px] active:scale-95 transition-transform"
+                                >
+                                    Raise a Dispute
+                                </button>
+                            )}
                         </>
                     )}
 

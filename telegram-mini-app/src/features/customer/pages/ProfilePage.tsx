@@ -156,10 +156,10 @@ export default function CustomerProfilePage() {
             <Mail size={20} className="text-gray-500" strokeWidth={1.5} />
             <div>
               <p className="text-[12px] font-bold uppercase tracking-wide text-gray-400">
-                Email
+                Primary Email (ASTU)
               </p>
               <span className="text-[13px] font-medium text-gray-600 dark:text-gray-300">
-                {user?.email ?? user?.astuEmail ?? "No email provided"}
+                {user?.astuEmail ?? user?.email ?? "No email provided"}
               </span>
             </div>
           </div>

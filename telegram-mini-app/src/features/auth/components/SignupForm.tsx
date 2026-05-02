@@ -9,7 +9,11 @@ import { useNavigate } from "react-router-dom";
 const signupSchema = z
   .object({
     fullName: z.string().trim().min(2, "Name Is Too Short!").max(50, "Name Is Too Long!"),
-    email: z.string().trim().email("Please Enter A Valid Email!"),
+    email: z
+      .string()
+      .trim()
+      .email("Please Enter A Valid Email!")
+      .regex(/^[a-zA-Z0-9._%+-]+@astu\.edu\.et$/, "Please use your university provided email (@astu.edu.et)"),
     password: z
       .string()
       .min(8, "Password Is Too Short!")
@@ -143,7 +147,7 @@ export default function SignupForm() {
             <input
               type="email"
               {...register("email")}
-              placeholder="Johndoe@Gmail.Com"
+              placeholder="name.surname@astu.edu.et"
               className={`w-full h-13 border ${errors.email || apiError ? "border-red-500" : "border-gray-200"} rounded-[10px] px-5 text-[15px] font-medium text-gray-900 placeholder:text-gray-300 focus:border-[#F26A1C] focus:outline-none transition-all`}
             />
             {errors.email ? (

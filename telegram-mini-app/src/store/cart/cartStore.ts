@@ -98,15 +98,10 @@ export const useCartStore = create<CartState>()(
         const { items: _items, restaurant } = get();
         const quantity = newItem.quantity || 1;
 
-        // Check if adding from different restaurant
+        // Note: UI components (RestaurantDetails/FoodDetails) should check for 
+        // restaurant mismatch before calling addToCart to show a nice modal.
         if (restaurant && restaurant.id !== newItem.restaurantId) {
-          if (
-            !confirm(
-              "Adding items from a different restaurant will clear your cart. Continue?",
-            )
-          ) {
-            return;
-          }
+          // Silent clear if mismatch - UI should have warned the user
           set({ items: [], restaurant: null, appliedPromo: null });
         }
 

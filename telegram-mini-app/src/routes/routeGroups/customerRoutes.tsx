@@ -85,6 +85,9 @@ const OrderHistoryPage = lazy(
 const ReviewPage = lazy(
   () => import("@/features/customer/pages/ReviewPage"),
 );
+const RaiseDisputePage = lazy(
+  () => import("@/features/customer/pages/RaiseDisputePage"),
+);
 
 // Payment & Wallet
 const PaymentMethodsPage = lazy(
@@ -247,6 +250,11 @@ export const customerRoutes: RouteGroup[] = [
   {
     path: ROUTES.CUSTOMER.ORDERS.REVIEW,
     element: <ReviewPage />,
+    roles: [UserRoles.CUSTOMER],
+  },
+  {
+    path: ROUTES.CUSTOMER.ORDERS.DISPUTE,
+    element: <RaiseDisputePage />,
     roles: [UserRoles.CUSTOMER],
   },
 

@@ -20,17 +20,17 @@ import { Header, SoftInput, ActionButton } from "../components/profileShared";
 import { ROUTES } from "@/routes/routePaths";
 
 const PAYMENT_METHODS = [
-  { id: "card", label: "Card" },
+
   { id: "telebirr", label: "Telebirr" },
   { id: "cbe", label: "CBE Birr" },
-  { id: "amole", label: "Amole" },
+
 ];
 
 const editProfileSchema = z.object({
   fullName: z.string().trim().min(2, "Name is too short"),
   phoneNumber: z.string().trim().optional().or(z.literal("")),
+  astuEmail: z.string().trim().email("Invalid ASTU email").min(1, "ASTU email is mandatory").regex(/^[a-zA-Z0-9._%+-]+@astu\.edu\.et$/, "Please use your university provided email (@astu.edu.et)"),
   email: z.string().trim().email("Invalid email").optional().or(z.literal("")),
-  astuEmail: z.string().trim().email("Invalid ASTU email").optional().or(z.literal("")),
   defaultLocation: z.string().trim().optional().or(z.literal("")),
 });
 
@@ -155,20 +155,8 @@ export default function CustomerEditProfilePage() {
 
           <div className="flex flex-col gap-1">
             <label className="text-[11px] font-bold text-gray-500 uppercase px-1 flex items-center gap-1">
-              <Mail size={10} /> Email
-            </label>
-            <SoftInput
-              {...register("email")}
-              type="email"
-              placeholder="your@email.com"
-            />
-            {errors.email && <p className="text-xs text-red-500 font-semibold px-2">{errors.email.message}</p>}
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <label className="text-[11px] font-bold text-gray-500 uppercase px-1 flex items-center gap-1">
               <BookOpen size={10} /> ASTU Email
-              <span className="text-[9px] font-normal text-gray-400 normal-case ml-1">(optional)</span>
+              <span className="text-[9px] font-black text-[#F26A1C] normal-case ml-1">(Mandatory)</span>
             </label>
             <SoftInput
               {...register("astuEmail")}
@@ -176,6 +164,19 @@ export default function CustomerEditProfilePage() {
               placeholder="your.name@astu.edu.et"
             />
             {errors.astuEmail && <p className="text-xs text-red-500 font-semibold px-2">{errors.astuEmail.message}</p>}
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] font-bold text-gray-500 uppercase px-1 flex items-center gap-1">
+              <Mail size={10} /> Personal Email
+              <span className="text-[9px] font-normal text-gray-400 normal-case ml-1">(Optional)</span>
+            </label>
+            <SoftInput
+              {...register("email")}
+              type="email"
+              placeholder="your@email.com"
+            />
+            {errors.email && <p className="text-xs text-red-500 font-semibold px-2">{errors.email.message}</p>}
           </div>
         </div>
 
@@ -207,11 +208,10 @@ export default function CustomerEditProfilePage() {
                   key={pm.id}
                   type="button"
                   onClick={() => setPreferredPayment(pm.id)}
-                  className={`py-3 rounded-[16px] text-[13px] font-bold transition-all active:scale-[0.98] border ${
-                    preferredPayment === pm.id
+                  className={`py-3 rounded-[16px] text-[13px] font-bold transition-all active:scale-[0.98] border ${preferredPayment === pm.id
                       ? "bg-[#FFF1E8] border-[#F26A1C] text-[#F26A1C]"
                       : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-500"
-                  }`}
+                    }`}
                 >
                   {pm.label}
                 </button>

@@ -14,12 +14,14 @@ import {
   CheckCircle2,
   XCircle,
   Loader2,
+  ShieldAlert,
 } from "lucide-react";
 import {
   useCustomerOrderStore,
   type OrderStatus,
 } from "@/store/orders/customerOrderStore";
-import { ROUTES } from "@/routes/routePaths";
+import { useDisputeStore } from "@/store/orders/disputeStore";
+import { ROUTES, buildRoute } from "@/routes/routePaths";
 
 // ─── Dynamic timeline icon mapping ───────────────────────────────────────────
 const getStatusIcon = (status: OrderStatus) => {
@@ -74,6 +76,9 @@ export default function OrderTrackingPage() {
   const { orders, fetchCustomerOrders, isLoading } = useCustomerOrderStore();
 
   const order = orders.find((o) => o.id === orderId);
+  const existingDispute = useDisputeStore((state) =>
+    state.getDisputeByOrderId(orderId || "")
+  );
 
   // Always fetch latest status when viewing tracking page
   useEffect(() => {
@@ -384,6 +389,18 @@ export default function OrderTrackingPage() {
           </div>
         </div>
       </div>
+      {/* 5. SUPPORT / DISPUTE BUTTON */}
+      {!existingDispute && (
+        <div className="px-5 mt-10">
+          <button
+            onClick={() => navigate(buildRoute(ROUTES.CUSTOMER.ORDERS.DISPUTE, { orderId: order.id }))}
+            className="w-full py-4 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl flex items-center justify-center gap-3 text-gray-500 hover:text-red-500 transition-colors active:scale-[0.98]"
+          >
+            <ShieldAlert size={18} />
+            <span className="text-sm font-bold">Having an issue? Raise a Complaint</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }

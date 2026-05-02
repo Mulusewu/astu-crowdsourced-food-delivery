@@ -10,19 +10,16 @@ import {
   History
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth/authStore";
-
 import { ROUTES } from "@/routes/routePaths";
 import { cn } from "@/lib/utils";
 
 function CustomerBottomNav() {
   const { user } = useAuthStore();
-
   const navigate = useNavigate();
   const location = useLocation();
   const path = location.pathname;
 
-
-  const isActive = (route: string) => path.startsWith(route);
+  const isActive = (route: string) => path.startsWith(route) || path === route;
 
   // Define navigation items based on role
   const getNavConfig = () => {
@@ -30,104 +27,33 @@ function CustomerBottomNav() {
       case "DELIVERER":
         return {
           items: [
-            {
-              id: "home",
-              icon: Home,
-              path: ROUTES.DELIVERY.DASHBOARD,
-              label: "Home",
-            },
-            {
-              id: "saved",
-              icon: Bookmark,
-              path: ROUTES.DELIVERY.SAVED,
-              label: "Saved",
-            },
-            {
-              id: "history",
-              icon: ClipboardList,
-              path: ROUTES.DELIVERY.HISTORY.LIST,
-              label: "History",
-            },
-            {
-              id: "profile",
-              icon: User,
-              path: ROUTES.DELIVERY.PROFILE,
-              label: "Profile",
-            },
+            { id: "home", icon: Home, path: ROUTES.DELIVERY.DASHBOARD },
+            { id: "saved", icon: Bookmark, path: ROUTES.DELIVERY.SAVED },
+            { id: "history", icon: ClipboardList, path: ROUTES.DELIVERY.HISTORY.LIST },
+            { id: "profile", icon: User, path: ROUTES.DELIVERY.PROFILE },
           ],
-          center: {
-            id: "active",
-            icon: Package,
-            path: ROUTES.DELIVERY.ACTIVE.LIST,
-            label: "Deliveries",
-          },
+          center: { id: "active", icon: Package, path: ROUTES.DELIVERY.ACTIVE.LIST },
         };
       case "VENDOR_STAFF":
         return {
           items: [
-            {
-              id: "home",
-              icon: Home,
-              path: "/vendor/dashboard",
-              label: "Home",
-            },
-            {
-              id: "menu",
-              icon: LayoutList,
-              path: "/vendor/menu",
-              label: "Menu",
-            },
-            {
-              id: "history",
-              icon: ClipboardList,
-              path: "/vendor/history",
-              label: "History",
-            },
-            { id: "profile", icon: User, path: "/profile", label: "Profile" },
+            { id: "home", icon: Home, path: "/vendor/dashboard" },
+            { id: "menu", icon: LayoutList, path: "/vendor/menu" },
+            { id: "history", icon: ClipboardList, path: "/vendor/history" },
+            { id: "profile", icon: User, path: "/profile" },
           ],
-          center: {
-            id: "orders",
-            icon: Bell,
-            path: "/vendor/orders/active",
-            label: "Orders",
-          },
+          center: { id: "orders", icon: Bell, path: "/vendor/orders/active" },
         };
       case "CUSTOMER":
       default:
         return {
           items: [
-            {
-              id: "home",
-              icon: Home,
-              path: ROUTES.CUSTOMER.HOME,
-              label: "Home",
-            },
-            {
-              id: "favs",
-              icon: Bookmark,
-              path: ROUTES.CUSTOMER.FAVORITES,
-              label: "Favs",
-            },
-            {
-              id: "history",
-              icon: History,
-              path: ROUTES.CUSTOMER.HISTORY,
-              label: "History",
-            },
-            {
-              id: "profile",
-              icon: User,
-              path: ROUTES.CUSTOMER.PROFILE,
-              label: "Profile",
-            },
+            { id: "home", icon: Home, path: ROUTES.CUSTOMER.HOME },
+            { id: "favs", icon: Bookmark, path: ROUTES.CUSTOMER.FAVORITES },
+            { id: "history", icon: History, path: ROUTES.CUSTOMER.HISTORY },
+            { id: "profile", icon: User, path: ROUTES.CUSTOMER.PROFILE },
           ],
-          center: {
-            id: "orders",
-            icon: Package,
-            path: ROUTES.CUSTOMER.ORDERS.LIST,
-            label: "Orders",
-            count: undefined,
-          },
+          center: { id: "orders", icon: Package, path: ROUTES.CUSTOMER.ORDERS.LIST, count: undefined },
         };
     }
   };
@@ -136,20 +62,15 @@ function CustomerBottomNav() {
 
   // Whitelist of primary top-level routes where BottomNav should be visible
   const primaryRoutes = [
-    // Delivery Routes
     ROUTES.DELIVERY.DASHBOARD,
     ROUTES.DELIVERY.SAVED,
     ROUTES.DELIVERY.HISTORY.LIST,
     ROUTES.DELIVERY.ACTIVE.LIST,
     ROUTES.DELIVERY.PROFILE,
-
-    // Vendor Routes
     ROUTES.VENDOR.DASHBOARD,
     ROUTES.VENDOR.MENU.LIST,
     ROUTES.VENDOR.ORDERS.LIST,
     ROUTES.VENDOR.ORDERS.HISTORY,
-
-    // Customer Routes
     ROUTES.CUSTOMER.HOME,
     ROUTES.CUSTOMER.FAVORITES,
     ROUTES.CUSTOMER.ORDERS.LIST,
@@ -158,19 +79,18 @@ function CustomerBottomNav() {
     ROUTES.CUSTOMER.HISTORY,
   ];
 
-  // Check if current path matches any of the primary routes (exact or base path)
   const shouldShow = primaryRoutes.some(
     (route) => path === route || path === `${route}/`,
   );
 
-  if (!shouldShow) {
-    return null;
-  }
+  if (!shouldShow) return null;
 
   return (
-    <nav className="fixed bottom-6 left-[100px] right-[100px] z-50 mx-auto max-w-sm">
+    // Replaced hardcoded left/right with proper centering logic for all mobile sizes
+    <nav className="fixed bottom-6 left-4 right-4 z-50 mx-auto max-w-[375px]">
       <div className="relative w-full h-[70px]">
-        {/* Wavy SVG Background (Brand Orange Solid) */}
+
+        {/* Wavy SVG Background */}
         <svg
           className="absolute inset-0 w-full h-full drop-shadow-[0_8px_16px_rgba(242,106,28,0.3)]"
           viewBox="0 0 375 70"
@@ -182,44 +102,32 @@ function CustomerBottomNav() {
           />
         </svg>
 
-        {/* Navigation Items */}
-        <div className="absolute inset-0 flex items-center justify-around px-1 pt-1">
-          <NavIconButton
-            icon={config.items[0].icon}
-            active={isActive(config.items[0].path)}
-            onClick={() => navigate(config.items[0].path)}
-          />
-          <NavIconButton
-            icon={config.items[1].icon}
-            active={isActive(config.items[1].path)}
-            onClick={() => navigate(config.items[1].path)}
-          />
+        {/* Navigation Items - Fluid layout */}
+        <div className="absolute inset-0 flex items-center justify-between px-3 sm:px-5 pt-1">
+          <div className="flex w-[40%] justify-around">
+            <NavIconButton icon={config.items[0].icon} active={isActive(config.items[0].path)} onClick={() => navigate(config.items[0].path)} />
+            <NavIconButton icon={config.items[1].icon} active={isActive(config.items[1].path)} onClick={() => navigate(config.items[1].path)} />
+          </div>
 
-          {/* Spacer for the center button */}
-          <div className="w-10" />
+          {/* Invisible Spacer exactly matching the gap of the SVG curve */}
+          <div className="w-[20%] max-w-[80px]" />
 
-          <NavIconButton
-            icon={config.items[2].icon}
-            active={isActive(config.items[2].path)}
-            onClick={() => navigate(config.items[2].path)}
-          />
-          <NavIconButton
-            icon={config.items[3].icon}
-            active={isActive(config.items[3].path)}
-            onClick={() => navigate(config.items[3].path)}
-          />
+          <div className="flex w-[40%] justify-around">
+            <NavIconButton icon={config.items[2].icon} active={isActive(config.items[2].path)} onClick={() => navigate(config.items[2].path)} />
+            <NavIconButton icon={config.items[3].icon} active={isActive(config.items[3].path)} onClick={() => navigate(config.items[3].path)} />
+          </div>
         </div>
 
         {/* Floating Center Action Button */}
-        <div className="absolute left-1/2 top-[-28px] z-20 -translate-x-1/2">
+        <div className="absolute left-1/2 top-[-26px] z-20 -translate-x-1/2">
           <button
             type="button"
             onClick={() => navigate(config.center.path)}
-            className="relative flex h-[66px] w-[66px] items-center justify-center rounded-full bg-white shadow-xl transition-transform active:scale-90"
+            className="relative flex h-[64px] w-[64px] items-center justify-center rounded-full bg-white shadow-xl transition-transform active:scale-90"
           >
             <div
               className={cn(
-                "flex h-[54px] w-[54px] items-center justify-center rounded-full border-[2.5px] border-[#F26A1C] bg-white transition-all relative",
+                "flex h-[52px] w-[52px] items-center justify-center rounded-full border-[2.5px] border-[#F26A1C] bg-white transition-all relative",
                 isActive(config.center.path) && "bg-orange-50",
               )}
             >
@@ -242,23 +150,13 @@ function CustomerBottomNav() {
   );
 }
 
-function NavIconButton({
-  icon: Icon,
-  active,
-  onClick,
-}: {
-  icon: React.ElementType;
-  active: boolean;
-  onClick: () => void;
-}) {
+function NavIconButton({ icon: Icon, active, onClick }: { icon: React.ElementType; active: boolean; onClick: () => void; }) {
   return (
     <button
       onClick={onClick}
       className={cn(
-        "relative flex h-[52px] w-[52px] items-center justify-center transition-all duration-300 active:scale-95",
-        active
-          ? "bg-white rounded-full shadow-md scale-105"
-          : "bg-transparent scale-100",
+        "relative flex h-[48px] w-[48px] sm:h-[52px] sm:w-[52px] items-center justify-center transition-all duration-300 active:scale-95",
+        active ? "bg-white rounded-full shadow-md scale-105" : "bg-transparent scale-100",
       )}
     >
       <Icon
@@ -266,9 +164,7 @@ function NavIconButton({
         strokeWidth={2.5}
         className={cn(
           "transition-all duration-300",
-          active
-            ? "text-[#F26A1C] fill-[#F26A1C]"
-            : "text-white fill-none opacity-80",
+          active ? "text-[#F26A1C] fill-[#F26A1C]" : "text-white fill-none opacity-80",
         )}
       />
     </button>
