@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { ArrowLeft, Star, CheckCircle2, ChefHat, Bike, AlertCircle } from "lucide-react";
 
 import { useReviewStore } from "@/store/reviewStore";
@@ -55,6 +58,17 @@ function StarInput({
     );
 }
 
+const reviewSchema = z.object({
+  restaurantRating: z.number(),
+  restaurantText: z.string().trim().optional(),
+  delivererRating: z.number(),
+  delivererText: z.string().trim().optional(),
+}).refine(data => data.restaurantRating > 0 || data.delivererRating > 0, {
+  message: "Please provide at least one rating.",
+});
+
+type ReviewData = z.infer<typeof reviewSchema>;
+
 // ── Main Page ──────────────────────────────────────────────────────────────────
 export default function ReviewPage() {
     const { orderId } = useParams<{ orderId: string }>();
@@ -66,15 +80,34 @@ export default function ReviewPage() {
     const fetchOrders = useCustomerOrderStore((s) => s.fetchCustomerOrders);
 
     const {
-        restaurantRating, restaurantText,
-        delivererRating, delivererText,
-        isLoading, isSubmitted, error,
-        setRestaurantRating, setRestaurantText,
-        setDelivererRating, setDelivererText,
-        submitReviews, reset,
+        submitReviews, 
+        reset,
+        isSubmitted,
+        isLoading,
+        error: storeError
     } = useReviewStore();
 
+    const {
+      register,
+      handleSubmit,
+      setValue,
+      watch,
+      formState: { isValid }
+    } = useForm<ReviewData>({
+      resolver: zodResolver(reviewSchema),
+      mode: "onChange",
+      defaultValues: {
+        restaurantRating: 0,
+        restaurantText: "",
+        delivererRating: 0,
+        delivererText: ""
+      }
+    });
+
     const [dataReady, setDataReady] = useState(false);
+
+    const watchRestaurantRating = watch("restaurantRating");
+    const watchDelivererRating = watch("delivererRating");
 
     useEffect(() => {
         reset(); // fresh state on mount
@@ -104,6 +137,7 @@ export default function ReviewPage() {
                 <AlertCircle size={48} className="text-red-500 mb-4" />
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Order Not Found</h2>
                 <button
+                    type="button"
                     onClick={() => navigate(ROUTES.CUSTOMER.ORDERS.LIST)}
                     className="mt-4 bg-[#F26A1C] text-white px-8 py-3 rounded-full font-bold"
                 >
@@ -113,10 +147,17 @@ export default function ReviewPage() {
         );
     }
 
-    const canSubmit =
-        !isLoading && (restaurantRating > 0 || delivererRating > 0);
+    const onSubmit = async (data: ReviewData) => {
+        // We sync local form data to store, but the store implementation only uses order details inside `submitReviews`
+        // Actually `useReviewStore` grabs `restaurantRating`, `restaurantText` from its own state inside `submitReviews`!
+        // So we need to call `setRestaurantRating` on the store before submitting, OR we just update the store's action.
+        // Wait! Let's just set the store values before calling submitReviews.
+        const store = useReviewStore.getState();
+        store.setRestaurantRating(data.restaurantRating);
+        store.setRestaurantText(data.restaurantText || "");
+        store.setDelivererRating(data.delivererRating);
+        store.setDelivererText(data.delivererText || "");
 
-    const handleSubmit = async () => {
         await submitReviews({
             orderId: order.id,
             restaurantId: order.restaurantId,
@@ -139,6 +180,7 @@ export default function ReviewPage() {
                     Your review helps us improve our service and supports the ASTU Eats community.
                 </p>
                 <button
+                    type="button"
                     onClick={() => {
                         reset();
                         navigate(ROUTES.CUSTOMER.ORDERS.LIST);
@@ -152,11 +194,12 @@ export default function ReviewPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 font-sans pb-32">
+        <form onSubmit={handleSubmit(onSubmit)} className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 font-sans pb-32">
 
             {/* ── Header ── */}
             <header className="px-5 pt-6 pb-4 sticky top-0 bg-[#FDFDFD]/90 dark:bg-gray-950/90 backdrop-blur-md z-30 flex items-center justify-between">
                 <button
+                    type="button"
                     onClick={() => navigate(-1)}
                     className="w-10 h-10 bg-orange-50 dark:bg-gray-900 border border-orange-100 dark:border-gray-800 rounded-[14px] flex items-center justify-center text-[#F26A1C] active:scale-95 transition-transform"
                 >
@@ -201,12 +244,11 @@ export default function ReviewPage() {
                     </div>
 
                     {/* Stars */}
-                    <StarInput value={restaurantRating} onChange={setRestaurantRating} />
+                    <StarInput value={watchRestaurantRating} onChange={(v) => setValue("restaurantRating", v, { shouldValidate: true })} />
 
                     {/* Textarea */}
                     <textarea
-                        value={restaurantText}
-                        onChange={(e) => setRestaurantText(e.target.value)}
+                        {...register("restaurantText")}
                         placeholder="How was the food quality, packaging, and overall experience?"
                         rows={3}
                         className="w-full p-4 bg-[#FFF4ED] dark:bg-gray-800 rounded-[16px] text-[13px] font-semibold text-gray-800 dark:text-gray-200 placeholder:text-gray-400 placeholder:font-medium focus:ring-1 focus:ring-[#F26A1C]/50 focus:outline-none resize-none"
@@ -234,12 +276,11 @@ export default function ReviewPage() {
                         </div>
 
                         {/* Stars */}
-                        <StarInput value={delivererRating} onChange={setDelivererRating} />
+                        <StarInput value={watchDelivererRating} onChange={(v) => setValue("delivererRating", v, { shouldValidate: true })} />
 
                         {/* Textarea */}
                         <textarea
-                            value={delivererText}
-                            onChange={(e) => setDelivererText(e.target.value)}
+                            {...register("delivererText")}
                             placeholder="How was the delivery speed, communication, and professionalism?"
                             rows={3}
                             className="w-full p-4 bg-[#FFF4ED] dark:bg-gray-800 rounded-[16px] text-[13px] font-semibold text-gray-800 dark:text-gray-200 placeholder:text-gray-400 placeholder:font-medium focus:ring-1 focus:ring-[#F26A1C]/50 focus:outline-none resize-none"
@@ -255,8 +296,8 @@ export default function ReviewPage() {
                 )}
 
                 {/* ── Error ── */}
-                {error && (
-                    <p className="text-[13px] font-bold text-red-500 text-center">{error}</p>
+                {storeError && (
+                    <p className="text-[13px] font-bold text-red-500 text-center">{storeError}</p>
                 )}
 
                 {/* ── Disclaimer ── */}
@@ -266,19 +307,19 @@ export default function ReviewPage() {
 
                 {/* ── Submit ── */}
                 <button
-                    onClick={handleSubmit}
-                    disabled={!canSubmit}
-                    className="w-full py-4 bg-[#F26A1C] disabled:bg-gray-200 dark:disabled:bg-gray-700 disabled:text-gray-400 disabled:shadow-none text-white font-bold rounded-[20px] text-[15px] shadow-[0_8px_20px_rgba(242,106,28,0.25)] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                    type="submit"
+                    disabled={!isValid || isLoading}
+                    className="w-full py-4 bg-[#F26A1C] disabled:bg-gray-300 dark:disabled:bg-gray-800 disabled:text-gray-500 disabled:shadow-none text-white font-bold rounded-[20px] text-[15px] shadow-[0_8px_20px_rgba(242,106,28,0.25)] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                 >
                     {isLoading ? (
                         <>
-                            <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            <span className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
                             Submitting...
                         </>
                     ) : "Submit Review"}
                 </button>
 
             </main>
-        </div>
+        </form>
     );
 }

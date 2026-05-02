@@ -4,11 +4,12 @@ import { z } from "zod";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuthStore } from "@/store/auth/authStore";
+import { useNavigate } from "react-router-dom";
 
 const signupSchema = z
   .object({
-    fullName: z.string().min(2, "Name Is Too Short!").max(50, "Name Is Too Long!"),
-    email: z.string().email("Please Enter A Valid Email!"),
+    fullName: z.string().trim().min(2, "Name Is Too Short!").max(50, "Name Is Too Long!"),
+    email: z.string().trim().email("Please Enter A Valid Email!"),
     password: z
       .string()
       .min(8, "Password Is Too Short!")
@@ -25,6 +26,7 @@ type SignupFormData = z.infer<typeof signupSchema>;
 
 export default function SignupForm() {
   const { signup, isLoading, clearError } = useAuthStore();
+  const navigate = useNavigate();
 
   const [apiError, setApiError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -33,7 +35,7 @@ export default function SignupForm() {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isValid, isSubmitting },
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
     mode: "onChange",
@@ -48,6 +50,7 @@ export default function SignupForm() {
         email: data.email,
         password: data.password,
       });
+      navigate(`/verify-email/${encodeURIComponent(data.email)}`);
     } catch (err: any) {
       setApiError(err.message || "User Already Exists With This Email!");
     }
@@ -200,10 +203,10 @@ export default function SignupForm() {
           <div className="pt-6 flex justify-center">
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || isSubmitting || !isValid}
               className="bg-[#F26A1C] hover:bg-[#e05d15] text-white font-black text-[22px] px-16 py-3.5 rounded-full shadow-lg shadow-orange-500/20 active:scale-95 transition-all disabled:opacity-70 min-w-[200px]"
             >
-              {isLoading ? "Wait..." : "Sign Up"}
+              {isLoading || isSubmitting ? "Wait..." : "Sign Up"}
             </button>
           </div>
         </form>

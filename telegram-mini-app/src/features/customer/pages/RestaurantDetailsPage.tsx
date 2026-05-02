@@ -261,7 +261,7 @@ export default function RestaurantDetailsPage() {
                 {/* Clickable image area */}
                 <div
                   className="w-full cursor-pointer group"
-                  onClick={() => navigate(`/customer/food/${item.id}`)}
+                  onClick={() => navigate(buildRoute(ROUTES.CUSTOMER.FOOD.DETAILS, { foodId: item.id }))}
                 >
                   <div className="w-full h-[100px] mb-3 rounded-xl overflow-hidden bg-gray-50">
                     <img

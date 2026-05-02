@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   ArrowLeft,
   Star,
@@ -69,6 +72,13 @@ const RATING_LABELS: Record<number, string> = {
   5: "Excellent 🌟",
 };
 
+const orderReviewSchema = z.object({
+  rating: z.number().min(1, "Please provide a rating"),
+  comment: z.string().trim().optional(),
+});
+
+type OrderReviewData = z.infer<typeof orderReviewSchema>;
+
 // ─── Page ──────────────────────────────────────────────────────────────────────
 export default function OrderReviewPage() {
   const { orderId } = useParams<{ orderId: string }>();
@@ -77,13 +87,25 @@ export default function OrderReviewPage() {
   const order = useCustomerOrderStore((s) =>
     s.orders.find((o) => o.id === orderId),
   );
-  const { hasRated, submitRating, isSubmitting } = useRatingStore();
+  const { hasRated, submitRating } = useRatingStore();
   const alreadyRated = orderId ? hasRated(orderId) : false;
 
-  const [rating, setRating] = useState(0);
-  const [comment, setComment] = useState("");
   const [submitted, setSubmitted] = useState(alreadyRated);
   const [selectedChips, setSelectedChips] = useState<string[]>([]);
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { isValid, isSubmitting },
+  } = useForm<OrderReviewData>({
+    resolver: zodResolver(orderReviewSchema),
+    mode: "onChange",
+    defaultValues: { rating: 0, comment: "" },
+  });
+
+  const rating = watch("rating");
 
   const toggleChip = (chip: string) => {
     setSelectedChips((prev) =>
@@ -91,17 +113,18 @@ export default function OrderReviewPage() {
     );
   };
 
-  const handleSubmit = async () => {
-    if (!order || rating === 0 || !orderId) return;
+  const onSubmit = async (data: OrderReviewData) => {
+    if (!order || data.rating === 0 || !orderId) return;
+    
     const fullComment = [
       ...selectedChips,
-      ...(comment.trim() ? [comment.trim()] : []),
+      ...(data.comment ? [data.comment] : []),
     ].join(" · ");
 
     await submitRating({
       rateeId: order.deliverer?.name || "unknown",
       orderId,
-      rating,
+      rating: data.rating,
       comment: fullComment,
     });
     setSubmitted(true);
@@ -155,10 +178,11 @@ export default function OrderReviewPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 font-sans flex flex-col pb-32">
+    <form onSubmit={handleSubmit(onSubmit)} className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 font-sans flex flex-col pb-32">
       {/* Header */}
       <header className="relative flex items-center justify-center px-5 pt-6 pb-5">
         <button
+          type="button"
           onClick={() => navigate(-1)}
           className="absolute left-5 w-10 h-10 bg-[#FFF4ED] dark:bg-gray-900 rounded-[12px] flex items-center justify-center text-[#F26A1C] active:scale-95 transition-transform"
         >
@@ -218,7 +242,7 @@ export default function OrderReviewPage() {
           <p className="text-center text-[14px] font-bold text-gray-500 dark:text-gray-400 mb-6">
             How was your delivery experience?
           </p>
-          <StarRow value={rating} onChange={setRating} />
+          <StarRow value={rating} onChange={(v) => setValue("rating", v, { shouldValidate: true })} />
           {rating > 0 && (
             <p className="text-center mt-4 text-[16px] font-black text-[#F26A1C] animate-in fade-in duration-200">
               {RATING_LABELS[rating]}
@@ -267,8 +291,7 @@ export default function OrderReviewPage() {
           </div>
           <textarea
             id="reviewComment"
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
+            {...register("comment")}
             rows={3}
             className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-[16px] px-4 py-3.5 text-[14px] text-gray-900 dark:text-white placeholder:text-gray-400 outline-none focus:border-[#F26A1C] focus:ring-1 focus:ring-[#F26A1C] transition-all resize-none"
             placeholder="Tell us more about your experience..."
@@ -279,9 +302,9 @@ export default function OrderReviewPage() {
       {/* Submit button */}
       <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-950 border-t border-gray-100 dark:border-gray-800 px-5 py-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] z-40">
         <button
-          onClick={handleSubmit}
-          disabled={rating === 0 || isSubmitting}
-          className="w-full flex items-center justify-center gap-2 bg-[#F26A1C] hover:bg-[#e05d15] text-white rounded-[20px] font-bold text-[15px] py-4 shadow-[0_8px_20px_rgba(242,106,28,0.3)] active:scale-[0.98] transition-all disabled:opacity-50"
+          type="submit"
+          disabled={!isValid || isSubmitting}
+          className="w-full flex items-center justify-center gap-2 bg-[#F26A1C] hover:bg-[#e05d15] text-white rounded-[20px] font-bold text-[15px] py-4 shadow-[0_8px_20px_rgba(242,106,28,0.3)] active:scale-[0.98] transition-all disabled:opacity-50 disabled:bg-gray-300 disabled:shadow-none"
         >
           <Send size={18} />
           {isSubmitting ? "Submitting..." : "Submit Review"}
@@ -290,6 +313,6 @@ export default function OrderReviewPage() {
           Your feedback is anonymous and helps improve our service.
         </p>
       </div>
-    </div>
+    </form>
   );
 }

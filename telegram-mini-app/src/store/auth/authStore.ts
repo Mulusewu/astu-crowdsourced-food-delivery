@@ -107,9 +107,10 @@ export const useAuthStore = create<AuthState>()(
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
-        set({ user: newUser, token: `mock_token_${newUser.id}`, isLoading: false });
+        // Mock user creation but do not log them in automatically (email verification required)
+        set({ isLoading: false });
         console.log("✅ Signup", newUser.fullName, "| role:", newUser.role);
-        if (navigate) navigate(getRoleRedirectPath(newUser.role));
+        if (navigate) navigate(`/verify-email/${encodeURIComponent(newUser.email || newUser.astuEmail || "default")}`);
       },
 
       signin: async (data, navigate) => {

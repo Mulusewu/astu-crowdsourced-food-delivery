@@ -20,13 +20,12 @@ const getLabelIcon = (label: string) => {
   return Star;
 };
 
-// ─── Add Address Modal ─────────────────────────────────────────────────────────
-function AddAddressModal({
+export function AddAddressModal({
   onClose,
   onSave,
 }: {
   onClose: () => void;
-  onSave: (address: Address) => void;
+  onSave: (address: any) => void; // Replace 'any' with your Address type
 }) {
   const [form, setForm] = useState({
     label: "Home",
@@ -41,7 +40,7 @@ function AddAddressModal({
 
   const handleSave = () => {
     if (!form.street.trim()) return;
-    const newAddress: Address = {
+    const newAddress = {
       id: `addr_${Date.now()}`,
       label: form.label,
       street: form.street,
@@ -62,20 +61,23 @@ function AddAddressModal({
 
   return (
     <div className="fixed inset-0 z-[200] flex flex-col justify-end">
-      {/* Backdrop */}
+      {/* Backdrop (Covers full screen) */}
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
 
-      {/* Sheet */}
-      <div className="relative bg-white dark:bg-gray-950 rounded-t-[32px] px-5 pt-8 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-2xl animate-in slide-in-from-bottom-full duration-300">
+      {/* Sheet (Constrained to Mobile Width: w-full max-w-md mx-auto) */}
+      <div className="relative w-full max-w-md mx-auto bg-white dark:bg-gray-950 rounded-t-[32px] px-5 pt-8 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-2xl animate-in slide-in-from-bottom-full duration-300">
+
         {/* Drag handle */}
         <div className="absolute top-3 left-1/2 -translate-x-1/2 w-10 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full" />
 
-        <h2 className="text-[18px] font-black text-gray-900 dark:text-white mb-6">
-          Add New Address
-        </h2>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-[18px] font-black text-gray-900 dark:text-white">
+            Add New Address
+          </h2>
+        </div>
 
         {/* Label selector */}
         <div className="flex gap-2 mb-5">
@@ -83,24 +85,20 @@ function AddAddressModal({
             <button
               key={l}
               onClick={() => setForm((f) => ({ ...f, label: l }))}
-              className={`flex-1 py-2.5 rounded-[14px] text-[13px] font-bold transition-all active:scale-95 ${
-                form.label === l
+              className={`flex-1 py-2.5 rounded-[14px] text-[13px] font-bold transition-all active:scale-95 ${form.label === l
                   ? "bg-[#F26A1C] text-white shadow-md"
                   : "bg-[#FFF4ED] dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-orange-100 dark:border-gray-700"
-              }`}
+                }`}
             >
               {l}
             </button>
           ))}
         </div>
 
-        <div className="space-y-3">
+        {/* Form Fields */}
+        <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-1 pb-2 [&::-webkit-scrollbar]:hidden">
           {[
-            {
-              field: "street",
-              placeholder: "Street address *",
-              required: true,
-            },
+            { field: "street", placeholder: "Street address *", required: true },
             { field: "area", placeholder: "Area / Neighborhood" },
             { field: "building", placeholder: "Building / Block" },
             { field: "floor", placeholder: "Floor / Room" },
@@ -114,7 +112,7 @@ function AddAddressModal({
               onChange={(e) =>
                 setForm((f) => ({ ...f, [field]: e.target.value }))
               }
-              className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-[14px] px-4 py-3.5 text-[14px] text-gray-900 dark:text-white placeholder:text-gray-400 outline-none focus:border-[#F26A1C] focus:ring-1 focus:ring-[#F26A1C] transition-all"
+              className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-[14px] px-4 py-3.5 text-[14px] text-gray-900 dark:text-white placeholder:text-gray-400 outline-none focus:border-[#F26A1C] focus:ring-1 focus:ring-[#F26A1C] transition-all"
             />
           ))}
         </div>
@@ -125,11 +123,10 @@ function AddAddressModal({
           className="flex items-center gap-3 mt-4 w-full active:opacity-70"
         >
           <div
-            className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-              form.isDefault
+            className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${form.isDefault
                 ? "bg-[#F26A1C] border-[#F26A1C]"
                 : "border-gray-300 dark:border-gray-600"
-            }`}
+              }`}
           >
             {form.isDefault && (
               <Check size={13} className="text-white" strokeWidth={3} />
@@ -143,7 +140,7 @@ function AddAddressModal({
         <button
           onClick={handleSave}
           disabled={!form.street.trim()}
-          className="w-full mt-6 bg-[#F26A1C] hover:bg-[#e05d15] text-white rounded-[20px] font-bold text-[15px] py-4 shadow-[0_8px_20px_rgba(242,106,28,0.25)] active:scale-[0.98] transition-all disabled:opacity-50"
+          className="w-full mt-6 bg-[#F26A1C] hover:bg-[#e05d15] text-white rounded-[20px] font-bold text-[15px] py-4 shadow-[0_8px_20px_rgba(242,106,28,0.25)] active:scale-[0.98] transition-all disabled:opacity-50 disabled:shadow-none"
         >
           Save Address
         </button>
@@ -153,32 +150,32 @@ function AddAddressModal({
 }
 
 // ─── Address Card ──────────────────────────────────────────────────────────────
-function AddressCard({
+export function AddressCard({
   address,
   onSetDefault,
   onDelete,
 }: {
-  address: Address;
+  address: any; // Replace 'any' with your Address type
   onSetDefault: (id: string) => void;
   onDelete: (id: string) => void;
 }) {
-  const LabelIcon = getLabelIcon(address.label);
+  // Assuming a generic fallback if getLabelIcon isn't passed directly
+  // const LabelIcon = getLabelIcon(address.label);
+
   return (
     <div
-      className={`bg-white dark:bg-gray-900 rounded-[20px] p-4 border shadow-[0_4px_16px_rgba(0,0,0,0.04)] transition-all ${
-        address.isDefault
-          ? "border-[#F26A1C]/30 shadow-[0_4px_20px_rgba(242,106,28,0.1)]"
+      className={`w-full max-w-md mx-auto bg-white dark:bg-gray-900 rounded-[20px] p-4 border shadow-[0_4px_16px_rgba(0,0,0,0.04)] transition-all ${address.isDefault
+          ? "border-[#F26A1C]/30 shadow-[0_4px_20px_rgba(242,106,28,0.12)]"
           : "border-gray-100 dark:border-gray-800"
-      }`}
+        }`}
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
           <div
-            className={`w-10 h-10 rounded-full flex items-center justify-center ${
-              address.isDefault ? "bg-[#FFF4ED]" : "bg-gray-50 dark:bg-gray-800"
-            }`}
+            className={`w-10 h-10 rounded-full flex items-center justify-center ${address.isDefault ? "bg-[#FFF4ED] dark:bg-orange-900/30" : "bg-gray-50 dark:bg-gray-800"
+              }`}
           >
-            <LabelIcon
+            <MapPin
               size={20}
               className={address.isDefault ? "text-[#F26A1C]" : "text-gray-400"}
             />
@@ -196,7 +193,7 @@ function AddressCard({
         </div>
         <button
           onClick={() => onDelete(address.id)}
-          className="p-2 rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all active:scale-90"
+          className="p-2 rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all active:scale-90"
         >
           <Trash2 size={16} />
         </button>
@@ -237,7 +234,6 @@ function AddressCard({
     </div>
   );
 }
-
 // ─── Page ──────────────────────────────────────────────────────────────────────
 export default function AddressBookPage() {
   const navigate = useNavigate();

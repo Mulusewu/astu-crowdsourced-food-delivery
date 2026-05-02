@@ -169,7 +169,7 @@ export default function CustomerOrdersPage() {
           : "You haven't made any orders yet. Start exploring!"}
       </p>
       <button
-        onClick={() => navigate("/customer/dashboard")}
+        onClick={() => navigate(ROUTES.CUSTOMER.HOME)}
         className="bg-[#F26A1C] text-white font-bold py-3.5 px-8 rounded-full shadow-md active:scale-95 transition-transform"
       >
         Browse Restaurants

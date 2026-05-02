@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Trash2 } from "lucide-react";
+import { ROUTES } from "@/routes/routePaths";
 
 import { useCartStore } from "@/store/cart/cartStore";
 import { useAuthStore } from "@/store/auth/authStore";
@@ -117,7 +118,7 @@ export default function CartPage() {
         discount={discount}
         currency={"ETB"}
         isCartEmpty={cartItems.length === 0}
-        onPlaceOrder={() => navigate("/customer/checkout")}
+        onPlaceOrder={() => navigate(ROUTES.CUSTOMER.CHECKOUT)}
       />
 
       <CartItemDetailModal

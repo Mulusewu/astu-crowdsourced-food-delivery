@@ -213,8 +213,8 @@ export default function CartCheckoutPage() {
                 {selectedPaymentMethod?.brand
                   ? `${selectedPaymentMethod.brand.toUpperCase()} Card`
                   : selectedPaymentMethod?.type === "cash"
-                  ? "Cash on Delivery"
-                  : "Telebirr"}
+                    ? "Cash on Delivery"
+                    : "Telebirr"}
               </p>
               <p className="text-xs text-gray-500">
                 {selectedPaymentMethod?.last4

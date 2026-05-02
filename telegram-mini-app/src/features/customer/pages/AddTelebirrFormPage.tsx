@@ -1,24 +1,58 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Check } from "lucide-react";
+import { usePaymentStore } from "@/store/paymentStore";
 import {
   Header,
   BorderedInput,
   ActionButton,
-} from "../components/profileShared"; // Adjust path
+} from "../components/profileShared";
+import { ROUTES } from "@/routes/routePaths";
+
+const telebirrSchema = z.object({
+  accountName: z.string().trim().min(2, "Account Name is required"),
+  phoneNumber: z.string().trim().regex(/^(09|07)\d{8}$|^\+251(9|7)\d{8}$/, "Valid Ethiopian phone number required"),
+  otp: z.string().trim().min(4, "OTP must be at least 4 digits"),
+});
+
+type TelebirrData = z.infer<typeof telebirrSchema>;
 
 export default function AddTelebirrFormPage() {
   const navigate = useNavigate();
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
 
-  const handleSubmit = () => {
-    setIsLoading(true);
-    // Simulate API call for OTP verification
-    setTimeout(() => {
-      setIsLoading(false);
+  const addPaymentMethod = usePaymentStore((state) => state.addPaymentMethod);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid, isSubmitting },
+  } = useForm<TelebirrData>({
+    resolver: zodResolver(telebirrSchema),
+    mode: "onChange",
+  });
+
+  const onSubmit = async (data: TelebirrData) => {
+    setApiError(null);
+    try {
+      // Simulate API call for OTP verification
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Send to Zustand Store (which mimics backend)
+      addPaymentMethod({
+        id: `tb_${Date.now()}`,
+        type: "Telebirr",
+        accountInfo: data.phoneNumber,
+      });
+
       setIsSubmitted(true);
-    }, 800);
+    } catch {
+      setApiError("Failed to add Telebirr account.");
+    }
   };
 
   // --- SUCCESS STATE VIEW ---
@@ -39,7 +73,7 @@ export default function AddTelebirrFormPage() {
         </div>
 
         <div className="mt-8 mb-4">
-          <ActionButton onClick={() => navigate("/customer/profile/payment")}>
+          <ActionButton onClick={() => navigate(ROUTES.CUSTOMER.PAYMENT.METHODS)}>
             Return to Payment Methods
           </ActionButton>
         </div>
@@ -49,7 +83,7 @@ export default function AddTelebirrFormPage() {
 
   // --- FORM STATE VIEW ---
   return (
-    <div className="px-5 font-sans flex flex-col h-full bg-[#FDFDFD] dark:bg-gray-950">
+    <form onSubmit={handleSubmit(onSubmit)} className="px-5 font-sans flex flex-col h-full bg-[#FDFDFD] dark:bg-gray-950">
       <Header title="Add Telebirr" showBack />
 
       <div className="flex-1 mt-2">
@@ -74,22 +108,36 @@ export default function AddTelebirrFormPage() {
             <label className="text-[12px] font-bold text-gray-900 dark:text-white mb-2 block">
               Account Name
             </label>
-            <BorderedInput placeholder="Enter Your Name" />
+            <BorderedInput 
+              {...register("accountName")}
+              placeholder="Enter Your Name" 
+              error={!!errors.accountName}
+            />
+            {errors.accountName && <p className="text-xs text-red-500 mt-1">{errors.accountName.message}</p>}
           </div>
 
           <div>
             <label className="text-[12px] font-bold text-gray-900 dark:text-white mb-2 block">
               Phone Number
             </label>
-            {/* Set error={true} if you want to show the red border validation */}
-            <BorderedInput placeholder="Enter Your Phone Number" />
+            <BorderedInput 
+              {...register("phoneNumber")}
+              placeholder="Enter Your Phone Number" 
+              error={!!errors.phoneNumber}
+            />
+            {errors.phoneNumber && <p className="text-xs text-red-500 mt-1">{errors.phoneNumber.message}</p>}
           </div>
 
           <div>
             <label className="text-[12px] font-bold text-gray-900 dark:text-white mb-2 block">
               Enter OTP For Verification
             </label>
-            <BorderedInput placeholder="Enter OTP" />
+            <BorderedInput 
+              {...register("otp")}
+              placeholder="Enter OTP" 
+              error={!!errors.otp}
+            />
+            {errors.otp && <p className="text-xs text-red-500 mt-1">{errors.otp.message}</p>}
             <div className="flex flex-col items-center mt-1.5 gap-0.5">
               <p className="text-[10px] text-gray-500 font-medium">
                 Haven't Received OTP Yet?{" "}
@@ -99,14 +147,16 @@ export default function AddTelebirrFormPage() {
               </p>
             </div>
           </div>
+
+          {apiError && <p className="text-xs font-bold text-red-500 text-center">{apiError}</p>}
         </div>
       </div>
 
       <div className="mt-8 mb-4">
-        <ActionButton onClick={handleSubmit}>
-          {isLoading ? "Verifying..." : "Add Payment Method"}
+        <ActionButton type="submit" disabled={!isValid || isSubmitting}>
+          {isSubmitting ? "Verifying..." : "Add Payment Method"}
         </ActionButton>
       </div>
-    </div>
+    </form>
   );
 }

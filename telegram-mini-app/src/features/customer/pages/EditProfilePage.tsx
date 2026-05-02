@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   Camera,
   User,
@@ -23,6 +26,16 @@ const PAYMENT_METHODS = [
   { id: "amole", label: "Amole" },
 ];
 
+const editProfileSchema = z.object({
+  fullName: z.string().trim().min(2, "Name is too short"),
+  phoneNumber: z.string().trim().optional().or(z.literal("")),
+  email: z.string().trim().email("Invalid email").optional().or(z.literal("")),
+  astuEmail: z.string().trim().email("Invalid ASTU email").optional().or(z.literal("")),
+  defaultLocation: z.string().trim().optional().or(z.literal("")),
+});
+
+type EditProfileData = z.infer<typeof editProfileSchema>;
+
 function ReadOnlyField({ label, value }: { label: string; value: string }) {
   return (
     <div className="w-full bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-[20px] px-4 py-3.5">
@@ -37,28 +50,34 @@ export default function CustomerEditProfilePage() {
   const { user, updateProfile, isLoading } = useAuthStore();
   const cp = user?.customerProfile;
 
-  // User-level fields
-  const [fullName, setFullName] = useState(user?.fullName ?? "");
-  const [email, setEmail] = useState(user?.email ?? "");
-  const [astuEmail, setAstuEmail] = useState(user?.astuEmail ?? "");
-  const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber ?? "");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid, isSubmitting },
+  } = useForm<EditProfileData>({
+    resolver: zodResolver(editProfileSchema),
+    mode: "onChange",
+    defaultValues: {
+      fullName: user?.fullName ?? "",
+      email: user?.email ?? "",
+      astuEmail: user?.astuEmail ?? "",
+      phoneNumber: user?.phoneNumber ?? "",
+      defaultLocation: cp?.defaultLocation ?? "",
+    },
+  });
 
-  // CustomerProfile fields
-  const [defaultLocation, setDefaultLocation] = useState(cp?.defaultLocation ?? "");
   const [preferredPayment, setPreferredPayment] = useState(cp?.prefferedPaymentMethod ?? "card");
-
   const [success, setSuccess] = useState(false);
 
-  const handleSave = async () => {
-    if (!fullName.trim()) return;
+  const onSubmit = async (data: EditProfileData) => {
     try {
       await updateProfile({
-        fullName: fullName.trim(),
-        email: email.trim() || null,
-        astuEmail: astuEmail.trim() || null,
-        phoneNumber: phoneNumber.trim() || null,
+        fullName: data.fullName,
+        email: data.email || null,
+        astuEmail: data.astuEmail || null,
+        phoneNumber: data.phoneNumber || null,
         customerProfile: {
-          defaultLocation: defaultLocation.trim() || null,
+          defaultLocation: data.defaultLocation || null,
           prefferedPaymentMethod: preferredPayment || null,
         },
       });
@@ -82,7 +101,7 @@ export default function CustomerEditProfilePage() {
   }
 
   return (
-    <div className="bg-[#FDFDFD] dark:bg-gray-950 font-sans flex flex-col pb-10">
+    <form onSubmit={handleSubmit(onSubmit)} className="bg-[#FDFDFD] dark:bg-gray-950 font-sans flex flex-col pb-10 min-h-screen">
       <Header title="Edit Profile" showBack />
 
       {/* Avatar */}
@@ -95,7 +114,7 @@ export default function CustomerEditProfilePage() {
               {user?.fullName?.[0] ?? "C"}
             </AvatarFallback>
           </Avatar>
-          <button className="absolute bottom-0 right-0 bg-[#F26A1C] p-2 rounded-full text-white border-2 border-white dark:border-gray-900 shadow-sm active:scale-95 transition-transform">
+          <button type="button" className="absolute bottom-0 right-0 bg-[#F26A1C] p-2 rounded-full text-white border-2 border-white dark:border-gray-900 shadow-sm active:scale-95 transition-transform">
             <Camera size={14} />
           </button>
         </div>
@@ -116,10 +135,10 @@ export default function CustomerEditProfilePage() {
               <User size={10} /> Full Name
             </label>
             <SoftInput
-              value={fullName}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFullName(e.target.value)}
+              {...register("fullName")}
               placeholder="Your full name"
             />
+            {errors.fullName && <p className="text-xs text-red-500 font-semibold px-2">{errors.fullName.message}</p>}
           </div>
 
           <div className="flex flex-col gap-1">
@@ -127,11 +146,11 @@ export default function CustomerEditProfilePage() {
               <Phone size={10} /> Phone Number
             </label>
             <SoftInput
-              value={phoneNumber}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPhoneNumber(e.target.value)}
+              {...register("phoneNumber")}
               type="tel"
               placeholder="+251 9XX XXX XXX"
             />
+            {errors.phoneNumber && <p className="text-xs text-red-500 font-semibold px-2">{errors.phoneNumber.message}</p>}
           </div>
 
           <div className="flex flex-col gap-1">
@@ -139,24 +158,24 @@ export default function CustomerEditProfilePage() {
               <Mail size={10} /> Email
             </label>
             <SoftInput
-              value={email}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+              {...register("email")}
               type="email"
               placeholder="your@email.com"
             />
+            {errors.email && <p className="text-xs text-red-500 font-semibold px-2">{errors.email.message}</p>}
           </div>
 
           <div className="flex flex-col gap-1">
             <label className="text-[11px] font-bold text-gray-500 uppercase px-1 flex items-center gap-1">
               <BookOpen size={10} /> ASTU Email
-              <span className="text-[9px] font-normal text-gray-400 normal-case ml-1">(optional – for ASTU students)</span>
+              <span className="text-[9px] font-normal text-gray-400 normal-case ml-1">(optional)</span>
             </label>
             <SoftInput
-              value={astuEmail}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAstuEmail(e.target.value)}
+              {...register("astuEmail")}
               type="email"
               placeholder="your.name@astu.edu.et"
             />
+            {errors.astuEmail && <p className="text-xs text-red-500 font-semibold px-2">{errors.astuEmail.message}</p>}
           </div>
         </div>
 
@@ -171,10 +190,10 @@ export default function CustomerEditProfilePage() {
               <MapPin size={10} /> Default Delivery Location
             </label>
             <SoftInput
-              value={defaultLocation}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDefaultLocation(e.target.value)}
+              {...register("defaultLocation")}
               placeholder="e.g. Bole Atlas, Addis Ababa"
             />
+            {errors.defaultLocation && <p className="text-xs text-red-500 font-semibold px-2">{errors.defaultLocation.message}</p>}
           </div>
 
           {/* Preferred Payment Method */}
@@ -228,10 +247,10 @@ export default function CustomerEditProfilePage() {
           </div>
         )}
 
-        <ActionButton onClick={handleSave}>
-          {isLoading ? "Saving…" : "Save Changes"}
+        <ActionButton type="submit" disabled={!isValid || isSubmitting || isLoading}>
+          {isLoading || isSubmitting ? "Saving…" : "Save Changes"}
         </ActionButton>
       </div>
-    </div>
+    </form>
   );
 }

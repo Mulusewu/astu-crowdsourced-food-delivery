@@ -65,6 +65,9 @@ export interface CustomerOrder {
   estimatedReadyAt: string | null;
   // Delivery address
   deliveryAddress: string | null;
+  // Payment info
+  paymentProvider: "chapa" | "cash" | "telebirr" | null;
+  transactionId: string | null;
   // Status history
   statusHistory: {
     oldStatus: OrderStatus | null;
@@ -99,6 +102,7 @@ interface CustomerOrderState {
     tip: number;
     totalAmount: number;
     deliveryAddress: string;
+    paymentProvider?: "chapa" | "cash" | "telebirr";
   }) => Promise<CustomerOrder>;
   updateOrderStatus: (orderId: string, status: OrderStatus) => Promise<void>;
   cancelOrder: (orderId: string) => Promise<void>;
@@ -180,6 +184,8 @@ const buildCustomerOrder = (rawOrder: (typeof db.orders)[0]): CustomerOrder => {
     estimatedDeliveryTime: rawOrder.estimatedDeliveryTime ?? null,
     estimatedReadyAt: rawOrder.estimatedReadyAt ?? null,
     deliveryAddress: null,
+    paymentProvider: (rawOrder as any).paymentProvider ?? null,
+    transactionId: (rawOrder as any).transactionId ?? null,
     statusHistory,
     deliverer,
     createdAt: rawOrder.createdAt,
@@ -254,6 +260,8 @@ export const useCustomerOrderStore = create<CustomerOrderState>()(
             estimatedDeliveryTime: null,
             estimatedReadyAt: null,
             deliveryAddress: params.deliveryAddress,
+            paymentProvider: params.paymentProvider ?? null,
+            transactionId: params.paymentProvider === "chapa" ? `txn_chapa_${Date.now()}` : null,
             statusHistory: [
               { oldStatus: null, newStatus: "AWAITING_ACCEPT", createdAt: now },
             ],

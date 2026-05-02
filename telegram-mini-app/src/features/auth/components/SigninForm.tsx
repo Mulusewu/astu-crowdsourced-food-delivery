@@ -4,9 +4,10 @@ import { z } from "zod";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuthStore } from "@/store/auth/authStore";
+import { Link } from "react-router-dom";
 
 const signinSchema = z.object({
-  email: z.string().email("Please Enter A Valid Email Address!"),
+  email: z.string().trim().email("Please Enter A Valid Email Address!"),
   password: z.string().min(1, "Password Is Required!"),
 });
 
@@ -21,10 +22,10 @@ export default function SigninForm() {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isValid, isSubmitting },
   } = useForm<SigninFormData>({
     resolver: zodResolver(signinSchema),
-    mode: "onSubmit",
+    mode: "onChange",
   });
 
   const onSubmit = async (data: SigninFormData) => {
@@ -194,16 +195,24 @@ export default function SigninForm() {
                 {apiError}
               </p>
             )}
+            <div className="flex justify-end mt-2">
+              <Link
+                to="/forgot-password"
+                className="text-sm font-semibold text-[#F26A1C] hover:underline"
+              >
+                Forgot Password?
+              </Link>
+            </div>
           </div>
 
           {/* Action Button */}
           <div className="pt-10 flex justify-center">
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || isSubmitting || !isValid}
               className="bg-[#F26A1C] hover:bg-[#e05d15] text-white font-black text-[22px] px-16 py-3.5 rounded-full shadow-lg shadow-orange-500/20 active:scale-95 transition-all disabled:opacity-70 min-w-[190px]"
             >
-              {isLoading ? "Wait..." : "Login"}
+              {isLoading || isSubmitting ? "Wait..." : "Login"}
             </button>
           </div>
         </form>

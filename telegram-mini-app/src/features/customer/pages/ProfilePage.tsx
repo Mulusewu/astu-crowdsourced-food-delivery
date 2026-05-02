@@ -41,6 +41,12 @@ export default function CustomerProfilePage() {
       onClick: () => navigate(ROUTES.CUSTOMER.EDIT_PROFILE),
     },
     {
+      label: "Address Book",
+      value: "Delivery locations",
+      icon: MapPin,
+      onClick: () => navigate(ROUTES.CUSTOMER.ADDRESSES),
+    },
+    {
       label: "Password",
       value: "Secure access",
       icon: Lock,
