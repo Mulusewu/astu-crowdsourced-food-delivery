@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import VendorBottomNav from "@/features/vendor/components/VendorBottomNav";
+import BottomNav from "@/components/common/BottomNav";
 
 export default function VendorLayout() {
   // Authentication check currently bypassed for development
@@ -24,7 +24,7 @@ export default function VendorLayout() {
       {/* Fixed Vendor Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-6 pointer-events-none">
         <div className="pointer-events-auto mx-auto max-w-md">
-          <VendorBottomNav />
+          <BottomNav />
         </div>
       </div>
     </div>

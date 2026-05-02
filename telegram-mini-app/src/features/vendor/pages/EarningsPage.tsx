@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { useVendorStore } from "@/store/vendorStore";
 import { DollarSign, Wallet, TrendingUp, Calendar, ArrowUpRight } from "lucide-react";
-import BottomNav from "@/components/common/BottomNav";
 
 export default function EarningsPage() {
   const { vendor, fetchVendorData, isLoading } = useVendorStore();
@@ -96,8 +95,6 @@ export default function EarningsPage() {
           ))}
         </div>
       </div>
-      
-      <BottomNav />
     </div>
   );
 }

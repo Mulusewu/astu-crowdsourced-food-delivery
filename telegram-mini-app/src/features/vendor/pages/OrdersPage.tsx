@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useVendorStore, type VendorOrder } from "@/store/vendorStore";
 import { Clock, Check, ChefHat, X, Package } from "lucide-react";
-import BottomNav from "@/components/common/BottomNav";
 
 export default function OrdersPage() {
   const { activeOrders, updateOrderStatus, fetchVendorData, isLoading } = useVendorStore();
@@ -120,8 +119,6 @@ export default function OrdersPage() {
           ))
         )}
       </div>
-      
-      <BottomNav />
     </div>
   );
 }

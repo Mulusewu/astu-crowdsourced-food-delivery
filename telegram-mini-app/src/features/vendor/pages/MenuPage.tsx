@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useVendorStore, type MenuItem } from "@/store/vendorStore";
 import { ArrowLeft, Plus, Pencil, EyeOff, Eye } from "lucide-react";
-import BottomNav from "@/components/common/BottomNav";
 
 export default function MenuPage() {
   const navigate = useNavigate();
@@ -141,7 +140,6 @@ export default function MenuPage() {
         )}
       </div>
 
-      <BottomNav />
     </div>
   );
 }

@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { useVendorStore } from "@/store/vendorStore";
 import { User, Store, LogOut, Clock, Building2, ChevronRight } from "lucide-react";
-import BottomNav from "@/components/common/BottomNav";
 
 export default function SettingsPage() {
   const { vendor, fetchVendorData, isLoading, logout } = useVendorStore();
@@ -110,8 +109,6 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
-      
-      <BottomNav />
     </div>
   );
 }

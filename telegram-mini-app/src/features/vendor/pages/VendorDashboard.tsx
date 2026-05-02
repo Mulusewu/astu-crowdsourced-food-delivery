@@ -10,7 +10,6 @@ import {
   TrendingUp,
   Mail
 } from "lucide-react";
-import BottomNav from "@/components/common/BottomNav";
 
 export default function VendorDashboard() {
   const { vendor, isActive, activeOrders, isLoading, fetchVendorData, toggleActiveStatus } = useVendorStore();
@@ -153,8 +152,6 @@ export default function VendorDashboard() {
           <p className="text-gray-500 font-medium">No available orders yet.</p>
         </div>
       )}
-      
-      <BottomNav />
     </div>
   );
 }
