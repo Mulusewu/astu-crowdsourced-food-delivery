@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -25,6 +25,16 @@ export default function AddTelebirrFormPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
+  const [searchParams] = useSearchParams();
+  const provider = searchParams.get("provider") || "telebirr";
+  const isCBE = provider === "cbe_birr";
+
+  const providerName = isCBE ? "CBE Birr" : "Telebirr";
+  const providerLogo = isCBE 
+    ? "https://combanketh.et/cbe_logo.png" 
+    : "https://telebirr.et/wp-content/uploads/2021/05/telebirr-logo.png";
+  const providerIdPrefix = isCBE ? "cbe" : "tb";
+
   const addPaymentMethod = usePaymentStore((state) => state.addPaymentMethod);
 
   const {
@@ -44,14 +54,14 @@ export default function AddTelebirrFormPage() {
       
       // Send to Zustand Store (which mimics backend)
       addPaymentMethod({
-        id: `tb_${Date.now()}`,
-        type: "Telebirr",
+        id: `${providerIdPrefix}_${Date.now()}`,
+        type: providerName,
         accountInfo: data.phoneNumber,
       });
 
       setIsSubmitted(true);
     } catch {
-      setApiError("Failed to add Telebirr account.");
+      setApiError(`Failed to add ${providerName} account.`);
     }
   };
 
@@ -59,7 +69,7 @@ export default function AddTelebirrFormPage() {
   if (isSubmitted) {
     return (
       <div className="px-5 font-sans flex flex-col h-full bg-[#FDFDFD] dark:bg-gray-950">
-        <Header title="Add Telebirr" showBack />
+        <Header title={`Add ${providerName}`} showBack />
 
         <div className="flex-1 flex flex-col items-center justify-center -mt-10 px-4 text-center">
           <div className="w-32 h-32 rounded-full border-[6px] border-[#34C759] flex items-center justify-center mb-8 bg-[#34C759]/5 animate-in zoom-in duration-300">
@@ -84,14 +94,14 @@ export default function AddTelebirrFormPage() {
   // --- FORM STATE VIEW ---
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="px-5 font-sans flex flex-col h-full bg-[#FDFDFD] dark:bg-gray-950">
-      <Header title="Add Telebirr" showBack />
+      <Header title={`Add ${providerName}`} showBack />
 
       <div className="flex-1 mt-2">
         {/* Logo & Warning */}
         <div className="flex flex-col items-center mb-8 px-4 text-center">
           <img
-            src="https://telebirr.et/wp-content/uploads/2021/05/telebirr-logo.png"
-            alt="Telebirr"
+            src={providerLogo}
+            alt={providerName}
             className="h-16 object-contain mb-6"
           />
           <p className="text-[11px] text-gray-500 leading-relaxed font-medium">

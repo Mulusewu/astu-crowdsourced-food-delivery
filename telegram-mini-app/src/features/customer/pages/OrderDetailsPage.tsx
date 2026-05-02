@@ -315,7 +315,11 @@ export default function OrderDetailsPage() {
                     </h3>
                     <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                         {order.items.map((item) => (
-                            <div key={item.id} className="w-[100px] shrink-0 flex flex-col gap-1.5">
+                            <div
+                                key={item.id}
+                                onClick={() => navigate(buildRoute(ROUTES.CUSTOMER.FOOD.DETAILS, { foodId: item.menuId }))}
+                                className="w-[100px] shrink-0 flex flex-col gap-1.5 cursor-pointer active:opacity-70 transition-opacity"
+                            >
                                 <div className="w-full h-[85px] rounded-[16px] overflow-hidden bg-gray-100 dark:bg-gray-800">
                                     {item.imageUrl ? (
                                         <img

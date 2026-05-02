@@ -7,9 +7,19 @@ interface FilterState {
   selectedPrice: string;
   selectedLocation: string;
   
+  // Restaurant Specific
+  sortBy: string;
+  filterBy: string;
+  
+  // Tab State
+  activeTab: string;
+  
   setSearchQuery: (query: string) => void;
   setSelectedPrice: (price: string) => void;
   setSelectedLocation: (location: string) => void;
+  setSortBy: (sort: string) => void;
+  setFilterBy: (filter: string) => void;
+  setActiveTab: (tab: string) => void;
   
   addRecentSearch: (query: string) => void;
   removeRecentSearch: (query: string) => void;
@@ -32,10 +42,16 @@ export const useFilterStore = create<FilterState>()(
       ],
       selectedPrice: "Any",
       selectedLocation: "Any",
+      sortBy: "Rating",
+      filterBy: "All",
+      activeTab: "All",
 
       setSearchQuery: (query) => set({ searchQuery: query }),
       setSelectedPrice: (price) => set({ selectedPrice: price }),
       setSelectedLocation: (location) => set({ selectedLocation: location }),
+      setSortBy: (sort) => set({ sortBy: sort }),
+      setFilterBy: (filter) => set({ filterBy: filter }),
+      setActiveTab: (tab) => set({ activeTab: tab }),
 
       addRecentSearch: (query) =>
         set((state) => {
@@ -65,6 +81,8 @@ export const useFilterStore = create<FilterState>()(
           searchQuery: "",
           selectedPrice: "Any",
           selectedLocation: "Any",
+          sortBy: "Rating",
+          filterBy: "All",
         }),
     }),
     {

@@ -102,6 +102,9 @@ const PaymentMethodsPage = lazy(
 const CustomerProfilePage = lazy(
   () => import("@/features/customer/pages/ProfilePage"),
 );
+const UploadProfilePage = lazy(
+  () => import("@/features/customer/pages/UploadProfilePage"),
+);
 const AddressesPage = lazy(
   () => import("@/features/customer/pages/AddressBookPage"),
 );
@@ -273,6 +276,11 @@ export const customerRoutes: RouteGroup[] = [
   {
     path: ROUTES.CUSTOMER.PROFILE,
     element: <CustomerProfilePage />,
+    roles: [UserRoles.CUSTOMER],
+  },
+  {
+    path: ROUTES.CUSTOMER.UPLOAD_PROFILE,
+    element: <UploadProfilePage />,
     roles: [UserRoles.CUSTOMER],
   },
   {

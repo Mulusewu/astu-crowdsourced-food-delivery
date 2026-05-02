@@ -4,21 +4,10 @@ import {
   ArrowLeft,
   MapPin,
   Plus,
-  Home,
-  Briefcase,
-  Star,
   Trash2,
   Check,
 } from "lucide-react";
-import { useCustomerStore, type Address } from "@/store/customer/customerStore";
-
-// ─── Label icon helper ─────────────────────────────────────────────────────────
-const getLabelIcon = (label: string) => {
-  const l = label.toLowerCase();
-  if (l.includes("home")) return Home;
-  if (l.includes("work") || l.includes("office")) return Briefcase;
-  return Star;
-};
+import { useCustomerStore } from "@/store/customer/customerStore";
 
 export function AddAddressModal({
   onClose,

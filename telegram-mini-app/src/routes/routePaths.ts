@@ -61,6 +61,7 @@ export const ROUTES = {
 
     // User profile
     PROFILE: "/customer/profile",
+    UPLOAD_PROFILE: "/customer/profile/upload",
     ADDRESSES: "/user/profile/addresses",
     ADD_ADDRESS: "/user/profile/addresses/add",
     EDIT_ADDRESS: "/user/profile/addresses/:addressId/edit",

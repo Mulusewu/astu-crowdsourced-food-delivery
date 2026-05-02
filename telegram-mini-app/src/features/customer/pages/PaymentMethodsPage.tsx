@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ChevronRight, CreditCard, ShieldCheck, Trash2, Plus } from "lucide-react";
+import { CreditCard, ShieldCheck, Trash2, Plus } from "lucide-react";
 import { Header } from "../components/profileShared";
 import { usePaymentStore } from "@/store/paymentStore";
 import { ROUTES } from "@/routes/routePaths";

@@ -1,4 +1,4 @@
-import { Outlet, Navigate } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 // import { useAuthStore } from "@/store/auth/authStore";
 // import { ROUTES } from "@/routes/routePaths";
 // import { getRoleRedirectPath } from "@/types/user.types";

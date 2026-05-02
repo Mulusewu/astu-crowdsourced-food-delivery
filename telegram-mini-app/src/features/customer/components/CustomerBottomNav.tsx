@@ -3,27 +3,25 @@ import {
   Home,
   Bookmark,
   Package,
-  FileText,
   User,
   LayoutList,
   ClipboardList,
   Bell,
-  ShoppingBag,
   History
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth/authStore";
-import { useCartStore } from "@/store/cart/cartStore";
+
 import { ROUTES } from "@/routes/routePaths";
 import { cn } from "@/lib/utils";
 
 function CustomerBottomNav() {
   const { user } = useAuthStore();
-  const { getTotalItems } = useCartStore();
+
   const navigate = useNavigate();
   const location = useLocation();
   const path = location.pathname;
 
-  const cartCount = getTotalItems();
+
   const isActive = (route: string) => path.startsWith(route);
 
   // Define navigation items based on role

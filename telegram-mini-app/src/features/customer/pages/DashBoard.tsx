@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES, buildRoute } from "@/routes/routePaths";
 import {
@@ -42,9 +42,6 @@ export default function CustomerDashboard() {
     isLoading: restaurantLoading,
   } = useRestaurantStore();
 
-  const [activeTab, setActiveTab] = useState<
-    "All" | "Foods" | "Restaurants" | "Fast Foods" | "Coffee"
-  >("All");
   const [isLoading, setIsLoading] = useState(true);
 
   const { items: savedItems, addItem: saveItem, removeItem: unsaveItem } = useSavedItemsStore();
@@ -56,11 +53,13 @@ export default function CustomerDashboard() {
   // Dropdown states for Restaurant Tab
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
-  const [sortBy, setSortBy] = useState("Location");
-  const [filterBy, setFilterBy] = useState("All");
 
   // Advanced Filter Modal State
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+
+  // Cart and Notification States
+  const cartCount = useCartStore(state => state.getTotalItems());
+  const hasUnreadNotifications = true; // TODO: Replace with actual notification store logic
 
   // Filter Store logic
   const {
@@ -68,34 +67,21 @@ export default function CustomerDashboard() {
     recentSearches,
     selectedPrice,
     selectedLocation,
+    sortBy,
+    filterBy,
+    activeTab,
     setSearchQuery,
     setSelectedPrice,
     setSelectedLocation,
+    setSortBy,
+    setFilterBy,
+    setActiveTab,
     addRecentSearch,
     removeRecentSearch,
     clearFilters
   } = useFilterStore();
 
-  // Compute filtered items
-  const filteredRestaurants = restaurants.filter((r) => {
-    if (searchQuery && !r.name.toLowerCase().includes(searchQuery.toLowerCase()) && !r.location.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-    if (selectedLocation !== "Any" && !r.location.toLowerCase().includes(selectedLocation.replace(" Gate", "").toLowerCase())) return false;
-    return true;
-  });
-
-  const filteredFoods = popularFoods.filter((f) => {
-    if (searchQuery && !f.name.toLowerCase().includes(searchQuery.toLowerCase()) && !f.restaurant.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-    if (selectedLocation !== "Any" && !f.location.toLowerCase().includes(selectedLocation.replace(" Gate", "").toLowerCase())) return false;
-
-    if (selectedPrice !== "Any") {
-      const [minStr, maxStr] = selectedPrice.split("-");
-      const min = parseInt(minStr, 10);
-      const max = parseInt(maxStr, 10);
-      if (f.price < min || f.price > max) return false;
-    }
-    return true;
-  });
-
+  // Initial data fetch
   useEffect(() => {
     const init = async () => {
       await fetchUserData();
@@ -104,7 +90,75 @@ export default function CustomerDashboard() {
       setIsLoading(false);
     };
     init();
-  }, []);
+  }, [fetchUserData, fetchRestaurants, fetchPopularFoods]);
+
+  // --- Filtering Logic ---
+
+  // 1. Base filtered restaurants (Search + Advanced Location)
+  const baseFilteredRestaurants = useMemo(() => {
+    let result = [...restaurants];
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(r => 
+        r.name.toLowerCase().includes(query) || 
+        r.location.toLowerCase().includes(query)
+      );
+    }
+    if (selectedLocation !== "Any") {
+      const loc = selectedLocation.replace(" Gate", "").toLowerCase();
+      result = result.filter(r => r.location.toLowerCase().includes(loc));
+    }
+    return result;
+  }, [restaurants, searchQuery, selectedLocation]);
+
+  // 2. Restaurants tab specific (Base + Gate + Sort)
+  const restaurantsTabFiltered = useMemo(() => {
+    let result = [...baseFilteredRestaurants];
+    
+    // Gate selection (filterBy)
+    if (filterBy !== "All") {
+      const loc = filterBy.toLowerCase();
+      result = result.filter(r => r.location.toLowerCase().includes(loc));
+    }
+
+    // Sort selection (sortBy)
+    if (sortBy === "Rating") {
+      result.sort((a, b) => b.rating - a.rating);
+    } else if (sortBy === "Newest To Oldest") {
+      result.sort((a, b) => b.id.localeCompare(a.id));
+    } else if (sortBy === "Location") {
+      result.sort((a, b) => a.location.localeCompare(b.location));
+    }
+
+    return result;
+  }, [baseFilteredRestaurants, filterBy, sortBy]);
+
+  // 3. Base filtered foods (Search + Advanced Location + Price)
+  const baseFilteredFoods = useMemo(() => {
+    let result = [...popularFoods];
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(f => 
+        f.name.toLowerCase().includes(query) || 
+        f.restaurant.toLowerCase().includes(query)
+      );
+    }
+    if (selectedLocation !== "Any") {
+      const loc = selectedLocation.replace(" Gate", "").toLowerCase();
+      result = result.filter(f => f.location.toLowerCase().includes(loc));
+    }
+    if (selectedPrice !== "Any") {
+      const [minStr, maxStr] = selectedPrice.split("-");
+      const min = parseInt(minStr, 10);
+      const max = parseInt(maxStr, 10);
+      result = result.filter(f => f.price >= min && f.price <= max);
+    }
+    return result;
+  }, [popularFoods, searchQuery, selectedLocation, selectedPrice]);
+
+  useEffect(() => {
+    fetchUserData();
+  }, [fetchUserData]);
 
   // --- UI Sub-Components ---
 
@@ -278,8 +332,16 @@ export default function CustomerDashboard() {
           </div>
 
           <div className="flex gap-2">
-            <button onClick={() => navigate(ROUTES.CUSTOMER.CART)} className="text-[#F26A1C] bg-[#FFF4ED] dark:bg-gray-800 w-[38px] h-[38px] rounded-full flex items-center justify-center active:scale-95 transition-transform">
+            <button 
+              onClick={() => navigate(ROUTES.CUSTOMER.CART)} 
+              className="text-[#F26A1C] bg-[#FFF4ED] dark:bg-gray-800 w-[38px] h-[38px] rounded-full flex items-center justify-center active:scale-95 transition-transform relative"
+            >
               <ShoppingCart size={18} strokeWidth={2.5} />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex min-w-[18px] h-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white shadow-sm">
+                  {cartCount}
+                </span>
+              )}
             </button>
             <button
               onClick={() => navigate(ROUTES.CUSTOMER.SUPPORT)}
@@ -292,7 +354,11 @@ export default function CustomerDashboard() {
               className="text-[#F26A1C] bg-[#FFF4ED] dark:bg-gray-800 w-[38px] h-[38px] rounded-full flex items-center justify-center active:scale-95 transition-transform relative"
             >
               <Bell size={18} strokeWidth={2.5} />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-[#FFF4ED] dark:border-gray-800"></span>
+              {hasUnreadNotifications && (
+                <span className="absolute top-0 right-0 flex w-[14px] h-[14px] items-center justify-center bg-red-500 rounded-full border-2 border-white dark:border-gray-950 text-white text-[10px] font-bold leading-none">
+                  +
+                </span>
+              )}
             </button>
           </div>
         </div>
@@ -391,7 +457,7 @@ export default function CustomerDashboard() {
             (tab) => (
               <button
                 key={tab}
-                onClick={() => setActiveTab(tab as any)}
+                onClick={() => setActiveTab(tab)}
                 className={`whitespace-nowrap px-5 py-2 rounded-[14px] text-[13px] font-bold transition-all shadow-sm border
               ${activeTab === tab
                     ? "bg-[#F26A1C] text-white border-[#F26A1C]"
@@ -411,9 +477,9 @@ export default function CustomerDashboard() {
               🔥 Top Restaurants
             </h3>
             <div className="flex gap-4 overflow-x-auto pb-4 pt-1 px-1 -mx-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] mb-2">
-              {filteredRestaurants.length === 0 ? (
+              {baseFilteredRestaurants.length === 0 ? (
                 <p className="text-sm text-gray-500 py-4 w-full text-center">No restaurants match your filters.</p>
-              ) : filteredRestaurants.map((rest) => (
+              ) : baseFilteredRestaurants.map((rest) => (
                 <div
                   key={rest.id}
                   className="w-[150px] shrink-0 bg-white dark:bg-gray-900 rounded-[16px] shadow-[0_4px_12px_rgba(0,0,0,0.04)] dark:shadow-none dark:border dark:border-gray-800 overflow-hidden cursor-pointer active:scale-[0.98] transition-transform"
@@ -454,9 +520,9 @@ export default function CustomerDashboard() {
               🔥 Popular Near You
             </h3>
             <div>
-              {filteredFoods.length === 0 ? (
+              {baseFilteredFoods.length === 0 ? (
                 <p className="text-sm text-gray-500 py-4 w-full text-center">No foods match your filters.</p>
-              ) : filteredFoods.map((food) => (
+              ) : baseFilteredFoods.map((food) => (
                 <FoodCard key={food.id} food={food} />
               ))}
             </div>
@@ -481,9 +547,15 @@ export default function CustomerDashboard() {
                 {/* Figma Match: Orange Header Dropdown */}
                 {showSortDropdown && (
                   <div className="absolute top-full left-0 mt-2 w-40 bg-white dark:bg-gray-900 rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-gray-100 overflow-hidden z-20 animate-in fade-in zoom-in-95 duration-200">
-                    <div className="bg-[#F26A1C] text-white text-center py-2 text-[11px] font-bold">
+                    <button
+                      onClick={() => {
+                        setSortBy("Location");
+                        setShowSortDropdown(false);
+                      }}
+                      className={`w-full bg-[#F26A1C] text-white text-center py-2 text-[11px] font-bold active:opacity-90 ${sortBy === "Location" ? "ring-2 ring-inset ring-white/50" : ""}`}
+                    >
                       Location
-                    </div>
+                    </button>
                     {["Rating", "Newest To Oldest", "Oldest To Newest"].map(
                       (opt) => (
                         <button
@@ -492,7 +564,9 @@ export default function CustomerDashboard() {
                             setSortBy(opt);
                             setShowSortDropdown(false);
                           }}
-                          className="w-full text-center px-3 py-2.5 text-[11px] font-semibold text-gray-700 hover:bg-gray-50 border-b border-gray-50 last:border-0"
+                          className={`w-full text-center px-3 py-2.5 text-[11px] font-semibold hover:bg-gray-50 border-b border-gray-50 last:border-0 ${
+                            sortBy === opt ? "text-[#F26A1C] bg-orange-50/50" : "text-gray-700"
+                          }`}
                         >
                           {opt}
                         </button>
@@ -515,9 +589,15 @@ export default function CustomerDashboard() {
                 {/* Figma Match: Orange Header Dropdown */}
                 {showFilterDropdown && (
                   <div className="absolute top-full right-0 mt-2 w-32 bg-white dark:bg-gray-900 rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-gray-100 overflow-hidden z-20 animate-in fade-in zoom-in-95 duration-200">
-                    <div className="bg-[#F26A1C] text-white text-center py-2 text-[11px] font-bold">
+                    <button
+                      onClick={() => {
+                        setFilterBy("All");
+                        setShowFilterDropdown(false);
+                      }}
+                      className={`w-full bg-[#F26A1C] text-white text-center py-2 text-[11px] font-bold active:opacity-90 ${filterBy === "All" ? "ring-2 ring-inset ring-white/50" : ""}`}
+                    >
                       All
-                    </div>
+                    </button>
                     {["In-Campus", "Bole", "Geda", "Kereyu", "Main"].map(
                       (opt) => (
                         <button
@@ -526,7 +606,9 @@ export default function CustomerDashboard() {
                             setFilterBy(opt);
                             setShowFilterDropdown(false);
                           }}
-                          className="w-full text-center px-3 py-2.5 text-[11px] font-semibold text-gray-700 hover:bg-gray-50 border-b border-gray-50 last:border-0"
+                          className={`w-full text-center px-3 py-2.5 text-[11px] font-semibold hover:bg-gray-50 border-b border-gray-50 last:border-0 ${
+                            filterBy === opt ? "text-[#F26A1C] bg-orange-50/50" : "text-gray-700"
+                          }`}
                         >
                           {opt}
                         </button>
@@ -538,52 +620,64 @@ export default function CustomerDashboard() {
             </div>
 
             {/* Categorized Lists */}
-            <LocationGroup
-              title="In-Campus"
-              items={filteredRestaurants.filter(
-                (r) => r.location === "ASTU Campus" || filterBy === "In-Campus",
-              )}
-            />
-            <LocationGroup
-              title="Geda Gate"
-              items={filteredRestaurants.filter(
-                (r) => r.location === "Geda" || filterBy === "Geda",
-              )}
-            />
-            <LocationGroup
-              title="Bole Gate"
-              items={filteredRestaurants.filter(
-                (r) => r.location === "Bole" || filterBy === "Bole",
-              )}
-            />
-            <LocationGroup
-              title="Kereyu Gate"
-              items={filteredRestaurants.filter(
-                (r) => r.location === "Kereyu" || filterBy === "Kereyu",
-              )}
-            />
-            <LocationGroup
-              title="Main Gate"
-              items={filteredRestaurants.filter(
-                (r) => r.location === "Main" || filterBy === "Main",
-              )}
-            />
+            {(filterBy === "All" || filterBy === "In-Campus") && (
+              <LocationGroup
+                title="In-Campus"
+                items={restaurantsTabFiltered.filter(
+                  (r) => r.location.toLowerCase().includes("campus"),
+                )}
+              />
+            )}
+            {(filterBy === "All" || filterBy === "Geda") && (
+              <LocationGroup
+                title="Geda Gate"
+                items={restaurantsTabFiltered.filter(
+                  (r) => r.location.toLowerCase().includes("geda"),
+                )}
+              />
+            )}
+            {(filterBy === "All" || filterBy === "Bole") && (
+              <LocationGroup
+                title="Bole Gate"
+                items={restaurantsTabFiltered.filter(
+                  (r) => r.location.toLowerCase().includes("bole"),
+                )}
+              />
+            )}
+            {(filterBy === "All" || filterBy === "Kereyu") && (
+              <LocationGroup
+                title="Kereyu Gate"
+                items={restaurantsTabFiltered.filter(
+                  (r) => r.location.toLowerCase().includes("kereyu"),
+                )}
+              />
+            )}
+            {(filterBy === "All" || filterBy === "Main") && (
+              <LocationGroup
+                title="Main Gate"
+                items={restaurantsTabFiltered.filter(
+                  (r) => r.location.toLowerCase().includes("main") || r.location.toLowerCase().includes("wavel"),
+                )}
+              />
+            )}
           </div>
         )}
 
         {/* TAB CONTENT: FOODS, FAST FOODS, COFFEE */}
-        {(activeTab === "Foods" || activeTab === "Fast Foods" || activeTab === "Coffee") && (
-          <div className="animate-in fade-in duration-300">
-            <div className="flex justify-between items-center mb-4">
+        {(activeTab === "Foods" ||
+          activeTab === "Fast Foods" ||
+          activeTab === "Coffee") && (
+          <div className="animate-in slide-in-from-right-4 duration-300">
+            <div className="flex justify-between items-center mb-5 px-1">
               <h3 className="font-bold text-gray-900 dark:text-white text-[16px]">
-                {activeTab === "Foods" ? "All Foods" : activeTab === "Fast Foods" ? "🍔 Fast Foods" : "☕ Coffee & Drinks"}
+                {activeTab === "Foods" ? "All Delicious Foods" : `Best ${activeTab}`}
               </h3>
             </div>
             <div className="space-y-3">
-              {filteredFoods.length === 0 && (
+              {baseFilteredFoods.length === 0 && (
                 <p className="text-sm text-gray-500 py-4 w-full text-center">No foods match your filters.</p>
               )}
-              {filteredFoods
+              {baseFilteredFoods
                 .filter((food) => {
                   if (activeTab === "Fast Foods") return food.name.toLowerCase().includes("burger") || food.name.toLowerCase().includes("pizza") || food.name.toLowerCase().includes("fast");
                   if (activeTab === "Coffee") return food.name.toLowerCase().includes("coffee") || food.name.toLowerCase().includes("macchiato");

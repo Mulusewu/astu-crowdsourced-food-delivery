@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, CheckCircle2, XCircle, Phone, History, AlertCircle, Clock } from "lucide-react";
+import { ArrowLeft, CheckCircle2, XCircle, Phone, History, Clock } from "lucide-react";
 import { useCustomerOrderStore } from "@/store/orders/customerOrderStore";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";

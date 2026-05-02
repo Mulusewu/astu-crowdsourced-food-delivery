@@ -9,7 +9,7 @@ import { ROUTES, buildRoute } from "@/routes/routePaths";
 
 // ─── constants ────────────────────────────────────────────────────────────────
 const ORANGE = "#F27420";
-const ORANGE_SOFT = "#FFF0E6";
+
 
 // ─── SavedItemCard ────────────────────────────────────────────────────────────
 function SavedItemCard({
@@ -22,7 +22,7 @@ function SavedItemCard({
   onNavigate: (id: string) => void;
 }) {
   return (
-    <article className="flex items-center gap-4 rounded-2xl bg-white px-4 py-3.5 shadow-[0_2px_16px_rgba(0,0,0,0.07)] ring-1 ring-gray-100">
+    <article className="flex items-center gap-4 rounded-2xl bg-white dark:bg-gray-900 px-4 py-3.5 shadow-[0_2px_16px_rgba(0,0,0,0.07)] dark:shadow-none ring-1 ring-gray-100 dark:ring-gray-800">
       {/* ── Navigational Button Wrapper ── */}
       <button
         type="button"
@@ -33,7 +33,7 @@ function SavedItemCard({
         {/* Circular image */}
         <div className="relative shrink-0">
           {/* Outer grey ring */}
-          <div className="flex h-[62px] w-[62px] items-center justify-center rounded-full bg-gray-100 ring-4 ring-gray-200/70">
+          <div className="flex h-[62px] w-[62px] items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 ring-4 ring-gray-200/70 dark:ring-gray-800/70">
             <div className="h-[54px] w-[54px] overflow-hidden rounded-full">
               <img
                 src={item.image}
@@ -46,7 +46,7 @@ function SavedItemCard({
 
         {/* Name + location */}
         <div className="min-w-0 flex-1">
-          <p className="truncate text-base font-bold text-gray-900">
+          <p className="truncate text-base font-bold text-gray-900 dark:text-white">
             {item.name}
           </p>
           <div className="mt-0.5 flex items-center gap-1">
@@ -56,7 +56,7 @@ function SavedItemCard({
               strokeWidth={2.5}
               aria-hidden
             />
-            <span className="truncate text-sm text-gray-500">
+            <span className="truncate text-sm text-gray-500 dark:text-gray-400">
               {item.location}
             </span>
           </div>
@@ -67,7 +67,7 @@ function SavedItemCard({
       <button
         type="button"
         onClick={() => onDelete(item.id)}
-        className="shrink-0 rounded-xl p-2 transition hover:bg-orange-50 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F27420]/40"
+        className="shrink-0 rounded-xl p-2 transition hover:bg-orange-50 dark:hover:bg-gray-800 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F27420]/40"
         aria-label={`Remove ${item.name} from saved items`}
       >
         <Trash2
@@ -85,8 +85,7 @@ function Separator() {
   return (
     <div className="flex items-center py-3" aria-hidden>
       <div
-        className="h-[2px] w-full rounded-full"
-        style={{ backgroundColor: ORANGE }}
+        className="h-px w-full bg-gray-200 dark:bg-gray-800"
       />
     </div>
   );
@@ -107,16 +106,15 @@ export default function SavedItemsPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-white">
+    <div className="flex min-h-screen flex-col bg-[#FDFDFD] dark:bg-gray-950 font-sans">
       {/* ── Header ── */}
-      <header className="sticky top-0 z-20 bg-white px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] shadow-[0_1px_0_rgba(0,0,0,0.06)]">
+      <header className="sticky top-0 z-20 bg-[#FDFDFD]/90 dark:bg-gray-950/90 backdrop-blur-md px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] shadow-[0_1px_0_rgba(0,0,0,0.06)] dark:shadow-[0_1px_0_rgba(255,255,255,0.05)]">
         <div className="relative flex h-12 items-center justify-center">
           {/* Back button */}
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="absolute left-0 flex h-10 w-10 items-center justify-center rounded-xl border border-[#F27420]/30 transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F27420]/40"
-            style={{ backgroundColor: ORANGE_SOFT }}
+            className="absolute left-0 flex h-10 w-10 items-center justify-center rounded-xl border border-[#F27420]/30 dark:border-gray-800 bg-orange-50 dark:bg-gray-900 transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F27420]/40"
             aria-label="Go back"
           >
             <ArrowLeft
@@ -127,7 +125,7 @@ export default function SavedItemsPage() {
           </button>
 
           {/* Title */}
-          <h1 className="text-xl font-bold text-gray-900">Saved Items</h1>
+          <h1 className="text-[17px] font-black text-gray-900 dark:text-white tracking-tight">Saved Items</h1>
         </div>
       </header>
 
@@ -137,12 +135,11 @@ export default function SavedItemsPage() {
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <div
-                className="mb-4 flex h-16 w-16 items-center justify-center rounded-full"
-                style={{ backgroundColor: ORANGE_SOFT }}
+                className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-orange-50 dark:bg-gray-900"
               >
                 <Trash2 className="h-8 w-8" style={{ color: ORANGE }} />
               </div>
-              <p className="text-base font-semibold text-gray-700">
+              <p className="text-[17px] font-black text-gray-900 dark:text-white">
                 No saved items yet
               </p>
               <p className="mt-1 text-sm text-gray-400">

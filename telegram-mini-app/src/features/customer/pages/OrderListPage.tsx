@@ -193,11 +193,10 @@ export default function CustomerOrdersPage() {
         <div className="flex p-1 bg-gray-100 dark:bg-gray-900 rounded-full mb-6">
           <button
             onClick={() => setActiveTab("active")}
-            className={`flex-1 py-2.5 rounded-full text-[13px] font-bold transition-all ${
-              activeTab === "active"
-                ? "bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
+            className={`flex-1 py-2.5 rounded-full text-[13px] font-bold transition-all ${activeTab === "active"
+              ? "bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm"
+              : "text-gray-500 hover:text-gray-700"
+              }`}
           >
             Active Orders
             {activeOrders.length > 0 && (
@@ -208,11 +207,10 @@ export default function CustomerOrdersPage() {
           </button>
           <button
             onClick={() => setActiveTab("history")}
-            className={`flex-1 py-2.5 rounded-full text-[13px] font-bold transition-all ${
-              activeTab === "history"
-                ? "bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
+            className={`flex-1 py-2.5 rounded-full text-[13px] font-bold transition-all ${activeTab === "history"
+              ? "bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm"
+              : "text-gray-500 hover:text-gray-700"
+              }`}
           >
             History
           </button>

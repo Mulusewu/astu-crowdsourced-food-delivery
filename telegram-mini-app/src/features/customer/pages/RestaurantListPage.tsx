@@ -1,17 +1,27 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, MapPin, Star, Clock, Search, Loader2, AlertCircle } from "lucide-react";
+import { ArrowLeft, MapPin, Star, Clock, Search, AlertCircle } from "lucide-react";
 import { ROUTES, buildRoute } from "@/routes/routePaths";
 import { useRestaurantStore } from "@/store/restaurantStore";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function RestaurantListPage() {
   const navigate = useNavigate();
+  const [selectedLocation, setSelectedLocation] = useState<string>("All");
+  
   const { restaurants, isLoading, error, fetchRestaurants } = useRestaurantStore();
 
   useEffect(() => {
     fetchRestaurants();
   }, [fetchRestaurants]);
+
+  // Extract unique locations from restaurants
+  const locations = ["All", ...Array.from(new Set(restaurants.map(r => r.location).filter(Boolean)))];
+
+  // Filter restaurants based on selected location
+  const filteredRestaurants = selectedLocation === "All" 
+    ? restaurants 
+    : restaurants.filter(r => r.location === selectedLocation);
 
   return (
     <div className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 font-sans pb-10">
@@ -28,6 +38,27 @@ export default function RestaurantListPage() {
           <Search size={20} strokeWidth={2.5} />
         </button>
       </header>
+
+      {/* ── Location Filters ── */}
+      {!isLoading && !error && locations.length > 1 && (
+        <div className="px-5 mb-4 mt-2">
+          <div className="flex gap-2 overflow-x-auto pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            {locations.map((loc) => (
+              <button
+                key={loc}
+                onClick={() => setSelectedLocation(loc)}
+                className={`px-4 py-2 rounded-full whitespace-nowrap text-[13px] font-bold transition-all active:scale-95 border ${
+                  selectedLocation === loc
+                    ? "bg-[#F26A1C] text-white border-[#F26A1C]"
+                    : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-800"
+                }`}
+              >
+                {loc}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <main className="px-5">
         {/* Loading State */}
@@ -49,16 +80,16 @@ export default function RestaurantListPage() {
         )}
 
         {/* Empty State */}
-        {!isLoading && !error && restaurants.length === 0 && (
+        {!isLoading && !error && filteredRestaurants.length === 0 && (
           <div className="flex flex-col items-center justify-center py-10 text-center">
             <p className="text-gray-500 font-medium">No restaurants found.</p>
           </div>
         )}
 
         {/* Restaurant List */}
-        {!isLoading && !error && restaurants.length > 0 && (
+        {!isLoading && !error && filteredRestaurants.length > 0 && (
           <div className="space-y-4 mt-2">
-            {restaurants.map((rest) => (
+            {filteredRestaurants.map((rest) => (
               <div
                 key={rest.id}
                 onClick={() => navigate(buildRoute(ROUTES.CUSTOMER.RESTAURANT.DETAILS, { restaurantId: rest.id }))}
@@ -107,7 +138,7 @@ export default function RestaurantListPage() {
                   <div className="flex items-center gap-3 text-gray-500 text-[11px] font-semibold mt-auto">
                     <div className="flex items-center gap-1">
                       <Clock size={12} className="text-gray-400" />
-                      <span>{rest.avgDeliveryTime} min</span>
+                      <span>{rest.deliveryTime} min</span>
                     </div>
                     <div className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-700" />
                     <span>Min. {rest.minimumOrder} ETB</span>

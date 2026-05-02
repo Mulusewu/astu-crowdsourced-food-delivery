@@ -80,26 +80,26 @@ export default function RestaurantDetailsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center pb-20">
+      <div className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 flex flex-col items-center justify-center pb-20">
         <Loader2 className="w-10 h-10 animate-spin text-[#F26A1C] mb-4" />
-        <p className="text-gray-500 font-bold text-sm">Loading Menu...</p>
+        <p className="text-gray-500 dark:text-gray-400 font-bold text-sm">Loading Menu...</p>
       </div>
     );
   }
 
   if (error || !restaurant) {
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center px-5 pb-20 text-center">
-        <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-4">
+      <div className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 flex flex-col items-center justify-center px-5 pb-20 text-center">
+        <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center mb-4">
           <AlertCircle size={32} className="text-red-500" />
         </div>
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Oops!</h2>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Oops!</h2>
         <p className="text-gray-500 font-medium mb-8 text-sm">
           {error || "We couldn't find this restaurant."}
         </p>
         <button
           onClick={() => navigate(-1)}
-          className="bg-white border-2 border-[#F26A1C] text-[#F26A1C] font-bold py-3 px-8 rounded-[16px] active:scale-95 transition-transform"
+          className="bg-white dark:bg-gray-900 border-2 border-[#F26A1C] text-[#F26A1C] font-bold py-3 px-8 rounded-[16px] active:scale-95 transition-transform"
         >
           Go Back
         </button>
@@ -108,21 +108,21 @@ export default function RestaurantDetailsPage() {
   }
 
   return (
-    <div className="bg-white min-h-screen text-gray-900 pb-28 flex flex-col font-sans antialiased">
+    <div className="bg-[#FDFDFD] dark:bg-gray-950 min-h-screen text-gray-900 dark:text-gray-100 pb-28 flex flex-col font-sans antialiased">
       {/* ── Header ── */}
-      <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md flex items-center justify-between px-4 py-4 border-b border-gray-100">
+      <header className="sticky top-0 z-30 bg-[#FDFDFD]/90 dark:bg-gray-950/90 backdrop-blur-md flex items-center justify-between px-4 py-4 border-b border-gray-100 dark:border-gray-800">
         <button
           onClick={() => navigate(-1)}
-          className="w-10 h-10 bg-orange-50 dark:bg-gray-800 rounded-xl flex items-center justify-center text-[#F26A1C] active:scale-95 transition-transform"
+          className="w-10 h-10 bg-orange-50 dark:bg-gray-900 border border-orange-100 dark:border-gray-800 rounded-xl flex items-center justify-center text-[#F26A1C] active:scale-95 transition-transform"
         >
           <ArrowLeft size={20} strokeWidth={2.5} />
         </button>
-        <h1 className="text-[17px] font-black tracking-wide truncate px-4">
+        <h1 className="text-[17px] font-black text-gray-900 dark:text-white tracking-wide truncate px-4">
           {restaurant.name}
         </h1>
         <button
           onClick={handleToggleSave}
-          className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center active:scale-95 transition-transform"
+          className="w-10 h-10 bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl flex items-center justify-center active:scale-95 transition-transform"
         >
           {isSaved ? (
             <Bookmark
@@ -149,7 +149,7 @@ export default function RestaurantDetailsPage() {
       <section className="px-4 mb-6">
         <div className="flex justify-between items-start mb-5">
           <div>
-            <h2 className="text-[22px] font-black leading-tight mb-1">
+            <h2 className="text-[22px] text-gray-900 dark:text-white font-black leading-tight mb-1">
               {restaurant.name}
             </h2>
             <div className="flex items-center gap-1 text-gray-500">
@@ -162,11 +162,11 @@ export default function RestaurantDetailsPage() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-3 gap-0 border border-gray-100 bg-gray-50 rounded-[18px] overflow-hidden divide-x divide-gray-200 shadow-sm">
+        <div className="grid grid-cols-3 gap-0 border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 rounded-[18px] overflow-hidden divide-x divide-gray-200 dark:divide-gray-800 shadow-sm dark:shadow-none">
           <div className="flex flex-col items-center justify-center py-3.5 px-2">
             <div className="flex items-center space-x-1.5 mb-0.5">
               <Star size={16} className="fill-[#F26A1C] text-[#F26A1C]" />
-              <span className="text-[16px] font-black text-gray-900">
+              <span className="text-[16px] font-black text-gray-900 dark:text-white">
                 {restaurant.rating}
               </span>
             </div>
@@ -177,12 +177,12 @@ export default function RestaurantDetailsPage() {
 
           <button
             onClick={() => navigate(buildRoute(ROUTES.CUSTOMER.RESTAURANT.REVIEWS, { restaurantId: restaurant.id }))}
-            className="flex flex-col items-center justify-center py-3.5 px-2 active:bg-gray-100 transition-colors"
+            className="flex flex-col items-center justify-center py-3.5 px-2 active:bg-gray-100 dark:active:bg-gray-800 transition-colors"
           >
             <div className="flex items-center space-x-1.5 mb-0.5">
               <Heart size={16} className="text-[#F26A1C]" strokeWidth={2.5} />
-              <span className="text-[16px] font-black text-gray-900">
-                {restaurant.reviews}
+              <span className="text-[16px] font-black text-gray-900 dark:text-white">
+                {restaurant.totalReviews}
               </span>
             </div>
             <p className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">
@@ -193,8 +193,8 @@ export default function RestaurantDetailsPage() {
           <div className="flex flex-col items-center justify-center py-3.5 px-2">
             <div className="flex items-center space-x-1.5 mb-0.5">
               <Clock size={16} className="text-[#F26A1C]" strokeWidth={2.5} />
-              <span className="text-[16px] font-black text-gray-900">
-                {restaurant.avgDeliveryTime}m
+              <span className="text-[16px] font-black text-gray-900 dark:text-white">
+                {restaurant.deliveryTime}m
               </span>
             </div>
             <p className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">
@@ -205,14 +205,14 @@ export default function RestaurantDetailsPage() {
       </section>
 
       {/* ── Description ── */}
-      <p className="px-5 text-[14px] text-gray-600 font-medium mb-8 leading-relaxed">
+      <p className="px-5 text-[14px] text-gray-600 dark:text-gray-400 font-medium mb-8 leading-relaxed">
         {restaurant.description}
       </p>
 
       {/* ── Menu Items ── */}
       <section className="px-4">
         <div className="flex items-center justify-between mb-4 px-1">
-          <h3 className="text-[18px] font-black">
+          <h3 className="text-[18px] font-black text-gray-900 dark:text-white">
             {isPromoOnly ? "Promo Offers" : "Menu Items"}
           </h3>
           {isPromoOnly && (
@@ -229,8 +229,8 @@ export default function RestaurantDetailsPage() {
 
           if (!displayedMenu || displayedMenu.length === 0) {
             return (
-              <div className="py-10 text-center bg-gray-50 rounded-[24px] border border-gray-100">
-                <p className="text-gray-500 font-bold text-sm">
+              <div className="py-10 text-center bg-gray-50 dark:bg-gray-900 rounded-[24px] border border-gray-100 dark:border-gray-800">
+                <p className="text-gray-500 dark:text-gray-400 font-bold text-sm">
                   {isPromoOnly ? "No promo items currently available." : "No menu items found."}
                 </p>
               </div>
@@ -242,7 +242,7 @@ export default function RestaurantDetailsPage() {
               {displayedMenu.map((item) => (
               <div
                 key={item.id}
-                className="bg-white border border-gray-100 rounded-[20px] p-3 flex flex-col items-center text-center shadow-[0_4px_16px_rgba(0,0,0,0.03)] relative overflow-hidden"
+                className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-[20px] p-3 flex flex-col items-center text-center shadow-[0_4px_16px_rgba(0,0,0,0.03)] dark:shadow-none relative overflow-hidden"
               >
                 {/* Fasting badge */}
                 {item.isFasting && (
@@ -258,20 +258,19 @@ export default function RestaurantDetailsPage() {
                   </span>
                 )}
 
-                {/* Clickable image area */}
                 <div
                   className="w-full cursor-pointer group"
                   onClick={() => navigate(buildRoute(ROUTES.CUSTOMER.FOOD.DETAILS, { foodId: item.id }))}
                 >
-                  <div className="w-full h-[100px] mb-3 rounded-xl overflow-hidden bg-gray-50">
+                  <div className="w-full h-[100px] mb-3 rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800">
                     <img
-                      src={item.imageUrl}
+                      src={item.image}
                       alt={item.name}
                       className="w-full h-full object-cover group-active:scale-105 transition-transform"
                     />
                   </div>
 
-                  <h4 className="font-bold text-[14px] text-gray-900 mb-1 truncate w-full px-1">
+                  <h4 className="font-bold text-[14px] text-gray-900 dark:text-white mb-1 truncate w-full px-1">
                     {item.name}
                   </h4>
 
@@ -297,7 +296,7 @@ export default function RestaurantDetailsPage() {
                     e.stopPropagation();
                     handleAddToCart(item);
                   }}
-                  className="bg-[#FFF4ED] hover:bg-[#F26A1C] text-[#F26A1C] hover:text-white font-bold py-2.5 px-4 rounded-[14px] w-full text-[13px] active:scale-95 transition-all mt-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-[#FFF4ED] dark:bg-orange-900/20 hover:bg-[#F26A1C] dark:hover:bg-[#F26A1C] text-[#F26A1C] hover:text-white font-bold py-2.5 px-4 rounded-[14px] w-full text-[13px] active:scale-95 transition-all mt-auto disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {item.isAvailable === false ? (item.availabilityReason ?? "Unavailable") : "Add to Cart"}
                 </button>

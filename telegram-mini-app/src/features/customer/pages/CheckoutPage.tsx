@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth/authStore";
 import { useCartStore } from "@/store/cart/cartStore";
 import { useCustomerStore } from "@/store/customer/customerStore";
+import { usePaymentStore } from "@/store/paymentStore";
 import { useCustomerOrderStore } from "@/store/orders/customerOrderStore";
 import { ROUTES, buildRoute } from "@/routes/routePaths";
 import { TMAStatusBar } from "../components/layout/TMAStatusBar";
@@ -36,9 +37,9 @@ export default function CartCheckoutPage() {
   const selectedAddress = useCustomerStore(
     (s) => s.getDefaultAddress?.() ?? s.addresses[0],
   );
-  const selectedPaymentMethod = useCustomerStore(
-    (s) => s.paymentMethods.find((pm) => pm.isDefault) ?? s.paymentMethods[0],
-  );
+  
+  const paymentMethods = usePaymentStore((s) => s.paymentMethods);
+  const selectedPaymentMethod = paymentMethods.find((pm) => pm.isSelected);
 
   const { placeOrder, isLoading: orderLoading } = useCustomerOrderStore();
 
@@ -80,7 +81,7 @@ export default function CartCheckoutPage() {
   }
 
   const handlePlaceOrder = async () => {
-    if (isPlacing) return;
+    if (isPlacing || !selectedPaymentMethod) return;
     setIsPlacing(true);
     try {
       const order = await placeOrder({
@@ -209,18 +210,25 @@ export default function CartCheckoutPage() {
               <CreditCard size={20} />
             </div>
             <div className="flex-1">
-              <p className="font-bold text-sm text-gray-900 dark:text-white">
-                {selectedPaymentMethod?.brand
-                  ? `${selectedPaymentMethod.brand.toUpperCase()} Card`
-                  : selectedPaymentMethod?.type === "cash"
-                    ? "Cash on Delivery"
-                    : "Telebirr"}
-              </p>
-              <p className="text-xs text-gray-500">
-                {selectedPaymentMethod?.last4
-                  ? `**** ${selectedPaymentMethod.last4}`
-                  : "+25191****753"}
-              </p>
+              {selectedPaymentMethod ? (
+                <>
+                  <p className="font-bold text-sm text-gray-900 dark:text-white">
+                    {selectedPaymentMethod.type}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {selectedPaymentMethod.accountInfo}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="font-bold text-sm text-red-500">
+                    No Payment Method Selected
+                  </p>
+                  <p className="text-[11px] font-medium text-red-400 mt-0.5">
+                    Tap here to set a default payment method
+                  </p>
+                </>
+              )}
             </div>
             <ChevronRight size={18} className="text-gray-400 shrink-0" />
           </button>
@@ -307,10 +315,20 @@ export default function CartCheckoutPage() {
 
       {/* ── Fixed Bottom Button ── */}
       <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-950 border-t border-gray-100 dark:border-gray-800 px-5 py-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] z-40 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
+        {!selectedPaymentMethod && (
+          <div className="mb-3 flex items-center justify-center gap-1.5 text-red-500 bg-red-50 dark:bg-red-900/10 py-2 px-3 rounded-xl border border-red-100 dark:border-red-900/20">
+            <span className="text-[12px] font-bold">Please select a payment method to continue</span>
+          </div>
+        )}
         <button
           onClick={handlePlaceOrder}
-          disabled={isPlacing || orderLoading}
-          className="w-full bg-[#F26A1C] hover:bg-[#e05d15] text-white rounded-[20px] font-bold text-[15px] py-4 shadow-[0_8px_20px_rgba(242,106,28,0.3)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-70"
+          disabled={isPlacing || orderLoading || !selectedPaymentMethod}
+          className={cn(
+            "w-full rounded-[20px] font-bold text-[15px] py-4 shadow-[0_8px_20px_rgba(242,106,28,0.3)] active:scale-[0.98] transition-all flex items-center justify-center gap-2",
+            isPlacing || orderLoading || !selectedPaymentMethod
+              ? "bg-gray-300 dark:bg-gray-800 text-gray-500 shadow-none active:scale-100"
+              : "bg-[#F26A1C] hover:bg-[#e05d15] text-white disabled:opacity-70"
+          )}
         >
           {isPlacing || orderLoading ? (
             <Loader2 size={20} className="animate-spin" />

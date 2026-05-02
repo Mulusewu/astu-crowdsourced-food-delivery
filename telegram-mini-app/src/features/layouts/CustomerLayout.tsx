@@ -1,6 +1,6 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 // import { useAuthStore } from "@/store/auth/authStore";
-// import { ROUTES } from "@/routes/routePaths";
+import { ROUTES } from "@/routes/routePaths";
 // import { getRoleRedirectPath } from "@/types/user.types";
 import CustomerBottomNav from "../customer/components/CustomerBottomNav";
 import { TMAStatusBar } from "../customer/components/layout/TMAStatusBar";
@@ -19,12 +19,15 @@ export default function CustomerLayout() {
   // if (!user) return <Navigate to={ROUTES.AUTH} replace />;
   // if (user.role !== "CUSTOMER") return <Navigate to={getRoleRedirectPath(user.role)} replace />;
 
+  const location = useLocation();
+  const isCartPage = location.pathname === ROUTES.CUSTOMER.CART;
+
   return (
     <>
       <TMAStatusBar />
-      <main className="flex-1 pb-28">
+      <main className={`flex-1 ${isCartPage ? "" : "pb-28"}`}>
         <Outlet />
-        <CustomerBottomNav />
+        {!isCartPage && <CustomerBottomNav />}
       </main>
     </>
   );

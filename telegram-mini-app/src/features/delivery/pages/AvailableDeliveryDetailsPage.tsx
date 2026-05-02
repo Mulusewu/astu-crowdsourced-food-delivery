@@ -67,11 +67,7 @@ export default function AvailableDeliveryDetailsPage() {
     );
   }
 
-  // Helper for the summary rows
-  const subtotal = order.items.reduce(
-    (sum, item) => sum + item.unitPrice * item.quantity,
-    0,
-  );
+
 
 
   const SummaryRow = ({

@@ -61,8 +61,8 @@ export default function RestaurantReviewsPage() {
     // Since we don't have real distribution data in the store, we generate a mock distribution based on the rating
     const ratingSummary = {
         overall: restaurant.rating,
-        totalRatings: restaurant.reviews,
-        totalReviewsText: `${restaurant.reviews} Reviews`,
+        totalRatings: restaurant.totalReviews,
+        totalReviewsText: `${restaurant.totalReviews} Reviews`,
         distribution: [
             { stars: 5, percentage: Math.round(restaurant.rating >= 4.5 ? 65 : 40) },
             { stars: 4, percentage: Math.round(restaurant.rating >= 4.0 ? 20 : 30) },
@@ -188,12 +188,7 @@ export default function RestaurantReviewsPage() {
                     <h3 className="text-[14px] font-medium text-gray-500">
                         {ratingSummary.totalReviewsText}
                     </h3>
-                    <button
-                        onClick={() => navigate(`/customer/review/restaurant/${restaurantId || 'rest_001'}`)}
-                        className="text-[14px] font-medium text-gray-500 active:opacity-70 transition-opacity"
-                    >
-                        Write A Review
-                    </button>
+
                 </div>
 
                 {/* ── Reviews List ── */}

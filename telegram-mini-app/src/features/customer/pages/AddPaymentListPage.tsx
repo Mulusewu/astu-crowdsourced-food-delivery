@@ -9,19 +9,13 @@ const SUPPORTED_PROVIDERS = [
     id: "telebirr",
     name: "Telebirr",
     logo: "https://telebirr.et/wp-content/uploads/2021/05/telebirr-logo.png",
-    route: ROUTES.CUSTOMER.PAYMENT.TELEBIRR_FORM || "/customer/profile/payment/add/telebirr",
+    route: `${ROUTES.CUSTOMER.PAYMENT.TELEBIRR_FORM || "/customer/profile/payment/add/telebirr"}?provider=telebirr`,
   },
   {
     id: "cbe_birr",
     name: "CBE Birr",
     logo: "https://combanketh.et/cbe_logo.png",
-    route: "#", // placeholder
-  },
-  {
-    id: "awash_birr",
-    name: "Awash Birr",
-    logo: "https://awashbank.com/wp-content/uploads/2020/11/awash-logo.png",
-    route: "#", // placeholder
+    route: `${ROUTES.CUSTOMER.PAYMENT.TELEBIRR_FORM || "/customer/profile/payment/add/telebirr"}?provider=cbe_birr`,
   },
 ];
 
