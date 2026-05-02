@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useRef } from "react";
 import {
   ChevronRight,
   Lock,
@@ -13,7 +14,24 @@ import { Header } from "@/features/shared/components/ProfileShared";
 
 export default function ProfileMain() {
   const navigate = useNavigate();
-  const { user, logout } = useAuthStore();
+  const { user, logout, updateAvatar } = useAuthStore();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        updateAvatar(base64String);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCameraClick = () => {
+    fileInputRef.current?.click();
+  };
 
   return (
     <div className="bg-[#FDFDFD] dark:bg-gray-950 font-sans flex flex-col">
@@ -38,8 +56,19 @@ export default function ProfileMain() {
               {user?.name?.[0] || "N"}
             </AvatarFallback>
           </Avatar>
-          <button className="absolute bottom-1 right-1 w-8 h-8 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center shadow-md border-2 border-white dark:border-gray-900 active:scale-95 transition-transform">
-            <div className="w-6 h-6 rounded-full border border-[#F26A1C] flex items-center justify-center text-[#F26A1C]">
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+          />
+          <button 
+            type="button"
+            onClick={handleCameraClick}
+            className="absolute bottom-1 right-1 w-8 h-8 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center shadow-md border-2 border-white dark:border-gray-900 active:scale-95 hover:scale-110 transition-transform cursor-pointer group"
+          >
+            <div className="w-6 h-6 rounded-full border border-[#F26A1C] flex items-center justify-center text-[#F26A1C] group-hover:bg-[#F26A1C] group-hover:text-white transition-colors">
               <Camera size={12} strokeWidth={3} />
             </div>
           </button>
