@@ -1,15 +1,17 @@
 import { useEffect } from "react";
 import { useVendorStore } from "@/store/vendorStore";
+import { useAuthStore } from "@/store/auth/authStore";
 import { DollarSign, Wallet, TrendingUp, Calendar, ArrowUpRight } from "lucide-react";
 
 export default function EarningsPage() {
+  const { user } = useAuthStore();
   const { vendor, fetchVendorData, isLoading } = useVendorStore();
 
   useEffect(() => {
-    if (!vendor && !isLoading) {
-      fetchVendorData();
+    if (user?.id) {
+      fetchVendorData(user.id);
     }
-  }, [fetchVendorData, vendor, isLoading]);
+  }, [fetchVendorData, user?.id]);
 
   if (isLoading || !vendor) {
     return (

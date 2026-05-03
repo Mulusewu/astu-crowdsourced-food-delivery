@@ -4,6 +4,8 @@ import { MapPin, ArrowLeft, UtensilsCrossed, Store } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useOrderDetailsStore } from "@/store/orderDetailsStore";
 import { useDeliveryDashboardStore } from "@/store/deliveryDashboardStore";
+import { toast } from "sonner";
+import { ROUTES } from "@/routes/routePaths";
 
 export default function AvailableDeliveryDetailsPage() {
   const { orderId } = useParams<{ orderId: string }>();
@@ -23,6 +25,16 @@ export default function AvailableDeliveryDetailsPage() {
   useEffect(() => {
     if (orderId) fetchOrderDetails(orderId);
   }, [orderId, fetchOrderDetails]);
+
+  const handleDecline = async () => {
+    try {
+      await declineOrder();
+      toast.success("Order successfully declined.");
+      navigate(ROUTES.DELIVERY.DASHBOARD);
+    } catch (error) {
+      toast.error("Failed to decline order.");
+    }
+  };
 
   // Loading Skeleton
   if (isLoading) {
@@ -178,7 +190,7 @@ export default function AvailableDeliveryDetailsPage() {
             </button>
 
             <button
-              onClick={declineOrder}
+              onClick={handleDecline}
               disabled={isAccepting}
               className="flex-1 bg-transparent border-2 border-[#F26A1C] text-[#F26A1C] hover:bg-orange-50 dark:hover:bg-gray-800 rounded-full py-3.5 font-bold text-[15px] active:scale-95 transition-all disabled:opacity-50"
             >

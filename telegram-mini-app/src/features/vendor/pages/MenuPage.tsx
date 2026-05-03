@@ -1,17 +1,21 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useVendorStore, type MenuItem } from "@/store/vendorStore";
+import { useAuthStore } from "@/store/auth/authStore";
 import { ArrowLeft, Plus, Pencil, EyeOff, Eye } from "lucide-react";
 import { ROUTES, buildRoute } from "@/routes/routePaths";
 
 export default function MenuPage() {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const { menuItems, toggleMenuItemStock, fetchVendorData, isLoading } = useVendorStore();
   const [activeTab, setActiveTab] = useState<"available" | "unavailable">("available");
 
   useEffect(() => {
-    fetchVendorData();
-  }, [fetchVendorData]);
+    if (user?.id) {
+      fetchVendorData(user.id);
+    }
+  }, [fetchVendorData, user?.id]);
 
   const filteredItems = menuItems.filter((item: MenuItem) => 
     activeTab === "available" ? item.inStock : !item.inStock

@@ -50,8 +50,12 @@ export default function DeliveryDashboard() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   useEffect(() => {
-    fetchDashboardData();
-  }, [fetchDashboardData]);
+    if (user?.id) {
+      fetchDashboardData(user.id);
+    } else {
+      fetchDashboardData();
+    }
+  }, [fetchDashboardData, user?.id]);
 
   const handleToggleActive = () => {
     toggleActiveStatus((path) => navigate(path));

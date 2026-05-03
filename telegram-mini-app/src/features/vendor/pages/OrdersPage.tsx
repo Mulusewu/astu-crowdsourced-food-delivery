@@ -1,16 +1,18 @@
 import { useState, useEffect } from "react";
 import { useVendorStore, type VendorOrder } from "@/store/vendorStore";
+import { useAuthStore } from "@/store/auth/authStore";
 import { Clock, Check, ChefHat, X, Package } from "lucide-react";
 
 export default function OrdersPage() {
-  const { activeOrders, updateOrderStatus, fetchVendorData, isLoading } = useVendorStore();
+  const { user } = useAuthStore();
+  const { activeOrders, updateOrderStatus, fetchVendorData } = useVendorStore();
   const [activeTab, setActiveTab] = useState<"new" | "preparing" | "ready" | "history">("new");
 
   useEffect(() => {
-    if (activeOrders.length === 0 && !isLoading) {
-      fetchVendorData();
+    if (user?.id) {
+      fetchVendorData(user.id);
     }
-  }, [fetchVendorData]);
+  }, [fetchVendorData, user?.id]);
 
   const tabs = [
     { id: "new", label: "New", count: activeOrders.filter((o: VendorOrder) => o.status === "new").length },

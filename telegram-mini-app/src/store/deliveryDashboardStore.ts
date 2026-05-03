@@ -70,7 +70,7 @@ interface DeliveryDashboardState {
   customerActivity: CustomerActivity;
 
   // Actions
-  fetchDashboardData: () => Promise<void>;
+  fetchDashboardData: (userId?: string) => Promise<void>;
   toggleActiveStatus: (navigate?: (path: string) => void) => void;
   toggleBookmark: (cafeId: string) => void;
   setOrderStatus: (status: OrderStatus) => void;
@@ -92,18 +92,32 @@ export const useDeliveryDashboardStore = create<DeliveryDashboardState>()(
       paymentTimer: 300, 
       customerActivity: "idle",
 
-      fetchDashboardData: async () => {
+      fetchDashboardData: async (userId?: string) => {
         set({ isLoading: true });
 
         try {
           await delay(800);
 
-          const data = db.deliveryDashboard;
-          if (data) {
+          let deliveryUser = null;
+          if (userId) {
+            deliveryUser = db.users.delivery?.find((u: any) => u.id === userId);
+            if (!deliveryUser) {
+              deliveryUser = db.users.multiRole?.find((u: any) => u.id === userId);
+            }
+          }
+          
+          const dashboardData = db.deliveryDashboard;
+          
+          // Use auth user data if available, otherwise fallback to dashboard default
+          const deliveryPersonData = deliveryUser 
+            ? { ...deliveryUser, ...dashboardData.deliveryPerson, id: deliveryUser.id, name: deliveryUser.name, email: deliveryUser.email }
+            : dashboardData.deliveryPerson;
+
+          if (dashboardData) {
             set({
-              deliveryPerson: data.deliveryPerson as DeliveryPerson,
-              cheapOrders: data.cheapOrders as CheapOrder[],
-              cafes: data.cafes as Cafe[],
+              deliveryPerson: deliveryPersonData as DeliveryPerson,
+              cheapOrders: dashboardData.cheapOrders as CheapOrder[],
+              cafes: dashboardData.cafes as Cafe[],
               isLoading: false,
             });
           }

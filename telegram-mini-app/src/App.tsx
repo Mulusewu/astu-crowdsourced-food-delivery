@@ -10,6 +10,7 @@ import { useTelegram } from "./hooks/useTelegram";
 import LoadingSkeleton from "./components/common/LoadingSkeleton";
 import WaitingForPaymentModal from "./components/delivery-person/WaitingForPaymentModal";
 import PaymentSuccessModal from "./components/delivery-person/PaymentSuccessModal";
+import { Toaster } from "@/components/ui/sonner";
 
 function AppContent() {
   const { initTelegram } = useTelegram();
@@ -33,6 +34,7 @@ function AppContent() {
               {/* Global modals — react to Zustand orderStatus from any page */}
               <WaitingForPaymentModal />
               <PaymentSuccessModal />
+              <Toaster position="top-center" />
             </CartProvider>
           </LocationProvider>
         </AuthProvider>

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   User, 
@@ -12,17 +12,25 @@ import {
   LogOut
 } from "lucide-react";
 import { useVendorStore } from "@/store/vendorStore";
+import { useAuthStore } from "@/store/auth/authStore";
 import { ROUTES } from "@/routes/routePaths";
 
 export default function VendorProfilePage() {
   const navigate = useNavigate();
-  const { vendor, fetchVendorData, isLoading, logout } = useVendorStore();
+  const { user, logout: authLogout } = useAuthStore();
+  const { vendor, fetchVendorData, isLoading, logout: vendorLogout } = useVendorStore();
+
+  const handleLogout = () => {
+    vendorLogout();
+    authLogout();
+    navigate(ROUTES.AUTH);
+  };
 
   useEffect(() => {
-    if (!vendor && !isLoading) {
-      fetchVendorData();
+    if (user?.id) {
+      fetchVendorData(user.id);
     }
-  }, [fetchVendorData, vendor, isLoading]);
+  }, [fetchVendorData, user?.id]);
 
   if (isLoading || !vendor) {
     return (
@@ -99,7 +107,7 @@ export default function VendorProfilePage() {
 
         {/* Logout Button */}
         <button 
-          onClick={logout}
+          onClick={handleLogout}
           className="mt-8 w-full flex items-center justify-center gap-2 py-4 text-red-500 font-black text-sm uppercase tracking-widest hover:bg-red-50 rounded-2xl transition-all"
         >
           <LogOut className="w-5 h-5" />
