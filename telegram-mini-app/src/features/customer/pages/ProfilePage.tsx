@@ -20,6 +20,7 @@ import { useThemeStore } from "@/store/ui/themeStore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ROUTES } from "@/routes/routePaths";
 import { Header, ActionButton } from "../components/profileShared";
+import RoleSwitcher from "@/components/common/RoleSwitcher";
 
 export default function CustomerProfilePage() {
   const navigate = useNavigate();
@@ -106,6 +107,9 @@ export default function CustomerProfilePage() {
           Customer Account
         </div>
       </div>
+
+      {/* ─── Role Switcher ─── */}
+      <RoleSwitcher />
 
       {/* ─── Stats row ─── */}
       {profile && (

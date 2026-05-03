@@ -1,4 +1,4 @@
-import { Suspense, useEffect } from "react";
+import { Suspense } from "react";
 import { AuthProvider } from "./contexts/AuthContext";
 import { CartProvider } from "./contexts/CartContext";
 import { LocationProvider } from "./contexts/LocationContext";
@@ -6,20 +6,17 @@ import { TelegramProvider } from "./contexts/TelegramContext";
 import { ThemeProvider } from "./components/common/ThemeProvider";
 import AppRoutes from "./routes/AppRoutes";
 import ErrorBoundary from "./components/common/ErrorBoundary";
-import { useTelegram } from "./hooks/useTelegram";
 import LoadingSkeleton from "./components/common/LoadingSkeleton";
 import WaitingForPaymentModal from "./components/delivery-person/WaitingForPaymentModal";
 import PaymentSuccessModal from "./components/delivery-person/PaymentSuccessModal";
 import { Toaster } from "@/components/ui/sonner";
 
+/**
+ * AppContent
+ * Wraps the main application logic with necessary context providers.
+ * Telegram initialization is now handled within TelegramProvider.
+ */
 function AppContent() {
-  const { initTelegram } = useTelegram();
-
-  useEffect(() => {
-    // Initialize Telegram Mini-App
-    initTelegram();
-  }, [initTelegram]);
-
   return (
     <ErrorBoundary>
       <TelegramProvider>
@@ -34,7 +31,7 @@ function AppContent() {
               {/* Global modals — react to Zustand orderStatus from any page */}
               <WaitingForPaymentModal />
               <PaymentSuccessModal />
-              <Toaster position="top-center" />
+              <Toaster position="top-center" expand={false} richColors />
             </CartProvider>
           </LocationProvider>
         </AuthProvider>

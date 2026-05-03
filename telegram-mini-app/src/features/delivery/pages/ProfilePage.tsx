@@ -22,6 +22,7 @@ import { useThemeStore } from "@/store/ui/themeStore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ROUTES } from "@/routes/routePaths";
 import { Header, ActionButton } from "@/features/shared/components/ProfileShared";
+import RoleSwitcher from "@/components/common/RoleSwitcher";
 
 export default function ProfileMain() {
   const navigate = useNavigate();
@@ -63,6 +64,12 @@ export default function ProfileMain() {
       value: "Personal details",
       icon: UserPen,
       onClick: () => navigate(ROUTES.DELIVERY.EDIT_PROFILE),
+    },
+    {
+      label: "My Earnings",
+      value: "Transaction history",
+      icon: Wallet,
+      onClick: () => navigate(ROUTES.DELIVERY.EARNINGS.SUMMARY),
     },
     {
       label: "Password",
@@ -149,6 +156,9 @@ export default function ProfileMain() {
         </div>
       </div>
 
+      {/* ─── Role Switcher ─── */}
+      <RoleSwitcher />
+
       {/* ─── Stats row ─── */}
       {dp && (
         <div className="mx-5 mt-5 grid grid-cols-3 gap-3">
@@ -174,7 +184,10 @@ export default function ProfileMain() {
               Rating
             </p>
           </div>
-          <div className="bg-white dark:bg-gray-900 rounded-[18px] p-3 text-center shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:border dark:border-gray-800">
+          <div 
+            onClick={() => navigate(ROUTES.DELIVERY.EARNINGS.SUMMARY)}
+            className="bg-white dark:bg-gray-900 rounded-[18px] p-3 text-center shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:border dark:border-gray-800 cursor-pointer active:scale-95 transition-transform"
+          >
             <div className="flex items-center justify-center gap-1 mb-1">
               <Wallet size={14} className="text-[#F26A1C]" />
             </div>

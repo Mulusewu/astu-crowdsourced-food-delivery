@@ -11,7 +11,9 @@ import {
   SlidersHorizontal,
   ChevronDown,
   ShoppingCart,
-  X
+  X,
+  User,
+  LogOut
 } from "lucide-react";
 
 import { useAuthStore } from "@/store/auth/authStore";
@@ -28,11 +30,18 @@ import { useFilterStore } from "@/store/customer/filterStore";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 
+function firstName(fullName: string) {
+  return fullName.split(/\s+/)[0] ?? fullName;
+}
+
+function firstInitial(fullName: string) {
+  return (fullName.trim()[0] ?? "U").toUpperCase();
+}
 
 // --- Main Page Component ---
 export default function CustomerDashboard() {
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const { user, logout } = useAuthStore();
   const { fetchUserData, isLoading: userLoading } = useCustomerStore();
   const {
     restaurants,
@@ -46,9 +55,9 @@ export default function CustomerDashboard() {
 
   const { items: savedItems, addItem: saveItem, removeItem: unsaveItem } = useSavedItemsStore();
 
-  // Role dropdown disabled (single-role model)
+  // Role dropdown logic
   const [showRoleMenu, setShowRoleMenu] = useState(false);
-  const hasMultipleRoles = false;
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   // Dropdown states for Restaurant Tab
   const [showSortDropdown, setShowSortDropdown] = useState(false);
@@ -72,13 +81,11 @@ export default function CustomerDashboard() {
     activeTab,
     setSearchQuery,
     setSelectedPrice,
-    setSelectedLocation,
     setSortBy,
     setFilterBy,
     setActiveTab,
     addRecentSearch,
     removeRecentSearch,
-    clearFilters
   } = useFilterStore();
 
   // Initial data fetch
@@ -307,28 +314,78 @@ export default function CustomerDashboard() {
     );
   }
 
+  const name = user?.fullName || "Customer";
+
   return (
     <div className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 pb-28 font-sans relative">
       {/* HEADER SECTION */}
       <header className="px-5 pt-6 pb-2">
         <div className="flex justify-between items-start mb-5">
-          <div className="relative">
-            <h1 className="text-[#F26A1C] font-bold text-[15px] leading-tight">
-              Welcome Back,
-            </h1>
-            <h2
-              onClick={() =>
-                hasMultipleRoles ? setShowRoleMenu(!showRoleMenu) : null
-              }
-              className="text-gray-900 dark:text-white font-black text-2xl capitalize flex items-center gap-1 cursor-pointer active:opacity-70 transition-opacity"
-            >
-              {user?.fullName?.split(" ")[0] || "Hello"}
-              {hasMultipleRoles && (
-                <ChevronDown size={20} className="text-[#F26A1C] mt-1" />
+          <div className="flex items-center gap-3">
+             {/* Avatar Circle with Dropdown (Exactly same as Delivery) */}
+             <div className="relative shrink-0">
+              {showProfileMenu && (
+                <div
+                  className="fixed inset-0 z-[90]"
+                  onClick={() => setShowProfileMenu(false)}
+                />
               )}
-            </h2>
+              <button
+                type="button"
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                className="relative z-[101] flex h-11 w-11 items-center justify-center rounded-full bg-[#F26A1C] text-lg font-semibold text-white shadow-sm transition hover:bg-[#F26A1C]/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26A1C] focus-visible:ring-offset-2"
+                aria-label="Account menu"
+              >
+                {user?.avatarUrl ? (
+                  <img
+                    src={user.avatarUrl}
+                    alt=""
+                    className="h-full w-full rounded-full object-cover"
+                  />
+                ) : (
+                  firstInitial(name)
+                )}
+              </button>
+              {showProfileMenu && (
+                <div className="absolute left-0 mt-2 w-56 rounded-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 py-2 shadow-lg z-[100] animate-in fade-in zoom-in-95 duration-200">
+                  <div className="border-b border-gray-100 dark:border-gray-800 px-4 py-3">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">{name}</p>
+                    <p className="text-xs text-gray-500">
+                      {user?.email ?? user?.astuEmail ?? ""}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => navigate(ROUTES.CUSTOMER.PROFILE)}
+                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  >
+                    <User size={16} /> View Profile
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      logout();
+                      navigate(ROUTES.AUTH);
+                    }}
+                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  >
+                    <LogOut size={16} /> Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
 
-            {/* Multi-role dropdown disabled in single-role model */}
+            <div>
+              <h1 className="text-[#F26A1C] font-bold text-[15px] leading-tight">
+                Welcome Back,
+              </h1>
+              <h2
+                onClick={() => setShowRoleMenu(!showRoleMenu)}
+                className="text-gray-900 dark:text-white font-black text-2xl capitalize flex items-center gap-1 cursor-pointer active:opacity-70 transition-opacity"
+              >
+                {firstName(name)}
+              </h2>
+            </div>
           </div>
 
           <div className="flex gap-2">
@@ -784,6 +841,7 @@ export default function CustomerDashboard() {
                     "150-200",
                     "200-250",
                     "250-300",
+                    "300-400",
                   ].map((price) => (
                     <button
                       key={price}
@@ -797,54 +855,6 @@ export default function CustomerDashboard() {
                     </button>
                   ))}
                 </div>
-              </div>
-
-              {/* Location Filters */}
-              <div className="mb-8">
-                <h3 className="text-[14px] font-bold text-gray-900 dark:text-white mb-3">
-                  Location
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    "Any",
-                    "Geda Gate",
-                    "Bole Gate",
-                    "Kereyu Gate",
-                    "Kulibi Gate",
-                    "Around Cafe",
-                    "Stadium",
-                  ].map((loc) => (
-                    <button
-                      key={loc}
-                      onClick={() => setSelectedLocation(loc)}
-                      className={`px-4 py-2 rounded-[10px] text-[12px] font-bold transition-colors active:scale-95 ${selectedLocation === loc
-                        ? "bg-[#F26A1C] text-white shadow-md"
-                        : "bg-[#FFF4ED] dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-orange-100 dark:border-gray-700"
-                        }`}
-                    >
-                      {loc}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Bottom Action Button */}
-              <div className="mt-auto pt-2 flex gap-3">
-                <button
-                  onClick={() => clearFilters()}
-                  className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-[20px] font-bold text-[15px] px-6 py-4 active:scale-[0.98] transition-transform"
-                >
-                  Clear
-                </button>
-                <button
-                  onClick={() => {
-                    addRecentSearch(searchQuery);
-                    setIsFilterModalOpen(false);
-                  }}
-                  className="flex-1 bg-[#F26A1C] hover:bg-[#e05d15] text-white rounded-[20px] font-bold text-[15px] py-4 shadow-[0_8px_20px_rgba(242,106,28,0.25)] active:scale-[0.98] transition-transform"
-                >
-                  Apply Changes
-                </button>
               </div>
             </div>
           </div>

@@ -107,6 +107,7 @@ interface CustomerOrderState {
   updateOrderStatus: (orderId: string, status: OrderStatus) => Promise<void>;
   cancelOrder: (orderId: string) => Promise<void>;
   confirmPayment: (orderId: string) => Promise<void>;
+  simulatePayment: (orderId: string) => Promise<void>;
   clearError: () => void;
 }
 
@@ -349,6 +350,11 @@ export const useCustomerOrderStore = create<CustomerOrderState>()(
             return o;
           }),
         }));
+      },
+
+      simulatePayment: async (orderId) => {
+        await delay(3000);
+        await get().confirmPayment(orderId);
       },
 
       clearError: () => set({ error: null }),

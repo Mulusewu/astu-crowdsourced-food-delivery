@@ -13,6 +13,11 @@ import { useAuthStore } from "@/store/auth/authStore";
 import { ROUTES } from "@/routes/routePaths";
 import { cn } from "@/lib/utils";
 
+/**
+ * CustomerBottomNav
+ * Primary navigation component for the application.
+ * Switches configuration based on the user's active mode (Customer/Deliverer).
+ */
 function CustomerBottomNav() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
@@ -21,46 +26,48 @@ function CustomerBottomNav() {
 
   const isActive = (route: string) => path.startsWith(route) || path === route;
 
-  // Define navigation items based on role
   const getNavConfig = () => {
-    switch (user?.role) {
-      case "DELIVERER":
-        return {
-          items: [
-            { id: "home", icon: Home, path: ROUTES.DELIVERY.DASHBOARD },
-            { id: "saved", icon: Bookmark, path: ROUTES.DELIVERY.SAVED },
-            { id: "history", icon: ClipboardList, path: ROUTES.DELIVERY.HISTORY.LIST },
-            { id: "profile", icon: User, path: ROUTES.DELIVERY.PROFILE },
-          ],
-          center: { id: "active", icon: Package, path: ROUTES.DELIVERY.ACTIVE.LIST },
-        };
-      case "VENDOR_STAFF":
-        return {
-          items: [
-            { id: "home", icon: Home, path: "/vendor/dashboard" },
-            { id: "menu", icon: LayoutList, path: "/vendor/menu" },
-            { id: "history", icon: ClipboardList, path: "/vendor/history" },
-            { id: "profile", icon: User, path: "/profile" },
-          ],
-          center: { id: "orders", icon: Bell, path: "/vendor/orders/active" },
-        };
-      case "CUSTOMER":
-      default:
-        return {
-          items: [
-            { id: "home", icon: Home, path: ROUTES.CUSTOMER.HOME },
-            { id: "favs", icon: Bookmark, path: ROUTES.CUSTOMER.FAVORITES },
-            { id: "history", icon: History, path: ROUTES.CUSTOMER.HISTORY },
-            { id: "profile", icon: User, path: ROUTES.CUSTOMER.PROFILE },
-          ],
-          center: { id: "orders", icon: Package, path: ROUTES.CUSTOMER.ORDERS.LIST, count: undefined },
-        };
+    // Deliverer Mode Navigation
+    if (user?.activeMode === "DELIVERER") {
+      return {
+        items: [
+          { id: "home", icon: Home, path: ROUTES.DELIVERY.DASHBOARD },
+          { id: "saved", icon: Bookmark, path: ROUTES.DELIVERY.SAVED },
+          { id: "history", icon: ClipboardList, path: ROUTES.DELIVERY.HISTORY.LIST },
+          { id: "profile", icon: User, path: ROUTES.DELIVERY.PROFILE },
+        ],
+        center: { id: "active", icon: Package, path: ROUTES.DELIVERY.ACTIVE.LIST },
+      };
     }
+
+    // Vendor Staff Navigation
+    if (user?.role === "VENDOR_STAFF") {
+      return {
+        items: [
+          { id: "home", icon: Home, path: "/vendor/dashboard" },
+          { id: "menu", icon: LayoutList, path: "/vendor/menu" },
+          { id: "history", icon: ClipboardList, path: "/vendor/history" },
+          { id: "profile", icon: User, path: "/profile" },
+        ],
+        center: { id: "orders", icon: Bell, path: "/vendor/orders/active" },
+      };
+    }
+
+    // Customer Navigation (Default)
+    return {
+      items: [
+        { id: "home", icon: Home, path: ROUTES.CUSTOMER.HOME },
+        { id: "favs", icon: Bookmark, path: ROUTES.CUSTOMER.FAVORITES },
+        { id: "history", icon: History, path: ROUTES.CUSTOMER.HISTORY },
+        { id: "profile", icon: User, path: ROUTES.CUSTOMER.PROFILE },
+      ],
+      center: { id: "orders", icon: Package, path: ROUTES.CUSTOMER.ORDERS.LIST },
+    };
   };
 
   const config = getNavConfig();
 
-  // Whitelist of primary top-level routes where BottomNav should be visible
+  // Primary top-level routes where BottomNav should be visible
   const primaryRoutes = [
     ROUTES.DELIVERY.DASHBOARD,
     ROUTES.DELIVERY.SAVED,
@@ -75,7 +82,6 @@ function CustomerBottomNav() {
     ROUTES.CUSTOMER.FAVORITES,
     ROUTES.CUSTOMER.ORDERS.LIST,
     ROUTES.CUSTOMER.PROFILE,
-    ROUTES.CUSTOMER.CART,
     ROUTES.CUSTOMER.HISTORY,
   ];
 
@@ -86,11 +92,9 @@ function CustomerBottomNav() {
   if (!shouldShow) return null;
 
   return (
-    // Replaced hardcoded left/right with proper centering logic for all mobile sizes
     <nav className="fixed bottom-6 left-4 right-4 z-50 mx-auto max-w-[375px]">
       <div className="relative w-full h-[70px]">
-
-        {/* Wavy SVG Background */}
+        {/* Wavy Background */}
         <svg
           className="absolute inset-0 w-full h-full drop-shadow-[0_8px_16px_rgba(242,106,28,0.3)]"
           viewBox="0 0 375 70"
@@ -102,14 +106,13 @@ function CustomerBottomNav() {
           />
         </svg>
 
-        {/* Navigation Items - Fluid layout */}
+        {/* Icons */}
         <div className="absolute inset-0 flex items-center justify-between px-3 sm:px-5 pt-1">
           <div className="flex w-[40%] justify-around">
             <NavIconButton icon={config.items[0].icon} active={isActive(config.items[0].path)} onClick={() => navigate(config.items[0].path)} />
             <NavIconButton icon={config.items[1].icon} active={isActive(config.items[1].path)} onClick={() => navigate(config.items[1].path)} />
           </div>
 
-          {/* Invisible Spacer exactly matching the gap of the SVG curve */}
           <div className="w-[20%] max-w-[80px]" />
 
           <div className="flex w-[40%] justify-around">
@@ -118,7 +121,7 @@ function CustomerBottomNav() {
           </div>
         </div>
 
-        {/* Floating Center Action Button */}
+        {/* Center Button */}
         <div className="absolute left-1/2 top-[-26px] z-20 -translate-x-1/2">
           <button
             type="button"
@@ -127,21 +130,11 @@ function CustomerBottomNav() {
           >
             <div
               className={cn(
-                "flex h-[52px] w-[52px] items-center justify-center rounded-full border-[2.5px] border-[#F26A1C] bg-white transition-all relative",
+                "flex h-[52px] w-[52px] items-center justify-center rounded-full border-[2.5px] border-[#F26A1C] bg-white transition-all",
                 isActive(config.center.path) && "bg-orange-50",
               )}
             >
-              <config.center.icon
-                size={26}
-                className="text-[#F26A1C]"
-                strokeWidth={2.5}
-                fill={isActive(config.center.path) ? "currentColor" : "none"}
-              />
-              {config.center.count !== undefined && config.center.count > 0 && (
-                <div className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 border-2 border-white text-[10px] font-bold text-white shadow-sm">
-                  {config.center.count}
-                </div>
-              )}
+              <config.center.icon size={26} className="text-[#F26A1C]" strokeWidth={2.5} fill={isActive(config.center.path) ? "currentColor" : "none"} />
             </div>
           </button>
         </div>

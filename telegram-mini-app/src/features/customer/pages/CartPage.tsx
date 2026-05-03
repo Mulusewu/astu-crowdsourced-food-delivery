@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Trash2,
@@ -8,16 +8,16 @@ import {
   ShoppingCart
 } from "lucide-react";
 import { ROUTES } from "@/routes/routePaths";
-
+import { useTelegram } from "@/contexts/TelegramContext";
 import { useCartStore } from "@/store/cart/cartStore";
 import { useAuthStore } from "@/store/auth/authStore";
 import type { CartItem } from "@/store/cart/cartStore";
 
-
 // ─── Main Cart Page Component ────────────────────────────────────────────────
 export default function CartPage() {
   const navigate = useNavigate();
-  const user = useAuthStore((state) => state.user);
+  const { user } = useAuthStore();
+  const { showBackButton, hideBackButton, hapticFeedback } = useTelegram();
 
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedItemForMod, setSelectedItemForMod] = useState<CartItem | null>(null);
@@ -31,12 +31,25 @@ export default function CartPage() {
   const total = useCartStore((state) => state.getTotal());
   const discount = useCartStore((state) => state.getDiscountAmount());
 
+  const handleBack = useCallback(() => {
+    hapticFeedback.impact("light");
+    navigate(-1);
+  }, [navigate, hapticFeedback]);
+
+  // Integration with Telegram native back button
+  useEffect(() => {
+    showBackButton(handleBack);
+    return () => hideBackButton();
+  }, [showBackButton, hideBackButton, handleBack]);
+
+  // Authorization check (redundant but safe)
   useEffect(() => {
     if (user?.activeMode !== "CUSTOMER") {
       navigate("/", { replace: true });
     }
   }, [user, navigate]);
 
+  // Sync modal state if cart changes
   useEffect(() => {
     if (!selectedItemForMod) return;
     const refreshedItem = cartItems.find((item) => item.id === selectedItemForMod.id);
@@ -60,28 +73,19 @@ export default function CartPage() {
     }
   };
 
-  const handleSaveInstructions = (foodId: string, instructions: string) => {
-    updateSpecialInstructions(foodId, instructions);
-  };
-
-  const handleClearCartConfirmed = () => {
-    clearCart();
-    setIsClearConfirmOpen(false);
-  };
-
   return (
     <div className="flex min-h-screen flex-col bg-gray-50/50 dark:bg-gray-950 font-sans antialiased text-black relative pb-56 w-full max-w-md mx-auto shadow-sm">
 
       {/* ── Header ── */}
       <header className="px-5 pt-6 pb-4 flex items-center justify-between sticky top-0 bg-gray-50/90 dark:bg-gray-950/90 backdrop-blur-md z-30">
         <button
-          onClick={() => navigate(-1)}
+          onClick={handleBack}
           className="w-11 h-11 bg-white dark:bg-gray-900 border border-orange-100 dark:border-gray-800 rounded-[16px] flex items-center justify-center text-[#F26A1C] active:scale-95 transition-transform shadow-sm"
         >
           <ArrowLeft size={22} strokeWidth={2.5} />
         </button>
         <h1 className="text-[18px] font-black text-gray-900 dark:text-white">Your Cart</h1>
-        <div className="w-11" /> {/* Spacer to center the title */}
+        <div className="w-11" />
       </header>
 
       {/* ── Cart Content ── */}
@@ -94,14 +98,14 @@ export default function CartPage() {
               <CartItemCard
                 key={item.id}
                 item={item}
-                onIncrement={() => updateQuantity(item.id, item.quantity + 1)}
-                onDecrement={() => updateQuantity(item.id, item.quantity - 1)}
+                onIncrement={() => { hapticFeedback.impact("light"); updateQuantity(item.id, item.quantity + 1); }}
+                onDecrement={() => { hapticFeedback.impact("light"); updateQuantity(item.id, item.quantity - 1); }}
                 onCardClick={() => handleOpenDetailModal(item.id)}
               />
             ))}
           </main>
 
-          {/* Floating Clear Cart Button - Bounded by a relative container trick */}
+          {/* Floating Clear Cart Button */}
           <div className="fixed bottom-[240px] z-40 w-full max-w-md mx-auto pointer-events-none flex justify-end px-6">
             <button
               type="button"
@@ -120,7 +124,7 @@ export default function CartPage() {
         total={total}
         discount={discount}
         isCartEmpty={cartItems.length === 0}
-        onPlaceOrder={() => navigate(ROUTES.CUSTOMER.CHECKOUT)}
+        onPlaceOrder={() => { hapticFeedback.impact("medium"); navigate(ROUTES.CUSTOMER.CHECKOUT); }}
       />
 
       {/* ── Modals ── */}
@@ -128,13 +132,13 @@ export default function CartPage() {
         item={selectedItemForMod}
         isOpen={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
-        onSave={handleSaveInstructions}
+        onSave={(id: string, instr: string) => updateSpecialInstructions(id, instr)}
       />
 
       <ClearCartConfirmModal
         isOpen={isClearConfirmOpen}
         onClose={() => setIsClearConfirmOpen(false)}
-        onConfirm={handleClearCartConfirmed}
+        onConfirm={() => { hapticFeedback.notification("success"); clearCart(); setIsClearConfirmOpen(false); }}
       />
     </div>
   );
@@ -157,7 +161,6 @@ function CartItemCard({ item, onIncrement, onDecrement, onCardClick }: any) {
           </h3>
 
           <div className="flex items-center justify-between w-full">
-            {/* Quantity Controls Pill */}
             <div className="flex items-center gap-3 bg-gray-50/80 dark:bg-gray-800 rounded-full px-2.5 py-1.5 w-max">
               <button onClick={(e) => { e.stopPropagation(); onDecrement(); }} className="text-gray-300 hover:text-gray-400 dark:text-gray-500 active:scale-90 transition-transform">
                 <MinusCircle size={20} strokeWidth={2.5} />
@@ -167,8 +170,6 @@ function CartItemCard({ item, onIncrement, onDecrement, onCardClick }: any) {
                 <PlusCircle size={20} strokeWidth={2.5} />
               </button>
             </div>
-
-            {/* Price */}
             <div className="font-black text-[#F26A1C] text-[15px] shrink-0 whitespace-nowrap">
               {item.price.toFixed(0)} Birr
             </div>
@@ -216,8 +217,6 @@ function CartFooter({ subtotal, total, discount, isCartEmpty, onPlaceOrder }: an
   );
 }
 
-// ─── Modals (Bounded by Mobile Screen) ───────────────────────────────────────
-
 function CartItemDetailModal({ item, isOpen, onClose, onSave }: any) {
   const [instructions, setInstructions] = useState("");
 
@@ -228,16 +227,10 @@ function CartItemDetailModal({ item, isOpen, onClose, onSave }: any) {
   if (!isOpen || !item) return null;
 
   return (
-    // Fixed inset 0, but forced to max-w-md mx-auto so it perfectly matches the mobile app container width
     <div className="fixed inset-0 z-50 flex items-center justify-center px-6 w-full max-w-md mx-auto">
-      {/* Absolute backdrop inside the constrained container */}
       <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px] transition-opacity" onClick={onClose} />
-
       <div className="bg-white dark:bg-gray-900 rounded-[40px] p-8 w-full max-w-sm relative z-10 animate-in zoom-in-95 duration-200 shadow-2xl">
-        <h3 className="text-[19px] font-black text-gray-900 dark:text-white mb-6 text-center">
-          Cart Item Detail
-        </h3>
-
+        <h3 className="text-[19px] font-black text-gray-900 dark:text-white mb-6 text-center">Cart Item Detail</h3>
         <div className="flex items-center gap-4 mb-8">
           <img src={item.image} alt={item.name} className="w-[52px] h-[52px] rounded-full object-cover shadow-sm bg-gray-100" />
           <div className="flex flex-col">
@@ -245,7 +238,6 @@ function CartItemDetailModal({ item, isOpen, onClose, onSave }: any) {
             <p className="font-black text-[15px] text-[#F26A1C] uppercase">{item.quantity}X</p>
           </div>
         </div>
-
         <div className="mb-8">
           <p className="text-[12px] font-bold text-gray-400 mb-2 px-1">Order Modification (If Any)</p>
           <textarea
@@ -254,20 +246,9 @@ function CartItemDetailModal({ item, isOpen, onClose, onSave }: any) {
             className="w-full h-28 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-[20px] p-4 text-[14px] font-semibold text-gray-800 dark:text-gray-200 focus:outline-none focus:border-[#F26A1C] focus:ring-1 focus:ring-[#F26A1C] resize-none shadow-sm"
           />
         </div>
-
         <div className="flex gap-4">
-          <button
-            onClick={onClose}
-            className="flex-1 py-3.5 border-[2px] border-[#F26A1C] bg-white dark:bg-gray-900 text-[#F26A1C] font-black tracking-wide rounded-full text-[14px] active:scale-95 transition-transform"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={() => { onSave(item.id, instructions); onClose(); }}
-            className="flex-1 py-3.5 bg-[#F26A1C] text-white font-black tracking-wide rounded-full text-[14px] shadow-[0_6px_20px_rgba(242,106,28,0.25)] active:scale-95 transition-transform"
-          >
-            Edit Order
-          </button>
+          <button onClick={onClose} className="flex-1 py-3.5 border-[2px] border-[#F26A1C] bg-white dark:bg-gray-900 text-[#F26A1C] font-black tracking-wide rounded-full text-[14px] active:scale-95 transition-transform">Cancel</button>
+          <button onClick={() => { onSave(item.id, instructions); onClose(); }} className="flex-1 py-3.5 bg-[#F26A1C] text-white font-black tracking-wide rounded-full text-[14px] shadow-[0_6px_20px_rgba(242,106,28,0.25)] active:scale-95 transition-transform">Edit Order</button>
         </div>
       </div>
     </div>
@@ -276,34 +257,15 @@ function CartItemDetailModal({ item, isOpen, onClose, onSave }: any) {
 
 function ClearCartConfirmModal({ isOpen, onClose, onConfirm }: any) {
   if (!isOpen) return null;
-
   return (
-    // Fixed inset 0, but forced to max-w-md mx-auto so it perfectly matches the mobile app container width
     <div className="fixed inset-0 z-50 flex items-center justify-center px-6 w-full max-w-md mx-auto">
-      {/* Absolute backdrop inside the constrained container */}
       <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px] transition-opacity" onClick={onClose} />
-
       <div className="bg-white dark:bg-gray-900 rounded-[40px] p-8 w-full max-w-sm relative z-10 animate-in zoom-in-95 duration-200 text-center shadow-2xl">
-        <h3 className="text-[19px] font-black text-gray-900 dark:text-white mb-2 leading-tight px-2">
-          Are You Sure You Want To Clear Your Cart?
-        </h3>
-        <p className="text-[13px] font-bold text-gray-400 mb-8">
-          All Cart Items Will Be Removed
-        </p>
-
+        <h3 className="text-[19px] font-black text-gray-900 dark:text-white mb-2 leading-tight px-2">Are You Sure You Want To Clear Your Cart?</h3>
+        <p className="text-[13px] font-bold text-gray-400 mb-8">All Cart Items Will Be Removed</p>
         <div className="flex gap-4">
-          <button
-            onClick={onClose}
-            className="flex-1 py-3.5 border-[2px] border-[#F26A1C] bg-white dark:bg-gray-900 text-[#F26A1C] font-black tracking-wide rounded-full text-[14px] active:scale-95 transition-transform"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={onConfirm}
-            className="flex-1 py-3.5 bg-[#F26A1C] text-white font-black tracking-wide rounded-full text-[14px] shadow-[0_6px_20px_rgba(242,106,28,0.25)] active:scale-95 transition-transform"
-          >
-            Clear Cart
-          </button>
+          <button onClick={onClose} className="flex-1 py-3.5 border-[2px] border-[#F26A1C] bg-white dark:bg-gray-900 text-[#F26A1C] font-black tracking-wide rounded-full text-[14px] active:scale-95 transition-transform">Cancel</button>
+          <button onClick={onConfirm} className="flex-1 py-3.5 bg-[#F26A1C] text-white font-black tracking-wide rounded-full text-[14px] shadow-[0_6px_20px_rgba(242,106,28,0.25)] active:scale-95 transition-transform">Clear Cart</button>
         </div>
       </div>
     </div>

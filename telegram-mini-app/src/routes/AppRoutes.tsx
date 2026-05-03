@@ -4,12 +4,12 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { ROUTES } from "./routePaths";
 import LoadingSkeleton from "@/components/common/LoadingSkeleton";
 import { useAuthStore } from "@/store/auth/authStore";
+import ProtectedRoute from "./ProtectedRoute";
 
 // Import Layouts
 import CustomerLayout from "@/features/layouts/CustomerLayout";
 import DeliveryLayout from "@/features/layouts/DeliveryLayout";
 import VendorLayout from "@/features/layouts/VendorLayout";
-// import AppLayout from "@/components/layout/AppLayout";
 
 // Import Route Groups
 import { authRoutes } from "./routeGroups/authRoutes";
@@ -22,18 +22,17 @@ function FallbackRoute() {
   const { user } = useAuthStore();
 
   if (user) {
-    if (user.role === "DELIVERER") {
+    if (user.activeMode === "DELIVERER") {
       return <Navigate to={ROUTES.DELIVERY.DASHBOARD} replace />;
+    }
+    if (user.activeMode === "CUSTOMER") {
+      return <Navigate to={ROUTES.CUSTOMER.HOME} replace />;
     }
     if (user.role === "VENDOR_STAFF") {
       return <Navigate to={ROUTES.VENDOR.DASHBOARD} replace />;
     }
-    if (user.role === "ADMIN") {
-      return <Navigate to={ROUTES.DELIVERY.DASHBOARD} replace />;
-    }
     return <Navigate to={ROUTES.CUSTOMER.HOME} replace />;
   }
-
   return <Navigate to={ROUTES.AUTH} replace />;
 }
 
@@ -52,28 +51,33 @@ export default function AppRoutes() {
         ))}
 
         {/* ====================== AUTHENTICATED ZONE ====================== */}
-        {/* <Route element={<AppLayout />}> */}
-        {/* ====================== CUSTOMER ZONE ====================== */}
-        <Route element={<CustomerLayout />}>
-          {customerRoutes.map((route) => (
-            <Route key={route.path} path={route.path} element={route.element} />
-          ))}
+
+        {/* CUSTOMER ZONE */}
+        <Route element={<ProtectedRoute allowedRoles={["CUSTOMER"]} requiredMode="CUSTOMER" />}>
+          <Route element={<CustomerLayout />}>
+            {customerRoutes.map((route) => (
+              <Route key={route.path} path={route.path} element={route.element} />
+            ))}
+          </Route>
         </Route>
 
-        {/* ====================== DELIVERY ROUTES ====================== */}
-        <Route element={<DeliveryLayout />}>
-          {deliveryRoutes.map((route) => (
-            <Route key={route.path} path={route.path} element={route.element} />
-          ))}
+        {/* DELIVERY ZONE */}
+        <Route element={<ProtectedRoute allowedRoles={["DELIVERER"]} requiredMode="DELIVERER" />}>
+          <Route element={<DeliveryLayout />}>
+            {deliveryRoutes.map((route) => (
+              <Route key={route.path} path={route.path} element={route.element} />
+            ))}
+          </Route>
         </Route>
 
-        {/* ====================== VENDOR ROUTES ====================== */}
-        <Route element={<VendorLayout />}>
-          {vendorRoutes.map((route) => (
-            <Route key={route.path} path={route.path} element={route.element} />
-          ))}
+        {/* VENDOR ZONE */}
+        <Route element={<ProtectedRoute allowedRoles={["VENDOR_STAFF"]} />}>
+          <Route element={<VendorLayout />}>
+            {vendorRoutes.map((route) => (
+              <Route key={route.path} path={route.path} element={route.element} />
+            ))}
+          </Route>
         </Route>
-        {/* </Route> */}
 
         {/* ====================== FALLBACK ROUTES ====================== */}
         <Route path="*" element={<FallbackRoute />} />

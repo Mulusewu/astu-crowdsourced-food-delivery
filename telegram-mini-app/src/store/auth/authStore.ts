@@ -2,8 +2,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import db from "@/data/database.json";
-import type { User, UserRole, CustomerProfile, DelivererProfile } from "@/types/user.types";
-import { getRoleRedirectPath } from "@/types/user.types";
+import type { User, UserRole, CustomerProfile, DelivererProfile, ActiveMode } from "@/types/user.types";
+import { getRoleRedirectPath, canSwitchRoles } from "@/types/user.types";
 
 export interface UpdateProfileData {
   // User-level fields
@@ -40,6 +40,7 @@ interface AuthState {
   logout: () => void;
   updatePassword: (oldPw: string, newPw: string) => Promise<void>;
   updateProfile: (data: UpdateProfileData) => Promise<void>;
+  toggleActiveMode: (targetMode?: ActiveMode) => Promise<void>;
   clearError: () => void;
 }
 
@@ -70,7 +71,7 @@ const buildUserWithProfile = (raw: (typeof db.users)[number]): User => {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       token: null,
       isLoading: false,
@@ -125,8 +126,8 @@ export const useAuthStore = create<AuthState>()(
         }
         const user = buildUserWithProfile(raw);
         set({ user, token: `mock_token_${user.id}`, isLoading: false });
-        console.log("✅ Signin", user.fullName, "| role:", user.role);
-        if (navigate) navigate(getRoleRedirectPath(user.role));
+        console.log("✅ Signin", user.fullName, "| role:", user.role, "| activeMode:", user.activeMode);
+        if (navigate) navigate(getRoleRedirectPath(user.role, user.activeMode));
       },
 
       logout: () => set({ user: null, token: null, error: null }),
@@ -166,6 +167,44 @@ export const useAuthStore = create<AuthState>()(
           });
         } catch (e) {
           set({ isLoading: false, error: "Failed to update profile." });
+          throw e;
+        }
+      },
+
+      toggleActiveMode: async (targetMode) => {
+        const currentUser = get().user;
+        if (!currentUser || !canSwitchRoles(currentUser)) {
+          console.warn("[Auth] User not authorized to switch roles or not logged in");
+          return;
+        }
+
+        const oldMode = currentUser.activeMode;
+        const newMode = targetMode || (oldMode === "CUSTOMER" ? "DELIVERER" : "CUSTOMER");
+
+        if (oldMode === newMode) {
+          console.log(`[Auth] Mode already set to ${newMode}, skipping switch.`);
+          return;
+        }
+
+        set({ isLoading: true });
+        try {
+          console.log(`[Auth] Initiating switch: ${oldMode} -> ${newMode}`);
+          // Simulate API call to backend expressjs
+          await delay(400);
+          
+          set({
+            user: { 
+              ...currentUser, 
+              activeMode: newMode,
+              updatedAt: new Date().toISOString()
+            },
+            isLoading: false,
+          });
+
+          console.log(`[Auth] Mode switch success: ${newMode}`);
+        } catch (e) {
+          console.error("[Auth] Mode switch failed:", e);
+          set({ isLoading: false, error: "Failed to switch role." });
           throw e;
         }
       },

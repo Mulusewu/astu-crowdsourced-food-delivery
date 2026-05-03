@@ -107,7 +107,10 @@ export const getRoleDisplayName = (role: UserRole): string => {
   return names[role];
 };
 
-export const getRoleRedirectPath = (role: UserRole): string => {
+export const getRoleRedirectPath = (role: UserRole, activeMode?: ActiveMode): string => {
+  if (activeMode === "DELIVERER") return "/delivery/dashboard";
+  if (activeMode === "CUSTOMER") return "/customer/dashboard";
+
   const paths: Record<UserRole, string> = {
     CUSTOMER: "/customer/dashboard",
     DELIVERER: "/delivery/dashboard",
@@ -115,6 +118,12 @@ export const getRoleRedirectPath = (role: UserRole): string => {
     ADMIN: "/admin/dashboard",
   };
   return paths[role];
+};
+
+export const canSwitchRoles = (user: User | null): boolean => {
+  if (!user) return false;
+  // Deliverers and Admins can switch to Customer mode
+  return user.role === "DELIVERER" || user.role === "ADMIN";
 };
 
 export const getRoleIcon = (role: UserRole): string => {

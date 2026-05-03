@@ -11,6 +11,7 @@ import {
   Package,
   ChevronDown,
   Clock3,
+  Wallet,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -182,16 +183,16 @@ export default function DeliveryDashboard() {
                 >
                   <User size={16} /> View Profile
                 </button>
-                {/* <button
+                <button
                   type="button"
                   onClick={() => {
-                    navigate(ROUTES.DELIVERY.SETTINGS);
+                    navigate(ROUTES.DELIVERY.EARNINGS.SUMMARY);
                     setShowProfileMenu(false);
                   }}
-                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors"
+                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                 >
-                  <Settings size={16} /> Settings
-                </button> */}
+                  <Wallet size={16} className="text-[#F26A1C]" /> My Earnings
+                </button>
                 <button
                   type="button"
                   onClick={() => {

@@ -9,7 +9,8 @@ import {
   ShieldCheck,
   Star,
   Clock,
-  MapPin
+  MapPin,
+  TrendingUp
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth/authStore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -34,6 +35,7 @@ export default function VendorProfilePage() {
   };
 
   const menuItems = [
+    { label: "Financial Insights", icon: TrendingUp, path: ROUTES.VENDOR.EARNINGS },
     { label: "Restaurant Settings", icon: Store, path: ROUTES.VENDOR.RESTAURANT.PROFILE },
     { label: "Account Settings", icon: Settings, path: ROUTES.VENDOR.SETTINGS.PROFILE },
     { label: "Business Hours", icon: Clock, path: ROUTES.VENDOR.RESTAURANT.HOURS },
@@ -90,9 +92,15 @@ export default function VendorProfilePage() {
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Orders</p>
             <span className="text-lg font-black text-gray-900 dark:text-white">{vendorInfo.ordersCompleted}</span>
           </div>
-          <div className="bg-white dark:bg-gray-900 p-4 rounded-[24px] shadow-sm border border-gray-50 dark:border-gray-800 text-center">
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Status</p>
-            <span className="text-[12px] font-black text-green-500 uppercase tracking-wider">{vendorInfo.status}</span>
+          <div 
+            onClick={() => navigate(ROUTES.VENDOR.EARNINGS)}
+            className="bg-white dark:bg-gray-900 p-4 rounded-[24px] shadow-sm border border-gray-50 dark:border-gray-800 text-center cursor-pointer active:scale-95 transition-transform"
+          >
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Finance</p>
+            <div className="flex items-center justify-center gap-1 text-green-500">
+               <TrendingUp size={14} />
+               <span className="text-[12px] font-black uppercase tracking-wider">Stats</span>
+            </div>
           </div>
         </div>
 
