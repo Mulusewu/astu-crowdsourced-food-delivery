@@ -7,9 +7,13 @@ import { useVendorStore } from "@/store/vendorStore";
 type OrderStatusType = "Confirmed" | "Preparing" | "Ready For Pickup" | "Picked Up";
 export default function OrderStatusPage() {
   const navigate = useNavigate();
-  const { orderId } = useParams();
+  const { orderId: paramOrderId } = useParams();
   const { state } = useLocation();
   const { vendor, activeOrders } = useVendorStore();
+
+  // If no orderId in params, take the first active order
+  const orderId = paramOrderId || activeOrders[0]?.id;
+  const order = activeOrders.find(o => o.id === orderId);
 
   const [currentStatus, setCurrentStatus] = useState<OrderStatusType>("Confirmed");
   const [showNotification, setShowNotification] = useState(false);
@@ -20,9 +24,6 @@ export default function OrderStatusPage() {
     // Hide notification after 3 seconds
     setTimeout(() => setShowNotification(false), 3000);
   };
-
-  // Fetch the matching order from the store to ensure data is synced
-  const order = activeOrders.find(o => o.id === orderId);
 
   // Use dynamic state passed from Details page if available (reflects Out Of Stock changes), else fallback
   const orderNumber = order?.orderNo || "123";
@@ -36,7 +37,7 @@ export default function OrderStatusPage() {
       {/* Header */}
       <div className="flex items-center px-4 py-4 bg-gray-50 sticky top-0 z-10">
         <button 
-          onClick={() => navigate(`/vendor/order/${orderId}`)}
+          onClick={() => navigate(paramOrderId ? `/vendor/order/${paramOrderId}` : "/vendor/dashboard")}
           className="flex items-center justify-center w-10 h-10 rounded-xl border-2 border-orange-200 text-orange-500 hover:bg-orange-50 transition-colors"
         >
           <ArrowLeft className="w-6 h-6" />
@@ -107,6 +108,14 @@ export default function OrderStatusPage() {
             Customer Notified: Order is {currentStatus}
           </div>
         </div>
+
+        {/* No active orders state */}
+        {!order && !activeOrders.length && (
+          <div className="flex flex-col items-center justify-center py-20 text-center bg-white rounded-3xl border border-dashed border-gray-200 mt-10">
+            <Clock className="w-16 h-16 text-gray-200 mb-4" />
+            <p className="text-gray-400 font-bold">No active orders found.</p>
+          </div>
+        )}
       </div>
 
       {/* Bottom Navigation */}

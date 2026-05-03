@@ -315,7 +315,7 @@ export const vendorRoutes: RouteGroup[] = [
   // ==================== ORDER MANAGEMENT ====================
   {
     path: ROUTES.VENDOR.ORDERS.LIST,
-    element: <VendorOrdersPage />,
+    element: <VendorOrderStatusPage />,
     roles: [UserRoles.VENDOR],
   },
   {

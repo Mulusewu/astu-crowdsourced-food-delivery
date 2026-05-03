@@ -45,7 +45,7 @@ function BottomNav() {
             { id: "menu", icon: FileText, path: ROUTES.VENDOR.MENU.LIST, label: "Menu" },
             { id: "profile", icon: User, path: ROUTES.VENDOR.SETTINGS.PROFILE, label: "Profile" },
           ],
-          center: { id: "orders", icon: Package, path: ROUTES.VENDOR.ORDERS.LIST, label: "Orders" }
+          center: { id: "orders", icon: Package, path: ROUTES.VENDOR.ORDERS.LIST, label: "Order Status" }
         };
       case "customer":
       default:
