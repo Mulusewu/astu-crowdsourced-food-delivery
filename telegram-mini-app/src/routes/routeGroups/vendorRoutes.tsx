@@ -163,8 +163,8 @@ const VendorOrderStatusPage = lazy(
 // );
 
 // Settings
-const VendorSettingsPage = lazy(
-  () => import("@/features/vendor/pages/SettingsPage"),
+const VendorProfilePage = lazy(
+  () => import("@/features/vendor/pages/VendorProfilePage"),
 );
 // const VendorPaymentSettingsPage = lazy(
 //   () => import("@/features/vendor/pages/PaymentSettingsPage"),
@@ -445,7 +445,7 @@ export const vendorRoutes: RouteGroup[] = [
   // ==================== SETTINGS ====================
   {
     path: ROUTES.VENDOR.SETTINGS.PROFILE,
-    element: <VendorSettingsPage />,
+    element: <VendorProfilePage />,
     roles: [UserRoles.VENDOR],
   },
   //   {
