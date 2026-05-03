@@ -195,10 +195,10 @@ export default function ProfileMain() {
             <Mail size={20} className="text-gray-500" strokeWidth={1.5} />
             <div>
               <p className="text-[12px] font-bold uppercase tracking-wide text-gray-400">
-                Email
+                Primary Email (ASTU)
               </p>
               <span className="text-[13px] font-medium text-gray-600 dark:text-gray-300">
-                {user?.email ?? user?.astuEmail ?? "No email provided"}
+                {user?.astuEmail ?? user?.email ?? "No email provided"}
               </span>
             </div>
           </div>
@@ -208,7 +208,7 @@ export default function ProfileMain() {
                 Verified
               </span>
             )}
-            <ChevronRight size={18} className="text-gray-400" />
+            {/* <ChevronRight size={18} className="text-gray-400" /> */}
           </div>
         </div>
 
@@ -230,7 +230,7 @@ export default function ProfileMain() {
                 Verified
               </span>
             )}
-            <ChevronRight size={18} className="text-gray-400" />
+            {/* <ChevronRight size={18} className="text-gray-400" /> */}
           </div>
         </div>
       </div>
@@ -243,11 +243,10 @@ export default function ProfileMain() {
           return (
             <div
               key={item.label}
-              className={`flex items-center justify-between p-4 cursor-pointer active:bg-gray-50 dark:active:bg-gray-800/50 transition-colors ${
-                isLast
+              className={`flex items-center justify-between p-4 cursor-pointer active:bg-gray-50 dark:active:bg-gray-800/50 transition-colors ${isLast
                   ? "rounded-b-[20px]"
                   : "border-b border-gray-100 dark:border-gray-800"
-              } ${index === 0 ? "rounded-t-[20px]" : ""}`}
+                } ${index === 0 ? "rounded-t-[20px]" : ""}`}
               onClick={item.onClick}
             >
               <div className="flex items-center gap-3">

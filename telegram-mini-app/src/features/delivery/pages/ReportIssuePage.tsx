@@ -71,18 +71,18 @@ export default function ReportIssuePage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#FDFDFD] font-sans pb-10 text-gray-900">
+    <div className="flex min-h-screen flex-col bg-[#FDFDFD] dark:bg-gray-950 font-sans pb-10 text-gray-900 dark:text-white">
       {/* Header */}
       <header className="px-5 pt-[max(2.5rem,env(safe-area-inset-top))] pb-6">
         <div className="relative flex items-center justify-center h-12">
           <button
             onClick={() => navigate(buildRoute(ROUTES.DELIVERY.ACTIVE.DETAILS, { orderId }))}
-            className="absolute left-0 top-1/2 -translate-y-1/2 flex h-[42px] w-[42px] items-center justify-center rounded-[14px] bg-[#FFEFE5] text-[#F26A1C] transition hover:bg-orange-200 active:scale-95"
+            className="absolute left-0 top-1/2 -translate-y-1/2 flex h-[42px] w-[42px] items-center justify-center rounded-[14px] bg-[#FFEFE5] dark:bg-orange-950/30 text-[#F26A1C] transition hover:bg-orange-200 dark:hover:bg-orange-900/50 active:scale-95"
             aria-label="Go back"
           >
             <ArrowLeft className="h-6 w-6" strokeWidth={2} />
           </button>
-          <h1 className="text-[22px] font-black text-black tracking-tight">
+          <h1 className="text-[22px] font-black text-black dark:text-white tracking-tight">
             What Is The Issue ?
           </h1>
         </div>
@@ -109,7 +109,7 @@ export default function ReportIssuePage() {
                     <div className="h-[12px] w-[12px] rounded-full bg-[#F26A1C]" />
                   )}
                 </div>
-                <span className="text-[15px] font-medium text-black">
+                <span className="text-[15px] font-medium text-black dark:text-white">
                   {issue}
                 </span>
               </button>
@@ -119,27 +119,27 @@ export default function ReportIssuePage() {
 
         {/* Text Area Section */}
         <div className="mt-10">
-          <h2 className="text-[16px] font-black text-black mb-[10px] tracking-tight">
+          <h2 className="text-[16px] font-black text-black dark:text-white mb-[10px] tracking-tight">
             Reporting For Order #{order?.shortId || "..."}
           </h2>
           <textarea
             value={description}
             onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
             placeholder="Describe The Problem Here.."
-            className="h-[140px] w-full resize-none rounded-[16px] border border-gray-300 bg-white p-4 text-[15px] text-gray-800 placeholder-gray-400 outline-none transition-colors focus:border-[#F26A1C] focus:ring-1 focus:ring-[#F26A1C] shadow-sm"
+            className="h-[140px] w-full resize-none rounded-[16px] border border-gray-300 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 text-[15px] text-gray-800 dark:text-gray-200 placeholder-gray-400 outline-none transition-colors focus:border-[#F26A1C] focus:ring-1 focus:ring-[#F26A1C] shadow-sm"
           />
           
           {/* Evidence Attachment */}
           <div className="mt-4">
-            <h3 className="text-[14px] font-bold text-gray-900 mb-2">Attach Evidence (Optional)</h3>
+            <h3 className="text-[14px] font-bold text-gray-900 dark:text-gray-100 mb-2">Attach Evidence (Optional)</h3>
             {!evidencePreview ? (
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full flex flex-col items-center justify-center py-6 border-2 border-dashed border-gray-300 rounded-[16px] bg-gray-50 active:bg-gray-100 transition-colors"
+                className="w-full flex flex-col items-center justify-center py-6 border-2 border-dashed border-gray-300 dark:border-gray-800 rounded-[16px] bg-gray-50 dark:bg-gray-900/50 active:bg-gray-100 dark:active:bg-gray-800 transition-colors"
               >
-                <Camera size={24} className="text-gray-400 mb-2" />
-                <span className="text-[13px] font-medium text-gray-500">Tap to take or upload a photo</span>
+                <Camera size={24} className="text-gray-400 dark:text-gray-500 mb-2" />
+                <span className="text-[13px] font-medium text-gray-500 dark:text-gray-400">Tap to take or upload a photo</span>
               </button>
             ) : (
               <div className="relative w-full h-[140px] rounded-[16px] border border-gray-200 overflow-hidden">

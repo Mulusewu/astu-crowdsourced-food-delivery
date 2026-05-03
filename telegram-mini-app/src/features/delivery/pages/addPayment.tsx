@@ -1,25 +1,22 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check, Plus } from "lucide-react";
+import { Check } from "lucide-react";
 import { Header } from "@/features/shared/components/ProfileShared";
 import { usePaymentStore } from "@/store/paymentStore";
 import { ROUTES } from "@/routes/routePaths";
 
 const AVAILABLE_BANKS = [
   {
+    id: "telebirr",
+    name: "Telebirr",
+    short: "TB",
+    color: "bg-blue-50 dark:bg-blue-900/20 text-blue-600",
+  },
+  {
     id: "cbe-birr",
     name: "CBE Birr",
     short: "CBE",
-  },
-  {
-    id: "amole",
-    name: "Amole",
-    short: "AM",
-  },
-  {
-    id: "awash-birr",
-    name: "Awash Birr",
-    short: "AW",
+    color: "bg-purple-50 dark:bg-purple-900/20 text-purple-600",
   },
 ];
 
@@ -58,10 +55,13 @@ export default function AddPayment() {
         onBackClick={() => navigate(ROUTES.DELIVERY.PAYMENT)}
       />
 
-      <div className="px-5">
-        <p className="text-[11px] font-bold text-gray-500 mt-2 mb-6 px-1">
-          Choose Payment Method To Add
-        </p>
+      <div className="px-5 pt-4">
+        <div className="mb-8">
+          <h2 className="text-xl font-black text-gray-900 dark:text-white">Payer Account</h2>
+          <p className="text-[13px] font-medium text-gray-500 dark:text-gray-400 mt-1">
+            Choose a wallet or bank to receive your delivery earnings.
+          </p>
+        </div>
 
         <div className="flex-1 space-y-4">
           {AVAILABLE_BANKS.map((bank) => {
@@ -76,17 +76,20 @@ export default function AddPayment() {
               return (
                 <div
                   key={bank.id}
-                  className="flex items-center justify-between p-3 rounded-2xl bg-white dark:bg-gray-900 cursor-default shadow-sm border border-gray-50 dark:border-gray-800"
+                  className="flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-gray-900 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-800 opacity-60"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-50 text-sm font-black text-[#F26A1C]">
+                    <div className={`flex h-11 w-11 items-center justify-center rounded-full text-sm font-black ${bank.color}`}>
                       {bank.short}
                     </div>
-                    <span className="font-bold text-sm text-gray-900 dark:text-white">
-                      {bank.name}
-                    </span>
+                    <div>
+                      <span className="block font-bold text-sm text-gray-900 dark:text-white">
+                        {bank.name}
+                      </span>
+                      <span className="text-[11px] font-medium text-gray-400">Already Added</span>
+                    </div>
                   </div>
-                  <div className="w-5 h-5 bg-gray-400 rounded-full flex items-center justify-center">
+                  <div className="w-5 h-5 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
                     <Check size={12} className="text-white" strokeWidth={3} />
                   </div>
                 </div>
@@ -98,63 +101,63 @@ export default function AddPayment() {
                 key={bank.id}
                 type="button"
                 onClick={() => setSelectedBankId(bank.id)}
-                className={`w-full flex items-center justify-between p-3 rounded-2xl bg-white dark:bg-gray-900 hover:bg-gray-50 active:scale-[0.98] transition-all cursor-pointer shadow-sm border ${isSelected
-                    ? "border-[#F26A1C]"
-                    : "border-gray-50 dark:border-gray-800"
+                className={`w-full flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-gray-900 shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all cursor-pointer border-2 ${isSelected
+                    ? "border-[#F26A1C] ring-4 ring-orange-500/10"
+                    : "border-transparent dark:border-transparent hover:border-gray-100 dark:hover:border-gray-800"
                   }`}
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-50 text-sm font-black text-[#F26A1C]">
+                  <div className={`flex h-11 w-11 items-center justify-center rounded-full text-sm font-black ${bank.color}`}>
                     {bank.short}
                   </div>
                   <span className="font-bold text-sm text-gray-900 dark:text-white">
                     {bank.name}
                   </span>
                 </div>
-                <div className="w-5 h-5 bg-[#F26A1C] rounded-full flex items-center justify-center">
-                  {isSelected ? (
-                    <Check size={14} className="text-white" strokeWidth={3} />
-                  ) : (
-                    <Plus size={14} className="text-white" strokeWidth={3} />
-                  )}
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${
+                  isSelected ? "bg-[#F26A1C]" : "bg-gray-200 dark:bg-gray-800"
+                }`}>
+                  <Check size={14} className="text-white" strokeWidth={3} />
                 </div>
               </button>
             );
           })}
 
-          <div className="rounded-[20px] bg-white p-4 shadow-sm border border-gray-50 dark:border-gray-800 dark:bg-gray-900">
-            <label className="block">
-              <span className="text-[12px] font-bold uppercase tracking-wide text-gray-400">
+          <div className="mt-8 space-y-5 rounded-[28px] bg-white dark:bg-gray-900 p-6 shadow-[0_8px_24px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-800">
+            <div className="space-y-1.5">
+              <label className="text-[12px] font-black uppercase tracking-wider text-gray-400 px-1">
                 Account Holder
-              </span>
+              </label>
               <input
                 value={accountHolder}
                 onChange={(e) => setAccountHolder(e.target.value)}
-                placeholder="Enter account holder name"
-                className="mt-2 w-full rounded-2xl border border-gray-200 bg-[#FFF8F4] px-4 py-3 text-sm font-medium text-gray-900 outline-none focus:border-[#F26A1C]"
+                placeholder="Full Name"
+                className="w-full rounded-2xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 px-5 py-4 text-[15px] font-bold text-gray-900 dark:text-white outline-none transition-all focus:border-[#F26A1C] focus:ring-2 focus:ring-orange-500/10 placeholder:text-gray-400 dark:placeholder:text-gray-600"
               />
-            </label>
-            <label className="mt-4 block">
-              <span className="text-[12px] font-bold uppercase tracking-wide text-gray-400">
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[12px] font-black uppercase tracking-wider text-gray-400 px-1">
                 Account / Phone Number
-              </span>
+              </label>
               <input
                 value={accountInfo}
                 onChange={(e) => setAccountInfo(e.target.value)}
-                placeholder="Enter linked wallet or bank number"
-                className="mt-2 w-full rounded-2xl border border-gray-200 bg-[#FFF8F4] px-4 py-3 text-sm font-medium text-gray-900 outline-none focus:border-[#F26A1C]"
+                placeholder="+2519..."
+                className="w-full rounded-2xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 px-5 py-4 text-[15px] font-bold text-gray-900 dark:text-white outline-none transition-all focus:border-[#F26A1C] focus:ring-2 focus:ring-orange-500/10 placeholder:text-gray-400 dark:placeholder:text-gray-600"
               />
-            </label>
+            </div>
           </div>
 
-          <button
-            type="button"
-            onClick={handleAddPayment}
-            disabled={!accountInfo.trim() || !accountHolder.trim()}
-            className="w-full rounded-[18px] bg-[#F26A1C] py-4 text-sm font-bold text-white shadow-lg shadow-orange-500/20 transition-all disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Save Payment Method
-          </button>
+          <div className="pt-6">
+            <button
+              type="button"
+              onClick={handleAddPayment}
+              disabled={!accountInfo.trim() || !accountHolder.trim()}
+              className="w-full rounded-full bg-[#F26A1C] py-[18px] text-base font-black text-white shadow-[0_8px_24px_rgba(242,106,28,0.3)] transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Add Payout Account
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -18,8 +18,7 @@ import { ROUTES } from "@/routes/routePaths";
 const PAYOUT_PROVIDERS = [
   { id: "telebirr", label: "Telebirr" },
   { id: "cbe", label: "CBE Birr" },
-  { id: "awash", label: "Awash Birr" },
-  { id: "amole", label: "Amole" },
+
 ];
 
 function ReadOnlyField({ label, value }: { label: string; value: string }) {
@@ -38,8 +37,10 @@ export default function DeliveryEditProfilePage() {
 
   // User-level fields
   const [fullName, setFullName] = useState(user?.fullName ?? "");
+  const [astuEmail, setAstuEmail] = useState(user?.astuEmail ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
   const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber ?? "");
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   // DelivererProfile fields
   const [currentLocation, setCurrentLocation] = useState(dp?.currentLocation ?? "");
@@ -48,11 +49,24 @@ export default function DeliveryEditProfilePage() {
 
   const [success, setSuccess] = useState(false);
 
+  const validate = () => {
+    const newErrors: Record<string, string> = {};
+    if (!fullName.trim()) newErrors.fullName = "Full name is required";
+    if (!astuEmail.trim()) {
+      newErrors.astuEmail = "ASTU email is mandatory";
+    } else if (!/^[a-zA-Z0-9._%+-]+@astu\.edu\.et$/.test(astuEmail)) {
+      newErrors.astuEmail = "Please use your university email (@astu.edu.et)";
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSave = async () => {
-    if (!fullName.trim()) return;
+    if (!validate()) return;
     try {
       await updateProfile({
         fullName: fullName.trim(),
+        astuEmail: astuEmail.trim(),
         email: email.trim() || null,
         phoneNumber: phoneNumber.trim() || null,
         delivererProfile: {
@@ -94,11 +108,17 @@ export default function DeliveryEditProfilePage() {
               {user?.fullName?.[0] ?? "D"}
             </AvatarFallback>
           </Avatar>
-          <button className="absolute bottom-0 right-0 bg-[#F26A1C] p-2 rounded-full text-white border-2 border-white dark:border-gray-900 shadow-sm active:scale-95 transition-transform">
+          <button 
+            onClick={() => navigate(ROUTES.DELIVERY.UPLOAD_AVATAR)}
+            className="absolute bottom-0 right-0 bg-[#F26A1C] p-2 rounded-full text-white border-2 border-white dark:border-gray-900 shadow-sm active:scale-95 transition-transform"
+          >
             <Camera size={14} />
           </button>
         </div>
-        <p className="text-[#F26A1C] text-xs font-bold mt-3 cursor-pointer hover:underline">
+        <p 
+          onClick={() => navigate(ROUTES.DELIVERY.UPLOAD_AVATAR)}
+          className="text-[#F26A1C] text-xs font-bold mt-3 cursor-pointer hover:underline"
+        >
           Change Profile Picture
         </p>
       </div>
@@ -121,7 +141,21 @@ export default function DeliveryEditProfilePage() {
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-[11px] font-bold text-gray-500 uppercase px-1 flex items-center gap-1">
-              <Mail size={10} /> Email
+              <Mail size={10} /> ASTU Email
+              <span className="text-[9px] font-black text-[#F26A1C] normal-case ml-1">(Mandatory)</span>
+            </label>
+            <SoftInput
+              value={astuEmail}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAstuEmail(e.target.value)}
+              type="email"
+              placeholder="name.surname@astu.edu.et"
+            />
+            {errors.astuEmail && <p className="text-xs text-red-500 font-semibold px-2">{errors.astuEmail}</p>}
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] font-bold text-gray-500 uppercase px-1 flex items-center gap-1">
+              <Mail size={10} /> Personal Email
+              <span className="text-[9px] font-normal text-gray-400 normal-case ml-1">(Optional)</span>
             </label>
             <SoftInput
               value={email}
@@ -170,11 +204,10 @@ export default function DeliveryEditProfilePage() {
                   key={p.id}
                   type="button"
                   onClick={() => setPayoutProvider(p.id)}
-                  className={`py-3 rounded-[16px] text-[13px] font-bold transition-all active:scale-[0.98] border ${
-                    payoutProvider === p.id
+                  className={`py-3 rounded-[16px] text-[13px] font-bold transition-all active:scale-[0.98] border ${payoutProvider === p.id
                       ? "bg-[#FFF1E8] border-[#F26A1C] text-[#F26A1C]"
                       : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-500"
-                  }`}
+                    }`}
                 >
                   {p.label}
                 </button>

@@ -40,18 +40,18 @@ export default function ActiveDeliveriesPage() {
     }, [fetchActiveOrders]);
 
     return (
-        <div className="flex flex-col bg-[#FDFDFD] font-sans text-gray-900">
+        <div className="flex flex-col bg-[#FDFDFD] dark:bg-gray-950 font-sans text-gray-900 dark:text-gray-100 min-h-screen">
             {/* Header */}
             <header className="px-5 pt-[max(2.5rem,env(safe-area-inset-top))] pb-8">
                 <div className="relative flex items-center justify-center h-12">
                     <button
                         onClick={() => navigate(ROUTES.DELIVERY.DASHBOARD)}
-                        className="absolute left-0 top-1/2 -translate-y-1/2 flex h-[42px] w-[42px] items-center justify-center rounded-[14px] bg-[#FFEFE5] text-[#F26A1C] transition hover:bg-orange-200 active:scale-95"
+                        className="absolute left-0 top-1/2 -translate-y-1/2 flex h-[42px] w-[42px] items-center justify-center rounded-[14px] bg-[#FFEFE5] dark:bg-orange-950/30 text-[#F26A1C] transition hover:bg-orange-200 dark:hover:bg-orange-900/50 active:scale-95"
                         aria-label="Go back"
                     >
                         <ArrowLeft className="h-6 w-6" strokeWidth={2} />
                     </button>
-                    <h1 className="text-[26px] font-black text-black tracking-tight">
+                    <h1 className="text-[26px] font-black text-black dark:text-white tracking-tight">
                         Active Orders
                     </h1>
                 </div>
@@ -66,19 +66,19 @@ export default function ActiveDeliveriesPage() {
                             <p className="text-gray-500 font-medium">Loading active deliveries...</p>
                         </div>
                     ) : activeOrders.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-20 text-center bg-orange-50/30 rounded-[32px] border border-dashed border-orange-100">
-                            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4">
-                                <Truck size={32} className="text-orange-200" />
+                        <div className="flex flex-col items-center justify-center py-20 text-center bg-orange-50/30 dark:bg-orange-900/10 rounded-[32px] border border-dashed border-orange-100 dark:border-orange-900/30">
+                            <div className="w-16 h-16 bg-white dark:bg-gray-900 rounded-full flex items-center justify-center shadow-sm mb-4">
+                                <Truck size={32} className="text-orange-200 dark:text-orange-800" />
                             </div>
-                            <p className="text-gray-600 font-bold text-lg">No active deliveries</p>
-                            <p className="text-gray-400 text-sm mt-1">Accept an order from the dashboard to get started.</p>
+                            <p className="text-gray-600 dark:text-gray-300 font-bold text-lg">No active deliveries</p>
+                            <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">Accept an order from the dashboard to get started.</p>
                         </div>
                     ) : (
                         activeOrders.map((order) => (
                             <div
                                 key={order.id}
                                 onClick={() => navigate(buildRoute(ROUTES.DELIVERY.ACTIVE.DETAILS, { orderId: order.id }))}
-                                className="w-full rounded-[24px] border border-gray-100/80 bg-white p-[20px] shadow-[0_8px_30px_rgba(0,0,0,0.06)] cursor-pointer active:scale-[0.98] transition-all"
+                                className="w-full rounded-[24px] border border-gray-100/80 dark:border-gray-800 bg-white dark:bg-gray-900 p-[20px] shadow-[0_8px_30px_rgba(0,0,0,0.06)] cursor-pointer active:scale-[0.98] transition-all"
                             >
                                 {/* Date & Time */}
                                 <div className="flex items-center justify-between pb-[10px]">
@@ -89,16 +89,16 @@ export default function ActiveDeliveriesPage() {
                                         {order.estimatedDeliveryTime || "Ready"}
                                     </span>
                                 </div>
-                                <div className="h-[1px] w-full bg-gray-100 mb-[12px]" />
+                                <div className="h-[1px] w-full bg-gray-100 dark:bg-gray-800 mb-[12px]" />
 
                                 {/* Order Number & Status */}
                                 <div className="flex items-center justify-between mb-3">
                                     <span className="text-[16px] font-black tracking-tight text-[#F26A1C]">
                                         Order #{order.shortId}
                                     </span>
-                                    <div className="flex items-center gap-[6px] text-gray-900">
-                                        <Truck size={15} strokeWidth={1.5} className="text-gray-700" />
-                                        <span className="text-[14px] font-medium text-black">
+                                    <div className="flex items-center gap-[6px] text-gray-900 dark:text-gray-100">
+                                        <Truck size={15} strokeWidth={1.5} className="text-gray-700 dark:text-gray-400" />
+                                        <span className="text-[14px] font-medium text-black dark:text-white">
                                             {statusMap[order.status] || order.status}
                                         </span>
                                     </div>
@@ -108,14 +108,14 @@ export default function ActiveDeliveriesPage() {
                                 <div className="flex flex-col">
                                     {order.items.map((item, index) => (
                                         <div key={item.id || index} className="flex flex-col">
-                                            <div className="flex items-center py-[10px] text-[14px] font-medium text-black">
+                                            <div className="flex items-center py-[10px] text-[14px] font-medium text-black dark:text-white">
                                                 <span className="flex-1">{item.name}</span>
                                                 <span className="w-16 text-center">{item.quantity} Pcs</span>
                                                 <span className="w-20 text-right">{item.unitPrice} Birr</span>
                                             </div>
                                             {/* Divider except after last item */}
                                             {index < order.items.length - 1 && (
-                                                <div className="h-[1px] w-full bg-gray-100" />
+                                                <div className="h-[1px] w-full bg-gray-100 dark:bg-gray-800" />
                                             )}
                                         </div>
                                     ))}
@@ -130,8 +130,8 @@ export default function ActiveDeliveriesPage() {
                                         </span>
                                     </div>
                                     <div className="text-[15px]">
-                                        <span className="font-bold text-black mr-2">Total</span>
-                                        <span className="font-black text-black">{order.totalAmount} Birr</span>
+                                        <span className="font-bold text-black dark:text-white mr-2">Total</span>
+                                        <span className="font-black text-black dark:text-white">{order.totalAmount} Birr</span>
                                     </div>
                                 </div>
 
@@ -160,7 +160,7 @@ export default function ActiveDeliveriesPage() {
                                                 }),
                                             )
                                         }
-                                        className="rounded-full border-[1.5px] border-[#F26A1C]/60 bg-white px-8 py-[6px] text-[15px] font-medium text-[#F26A1C] transition hover:bg-orange-50 active:scale-95"
+                                        className="rounded-full border-[1.5px] border-[#F26A1C]/60 bg-white dark:bg-gray-950 px-8 py-[6px] text-[15px] font-medium text-[#F26A1C] transition hover:bg-orange-50 dark:hover:bg-orange-900/20 active:scale-95"
                                     >
                                         Track
                                     </button>
@@ -173,7 +173,7 @@ export default function ActiveDeliveriesPage() {
                                                 }),
                                             )
                                         }
-                                        className="rounded-full border-[1.5px] border-[#F26A1C]/60 bg-white px-8 py-[6px] text-[15px] font-medium text-[#F26A1C] transition hover:bg-orange-50 active:scale-95"
+                                        className="rounded-full border-[1.5px] border-[#F26A1C]/60 bg-white dark:bg-gray-950 px-8 py-[6px] text-[15px] font-medium text-[#F26A1C] transition hover:bg-orange-50 dark:hover:bg-orange-900/20 active:scale-95"
                                     >
                                         Report Issue
                                     </button>

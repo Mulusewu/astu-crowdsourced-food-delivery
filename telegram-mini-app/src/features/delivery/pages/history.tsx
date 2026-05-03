@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Star, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ROUTES } from "@/routes/routePaths";
 
 import { useOrderStore } from "@/store/orders/orderStore";
 
@@ -51,11 +52,11 @@ function StatusBadge({ status }: { status: OrderHistoryItem["status"] }) {
 // ─── OrderCard ────────────────────────────────────────────────────────────────
 function OrderCard({ item }: { item: OrderHistoryItem }) {
   return (
-    <article className="overflow-hidden rounded-2xl bg-white shadow-[0_2px_16px_rgba(0,0,0,0.08)] ring-1 ring-gray-100">
+    <article className="overflow-hidden rounded-2xl bg-white dark:bg-gray-900 shadow-[0_2px_16px_rgba(0,0,0,0.08)] ring-1 ring-gray-100 dark:ring-gray-800">
       <div className="px-4 pt-4 pb-5">
         {/* Row 1 — Restaurant name + shortId */}
         <div className="flex items-start justify-between gap-2">
-          <h2 className="text-base font-bold text-gray-900 leading-tight">
+          <h2 className="text-base font-bold text-gray-900 dark:text-white leading-tight">
             {item.restaurantName}
           </h2>
           <span className="shrink-0 text-sm text-gray-400">
@@ -66,8 +67,8 @@ function OrderCard({ item }: { item: OrderHistoryItem }) {
         {/* Row 2 — Food image + name + price */}
         <div className="mt-3 flex items-center gap-3">
           <div className="relative shrink-0">
-            <div className="absolute -bottom-1 left-1 h-14 w-14 rounded-xl bg-gray-200/60" />
-            <div className="relative h-14 w-14 overflow-hidden rounded-xl border border-gray-100 bg-gray-50 shadow-sm">
+            <div className="absolute -bottom-1 left-1 h-14 w-14 rounded-xl bg-gray-200/60 dark:bg-gray-800/60" />
+            <div className="relative h-14 w-14 overflow-hidden rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 shadow-sm">
               <img
                 src={item.firstItemImageUrl ?? "https://images.unsplash.com/photo-1544025162-831e5088eb7e?w=200"}
                 alt={item.firstItemName}
@@ -76,7 +77,7 @@ function OrderCard({ item }: { item: OrderHistoryItem }) {
             </div>
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-gray-800 leading-snug">
+            <p className="text-sm font-medium text-gray-800 dark:text-gray-200 leading-snug">
               {item.firstItemName}
             </p>
             <p className="mt-0.5 text-xs text-gray-400">Delivery: {item.deliveryFee} ETB</p>
@@ -106,14 +107,14 @@ export default function HistoryPage() {
   }, [fetchOrderHistory]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-white">
+    <div className="flex min-h-screen flex-col bg-white dark:bg-gray-950">
       {/* ── Header ── */}
-      <header className="sticky top-0 z-20 bg-white px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] shadow-[0_1px_0_rgba(0,0,0,0.06)]">
+      <header className="sticky top-0 z-20 bg-white dark:bg-gray-950 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] shadow-[0_1px_0_rgba(0,0,0,0.06)] dark:border-b dark:border-gray-800">
         <div className="relative flex h-12 items-center justify-center">
           {/* Back button */}
           <button
             type="button"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate(ROUTES.DELIVERY.DASHBOARD)}
             className="absolute left-0 flex h-10 w-10 items-center justify-center rounded-xl border border-[#F27420]/30 transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F27420]/40"
             style={{ backgroundColor: ORANGE_SOFT }}
             aria-label="Go back"
@@ -126,7 +127,7 @@ export default function HistoryPage() {
           </button>
 
           {/* Title */}
-          <h1 className="text-xl font-bold text-gray-900">History</h1>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white">History</h1>
         </div>
       </header>
 

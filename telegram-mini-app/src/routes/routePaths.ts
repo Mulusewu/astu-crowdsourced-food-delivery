@@ -239,6 +239,7 @@ export const ROUTES = {
     // Profile & Settings
     PROFILE: "/delivery/profile",
     EDIT_PROFILE: "/delivery/profile/edit",
+    UPLOAD_AVATAR: "/delivery/profile/upload",
     DOCUMENTS: "/delivery/documents",
     SETTINGS: "/delivery/settings",
     NOTIFICATIONS: "/delivery/notifications",
@@ -246,6 +247,7 @@ export const ROUTES = {
     PASSWORD: "/delivery/profile/password",
     PAYMENT: "/delivery/profile/payment",
     PAYMENT_ADD: "/delivery/profile/payment/add",
+    CAFE_DETAILS: "/delivery/cafe/:cafeId",
   },
 
   // ==================== SHARED ROUTES ====================
@@ -312,6 +314,7 @@ export type RouteParams = {
   roomId?: string | number;
   month?: string | number;
   deliveryId?: string | number;
+  cafeId?: string | number;
 };
 
 // Helper function to build dynamic routes

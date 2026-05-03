@@ -57,7 +57,7 @@ export default function AvailableDeliveryDetailsPage() {
         <div className="text-center">
           <p className="text-gray-500 font-medium">Order not found</p>
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate(ROUTES.DELIVERY.AVAILABLE.LIST)}
             className="mt-4 bg-[#F26A1C] text-white px-6 py-2 rounded-full font-bold"
           >
             Go Back
@@ -91,7 +91,7 @@ export default function AvailableDeliveryDetailsPage() {
       <header className="sticky top-0 z-50 bg-[#FDFDFD]/90 dark:bg-gray-950/90 backdrop-blur-md px-5 pt-6 pb-4">
         <div className="relative flex items-center justify-center">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate(ROUTES.DELIVERY.AVAILABLE.LIST)}
             className="absolute left-0 w-10 h-10 bg-orange-50 dark:bg-gray-800 rounded-xl flex items-center justify-center text-[#F26A1C] active:scale-95 transition-transform"
           >
             <ArrowLeft size={20} />

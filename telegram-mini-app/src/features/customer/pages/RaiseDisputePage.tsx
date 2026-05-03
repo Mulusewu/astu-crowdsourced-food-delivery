@@ -130,7 +130,7 @@ export default function RaiseDisputePage() {
                 type="file" 
                 accept="image/*"
                 className="absolute inset-0 opacity-0 cursor-pointer"
-                onChange={(e) => {
+                onChange={() => {
                   // In a real app, handle file upload here
                   setEvidence("https://storage.astueats.com/evidence/new_dispute_photo.jpg");
                 }}

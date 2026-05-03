@@ -71,6 +71,7 @@ interface DeliveryDashboardState {
   resetPaymentTimer: (seconds?: number) => void;
   setCustomerActivity: (activity: CustomerActivity) => void;
   updateDelivererStats: (earnings: number) => void;
+  updateCurrentLocation: (location: string) => Promise<void>;
 }
 
 // Statuses that count as "active" at a restaurant
@@ -219,6 +220,20 @@ export const useDeliveryDashboardStore = create<DeliveryDashboardState>()(
               totalDeliveries: (s.delivererProfile.totalDeliveries || 0) + 1,
               totalEarnings: (Number(s.delivererProfile.totalEarnings) || 0) + earnings,
             },
+          };
+        });
+      },
+      updateCurrentLocation: async (location) => {
+        set({ isLoading: true });
+        await delay(500);
+        set((s) => {
+          if (!s.delivererProfile) return { isLoading: false };
+          return {
+            delivererProfile: {
+              ...s.delivererProfile,
+              currentLocation: location,
+            },
+            isLoading: false,
           };
         });
       },

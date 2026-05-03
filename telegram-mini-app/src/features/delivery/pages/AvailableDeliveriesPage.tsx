@@ -13,6 +13,8 @@ import { useInView } from "react-intersection-observer";
 import { useOrderStore } from "@/store/orders/orderStore";
 import { useCafeStore } from "@/store/cafeStore";
 import { ROUTES, buildRoute } from "@/routes/routePaths";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 // Custom fast food icon (Drink + Burger matching the image)
 const FoodPlateIcon = () => (
@@ -111,38 +113,41 @@ export default function AvailableDeliveriesPage() {
   }, [inView, hasMore, isLoading, isLoadingMore, loadMoreOrders]);
 
   return (
-    <div className="bg-white font-sans flex flex-col min-h-screen">
+    <div className="bg-white dark:bg-gray-950 font-sans flex flex-col min-h-screen">
       {/* Header */}
-      <header className="px-5 pt-10 pb-2 bg-white">
+      <header className="px-5 pt-10 pb-2 bg-white dark:bg-gray-950">
         <div className="flex items-center justify-between mb-6 relative">
           <button
             onClick={() => navigate(ROUTES.DELIVERY.DASHBOARD)}
-            className="w-11 h-11 bg-orange-50 rounded-2xl flex items-center justify-center text-[#F26A1C] z-10"
+            className="w-11 h-11 bg-orange-50 dark:bg-orange-950/30 rounded-2xl flex items-center justify-center text-[#F26A1C] z-10"
           >
             <ArrowLeft strokeWidth={2.5} size={22} />
           </button>
-          <h1 className="absolute w-full text-center text-[26px] font-black text-black">
+          <h1 className="absolute w-full text-center text-[26px] font-black text-black dark:text-white">
             Orders
           </h1>
           <div className="w-11" /> {/* Spacer for centering */}
         </div>
 
         {/* Search Bar */}
-        <div className="flex items-center w-full h-[52px] bg-white border border-gray-300 rounded-[26px] px-4 shadow-sm">
-          <Search className="text-gray-400" size={24} />
-          <input
-            type="text"
-            placeholder="Search Orders.."
+        <div className="relative mt-4">
+          <Search
+            className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400"
+            aria-hidden
+          />
+          <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 bg-transparent border-none outline-none px-3 text-[16px] text-gray-800 placeholder:text-gray-400"
+            placeholder="Search Orders.."
+            className="h-12 rounded-full border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 pl-12 pr-12 text-base shadow-none dark:text-white"
           />
           <button
             type="button"
             onClick={() => setIsFilterOpen(!isFilterOpen)}
-            className="text-gray-500 hover:text-gray-700 transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            aria-label="Filters"
           >
-            <SlidersHorizontal size={24} />
+            <SlidersHorizontal className="h-5 w-5" />
           </button>
         </div>
 
@@ -153,7 +158,7 @@ export default function AvailableDeliveriesPage() {
             onClick={() => setSelectedCafe("all")}
             className={`font-bold text-[15px] px-7 h-[44px] rounded-[14px] shadow-sm transition-colors ${
               selectedCafe !== "all"
-                ? "bg-white text-gray-700 border border-gray-200"
+                ? "bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-800"
                 : "bg-[#F26A1C] text-white hover:bg-[#e05d15]"
             }`}
           >
@@ -168,7 +173,7 @@ export default function AvailableDeliveriesPage() {
               className={`h-[44px] rounded-[14px] px-4 text-sm font-semibold transition-colors ${
                 selectedCafe === cafe.id
                   ? "bg-[#F26A1C] text-white"
-                  : "border border-gray-200 bg-white text-gray-700"
+                  : "border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300"
               }`}
             >
               {cafe.name}
@@ -178,7 +183,7 @@ export default function AvailableDeliveriesPage() {
           <div className="relative">
             <button
               onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className="flex items-center justify-between gap-2 bg-white border border-gray-300 text-black font-semibold text-[15px] px-4 h-[44px] rounded-[14px] shadow-sm"
+              className="flex items-center justify-between gap-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-800 text-black dark:text-white font-semibold text-[15px] px-4 h-[44px] rounded-[14px] shadow-sm"
             >
               <span className="truncate max-w-[130px]">{activeSortLabel}</span>
               <ChevronDown
@@ -194,7 +199,7 @@ export default function AvailableDeliveriesPage() {
                   className="fixed inset-0 z-40"
                   onClick={() => setIsFilterOpen(false)}
                 />
-                <div className="absolute top-[calc(100%+8px)] left-0 z-50 w-[190px] rounded-xl border border-gray-100 bg-white shadow-xl animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute top-[calc(100%+8px)] left-0 z-50 w-[190px] rounded-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-xl animate-in fade-in zoom-in-95 duration-150">
                   <div className="flex flex-col p-1.5">
                     {sortOptions.map((option) => (
                       <button
@@ -203,11 +208,12 @@ export default function AvailableDeliveriesPage() {
                           setSecondaryFilter(option.value);
                           setIsFilterOpen(false);
                         }}
-                        className={`flex w-full text-left items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                        className={cn(
+                          "flex w-full text-left items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                           secondaryFilter === option.value
-                            ? "bg-orange-50 text-[#F26A1C]"
-                            : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                        }`}
+                            ? "bg-orange-50 dark:bg-orange-950/20 text-[#F26A1C]"
+                            : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
+                        )}
                       >
                         {option.label}
                       </button>
@@ -223,7 +229,7 @@ export default function AvailableDeliveriesPage() {
       {/* Grid */}
       <main className="flex-1 px-5 mt-8 relative z-0">
         {visibleOrders.length === 0 && !isLoading ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center bg-gray-50 rounded-[32px] border border-dashed border-gray-200">
+          <div className="flex flex-col items-center justify-center py-20 text-center bg-gray-50 dark:bg-gray-900/40 rounded-[32px] border border-dashed border-gray-200 dark:border-gray-800">
             <Package size={48} className="text-gray-300 mb-4" />
             <p className="text-gray-500 font-bold text-lg">No orders found</p>
             <p className="text-gray-400 text-sm mt-1">
@@ -242,10 +248,10 @@ export default function AvailableDeliveriesPage() {
               return (
                 <div
                   key={`${order.id}-${idx}`}
-                  className="relative bg-white border border-[#f5f5f5] rounded-[24px] pt-[65px] pb-5 px-3 flex flex-col items-center shadow-[0_8px_30px_rgba(0,0,0,0.06)]"
+                  className="relative bg-white dark:bg-gray-900 border border-[#f5f5f5] dark:border-gray-800 rounded-[24px] pt-[65px] pb-5 px-3 flex flex-col items-center shadow-[0_8px_30px_rgba(0,0,0,0.06)]"
                 >
                   {/* Product Image Overflow */}
-                  <div className="absolute -top-[45px] w-[110px] h-[110px] rounded-full shadow-[0_4px_15px_rgba(0,0,0,0.1)] border-[4px] border-white">
+                  <div className="absolute -top-[45px] w-[110px] h-[110px] rounded-full shadow-[0_4px_15px_rgba(0,0,0,0.1)] border-[4px] border-white dark:border-gray-900">
                     <img
                       src={firstImage}
                       alt={`Order #${orderId}`}
@@ -269,13 +275,13 @@ export default function AvailableDeliveriesPage() {
                     />
                   </button>
 
-                  <h2 className="text-[17px] font-black text-black tracking-tight mt-2">
+                  <h2 className="text-[17px] font-black text-black dark:text-white tracking-tight mt-2">
                     Order #{orderId}
                   </h2>
 
                   <div className="flex items-center justify-center mt-1">
                     <FoodPlateIcon />
-                    <span className="text-[14px] font-semibold text-black leading-tight">
+                    <span className="text-[14px] font-semibold text-black dark:text-white leading-tight">
                       {itemCount} Items
                     </span>
                   </div>

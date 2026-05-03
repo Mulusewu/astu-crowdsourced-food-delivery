@@ -78,6 +78,10 @@ const DeliveryEditProfilePage = lazy(
   () => import("../../features/delivery/pages/EditProfilePage"),
 );
 
+const DeliveryAvatarUploadPage = lazy(
+  () => import("../../features/delivery/pages/AvatarUploadPage"),
+);
+
 // ================= DELIVERY ACTIONS =================
 const AcceptDeliveryPage = lazy(
   () => import("../../features/delivery/pages/AcceptDeliveryPage"),
@@ -96,6 +100,10 @@ const OTPVerificationPage = lazy(
 
 const AddPaymentPage = lazy(
   () => import("../../features/delivery/pages/addPayment"),
+);
+
+const CafeDetailsPage = lazy(
+  () => import("../../features/delivery/pages/CafeDetailsPage"),
 );
 
 // Single role value for all delivery routes
@@ -140,5 +148,7 @@ export const deliveryRoutes: RouteGroup[] = [
   // ================= PROFILE & SETTINGS =================
   { path: ROUTES.DELIVERY.PROFILE, element: <DeliveryProfilePage />, roles: [DELIVERER] },
   { path: ROUTES.DELIVERY.EDIT_PROFILE, element: <DeliveryEditProfilePage />, roles: [DELIVERER] },
+  { path: ROUTES.DELIVERY.UPLOAD_AVATAR, element: <DeliveryAvatarUploadPage />, roles: [DELIVERER] },
   { path: ROUTES.DELIVERY.COMMUNICATION.REPORT, element: <ReportIssuePage />, roles: [DELIVERER] },
+  { path: ROUTES.DELIVERY.CAFE_DETAILS, element: <CafeDetailsPage />, roles: [DELIVERER] },
 ];

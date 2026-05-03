@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Lock } from "lucide-react";
+import { ROUTES } from "@/routes/routePaths";
 
 import { useAuthStore } from "@/store/auth/authStore";
 import {
@@ -50,7 +51,7 @@ export default function ChangePassword() {
       <Header
         title="Change Password"
         showBack
-        onBackClick={() => navigate(-1)}
+        onBackClick={() => navigate(ROUTES.DELIVERY.PROFILE)}
       />
 
       <div className="flex-1 mt-6 space-y-6 px-5">

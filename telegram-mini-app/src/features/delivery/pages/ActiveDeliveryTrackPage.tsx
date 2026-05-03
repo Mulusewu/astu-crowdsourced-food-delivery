@@ -40,9 +40,9 @@ export default function ActiveDeliveryTrackPage() {
 
   if (!order) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#FDFDFD] px-5">
+      <div className="flex min-h-screen items-center justify-center bg-[#FDFDFD] dark:bg-gray-950 px-5">
         <div className="text-center">
-          <p className="font-medium text-gray-600">Tracking data is not available yet.</p>
+          <p className="font-medium text-gray-600 dark:text-gray-400">Tracking data is not available yet.</p>
           <button
             type="button"
             onClick={() => navigate(ROUTES.DELIVERY.ACTIVE.LIST)}
@@ -56,13 +56,13 @@ export default function ActiveDeliveryTrackPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FDFDFD] pb-28 font-sans">
-      <header className="sticky top-0 z-20 bg-white px-5 pb-4 pt-6 shadow-[0_1px_0_rgba(0,0,0,0.06)]">
+    <div className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 pb-28 font-sans">
+      <header className="sticky top-0 z-20 bg-white dark:bg-gray-950 px-5 pb-4 pt-6 shadow-[0_1px_0_rgba(0,0,0,0.06)] dark:border-b dark:border-gray-800">
         <div className="relative flex items-center justify-center">
           <button
             type="button"
             onClick={() => navigate(ROUTES.DELIVERY.ACTIVE.LIST)}
-            className="absolute left-0 flex h-11 w-11 items-center justify-center rounded-2xl bg-[#FFEFE5] text-[#F26A1C]"
+            className="absolute left-0 flex h-11 w-11 items-center justify-center rounded-2xl bg-[#FFEFE5] dark:bg-orange-950/30 text-[#F26A1C]"
             aria-label="Go back"
           >
             <ArrowLeft size={22} strokeWidth={2.5} />
@@ -71,7 +71,7 @@ export default function ActiveDeliveryTrackPage() {
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#F26A1C]">
               Live Tracking
             </p>
-            <h1 className="text-xl font-black text-gray-900">
+            <h1 className="text-xl font-black text-gray-900 dark:text-white">
               Order #{order.shortId}
             </h1>
           </div>
@@ -79,13 +79,13 @@ export default function ActiveDeliveryTrackPage() {
       </header>
 
       <main className="space-y-5 px-5 pt-5">
-        <section className="overflow-hidden rounded-[28px] bg-white shadow-[0_8px_28px_rgba(0,0,0,0.05)]">
+        <section className="overflow-hidden rounded-[28px] bg-white dark:bg-gray-900 shadow-[0_8px_28px_rgba(0,0,0,0.05)]">
           <div className="h-64 bg-[linear-gradient(160deg,#FFF3EB_0%,#FFE0CC_100%)] p-5">
             <div className="flex items-center justify-between">
-              <div className="rounded-full bg-white/90 px-3 py-1 text-xs font-bold text-[#F26A1C]">
+              <div className="rounded-full bg-white/90 dark:bg-gray-800/90 px-3 py-1 text-xs font-bold text-[#F26A1C]">
                 {order.distance} away
               </div>
-              <div className="rounded-full bg-white/90 px-3 py-1 text-xs font-bold text-gray-700">
+              <div className="rounded-full bg-white/90 dark:bg-gray-800/90 px-3 py-1 text-xs font-bold text-gray-700 dark:text-gray-300">
                 {order.estimatedDeliveryTime || "25 min"}
               </div>
             </div>
@@ -94,32 +94,32 @@ export default function ActiveDeliveryTrackPage() {
               <div className="relative flex h-28 w-full max-w-xs items-center">
                 <div className="absolute left-4 right-4 top-1/2 h-1 -translate-y-1/2 rounded-full bg-[#F26A1C]/20" />
                 <div className="absolute left-4 right-20 top-1/2 h-1 -translate-y-1/2 rounded-full bg-[#F26A1C]" />
-                <div className="absolute left-4 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white text-[#F26A1C] shadow-md">
+                <div className="absolute left-4 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white dark:bg-gray-800 text-[#F26A1C] shadow-md">
                   <Navigation size={20} />
                 </div>
                 <div className="absolute right-16 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-[#F26A1C] text-white shadow-md">
                   <Truck size={20} />
                 </div>
-                <div className="absolute right-0 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white text-[#F26A1C] shadow-md">
+                <div className="absolute right-0 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white dark:bg-gray-800 text-[#F26A1C] shadow-md">
                   <MapPin size={20} />
                 </div>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-2xl bg-white/90 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+              <div className="rounded-2xl bg-white/90 dark:bg-gray-800/90 p-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                   Current Status
                 </p>
-                <p className="mt-1 text-base font-black text-gray-900">
+                <p className="mt-1 text-base font-black text-gray-900 dark:text-white">
                   {order.status.replace("_", " ")}
                 </p>
               </div>
-              <div className="rounded-2xl bg-white/90 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+              <div className="rounded-2xl bg-white/90 dark:bg-gray-800/90 p-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                   Driver Position
                 </p>
-                <p className="mt-1 text-base font-black text-gray-900">
+                <p className="mt-1 text-base font-black text-gray-900 dark:text-white">
                   {location || "Location sync ready"}
                 </p>
               </div>
@@ -127,19 +127,19 @@ export default function ActiveDeliveryTrackPage() {
           </div>
         </section>
 
-        <section className="rounded-[28px] bg-white p-5 shadow-[0_8px_28px_rgba(0,0,0,0.05)]">
+        <section className="rounded-[28px] bg-white dark:bg-gray-900 p-5 shadow-[0_8px_28px_rgba(0,0,0,0.05)]">
           <div className="flex items-center gap-2">
             <Clock3 size={18} className="text-[#F26A1C]" />
-            <h2 className="text-lg font-black text-gray-900">Delivery Guidance</h2>
+            <h2 className="text-lg font-black text-gray-900 dark:text-white">Delivery Guidance</h2>
           </div>
-          <p className="mt-3 text-sm leading-6 text-gray-600">{stage}</p>
+          <p className="mt-3 text-sm leading-6 text-gray-600 dark:text-gray-400">{stage}</p>
 
-          <div className="mt-5 rounded-2xl bg-[#FFF7F2] p-4">
+          <div className="mt-5 rounded-2xl bg-[#FFF7F2] dark:bg-orange-950/20 p-4">
             <div className="flex items-center gap-2 text-[#F26A1C]">
               <ShieldCheck size={16} />
               <p className="text-sm font-bold">Backend-ready tracking shell</p>
             </div>
-            <p className="mt-2 text-sm text-gray-600">
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
               This screen is ready to consume live GPS, ETA, and socket updates without
               changing the surrounding delivery UI structure.
             </p>
@@ -169,7 +169,7 @@ export default function ActiveDeliveryTrackPage() {
               onClick={() =>
                 navigate(buildRoute(ROUTES.DELIVERY.DELIVERY_ACTIONS.UPDATE_LOCATION, { orderId: order.id }))
               }
-              className="w-full rounded-full border border-gray-200 py-3.5 text-sm font-semibold text-gray-700"
+              className="w-full rounded-full border border-gray-200 dark:border-gray-800 py-3.5 text-sm font-semibold text-gray-700 dark:text-gray-300"
             >
               Update Location
             </button>

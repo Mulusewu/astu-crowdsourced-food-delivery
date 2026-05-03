@@ -69,20 +69,20 @@ export default function DeliveryDashboard() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen flex-col bg-white">
-        <div className="sticky top-0 z-10 bg-white px-4 pb-3 pt-4">
+      <div className="flex min-h-screen flex-col bg-white dark:bg-gray-950">
+        <div className="sticky top-0 z-10 bg-white dark:bg-gray-950 px-4 pb-3 pt-4">
           <div className="flex items-start justify-between">
             <div className="space-y-2">
               <Skeleton className="h-4 w-24" />
               <Skeleton className="h-8 w-32" />
             </div>
-            <Skeleton className="h-11 w-11 shrink-0 rounded-full" />
+            <Skeleton className="h-11 w-11 shrink-0 rounded-full bg-gray-200 dark:bg-gray-800" />
           </div>
-          <Skeleton className="mt-4 h-12 w-full rounded-full" />
+          <Skeleton className="mt-4 h-12 w-full rounded-full bg-gray-200 dark:bg-gray-800" />
           <div className="mt-4 flex gap-2">
-            <Skeleton className="h-10 w-16 rounded-xl" />
-            <Skeleton className="h-10 flex-1 rounded-xl" />
-            <Skeleton className="h-10 w-28 rounded-full" />
+            <Skeleton className="h-10 w-16 rounded-xl bg-gray-200 dark:bg-gray-800" />
+            <Skeleton className="h-10 flex-1 rounded-xl bg-gray-200 dark:bg-gray-800" />
+            <Skeleton className="h-10 w-28 rounded-full bg-gray-200 dark:bg-gray-800" />
           </div>
         </div>
         <div className="flex-1 space-y-4 px-4 py-4">
@@ -135,11 +135,11 @@ export default function DeliveryDashboard() {
 
   return (
     <>
-      <header className="sticky top-0 z-20 bg-white px-4 pb-3 pt-4 shadow-[0_1px_0_rgba(0,0,0,0.06)]">
+      <header className="sticky top-0 z-20 bg-white dark:bg-gray-950 px-4 pb-3 pt-4 shadow-[0_1px_0_rgba(0,0,0,0.06)] dark:border-b dark:border-gray-800">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-3xl font-medium text-[#F26A1C]">Welcome Back,</p>
-            <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-[1.75rem]">
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-[1.75rem]">
               {firstName(name)}
             </h1>
           </div>
@@ -168,9 +168,9 @@ export default function DeliveryDashboard() {
               )}
             </button>
             {showProfileMenu && (
-              <div className="absolute right-0 mt-2 w-56 rounded-xl border border-gray-100 bg-white py-2 shadow-lg z-[100] animate-in fade-in zoom-in-95 duration-200">
-                <div className="border-b border-gray-100 px-4 py-3">
-                  <p className="text-sm font-medium text-gray-900">{name}</p>
+              <div className="absolute right-0 mt-2 w-56 rounded-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 py-2 shadow-lg z-[100] animate-in fade-in zoom-in-95 duration-200">
+                <div className="border-b border-gray-100 dark:border-gray-800 px-4 py-3">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">{name}</p>
                   <p className="text-xs text-gray-500">
                     {user?.email ?? user?.astuEmail ?? ""}
                   </p>
@@ -178,7 +178,7 @@ export default function DeliveryDashboard() {
                 <button
                   type="button"
                   onClick={() => navigate(ROUTES.DELIVERY.PROFILE)}
-                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm hover:bg-gray-50"
+                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                 >
                   <User size={16} /> View Profile
                 </button>
@@ -198,7 +198,7 @@ export default function DeliveryDashboard() {
                     logout();
                     navigate(ROUTES.AUTH);
                   }}
-                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50"
+                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50 dark:hover:bg-gray-800"
                 >
                   <LogOut size={16} /> Sign Out
                 </button>
@@ -216,7 +216,7 @@ export default function DeliveryDashboard() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search"
-            className="h-12 rounded-full border-gray-200 bg-white pl-12 pr-12 text-base shadow-none"
+            className="h-12 rounded-full border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 pl-12 pr-12 text-base shadow-none dark:text-white"
           />
           <button
             type="button"
@@ -250,7 +250,7 @@ export default function DeliveryDashboard() {
 
             <button
               onClick={() => setIsLocationOpen(!isLocationOpen)}
-              className="relative z-50 flex h-10 w-[130px] items-center justify-between rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 shadow-sm transition-all hover:border-[#F26A1C]/50 hover:text-[#F26A1C] focus-visible:ring-1 focus-visible:ring-[#F26A1C]"
+              className="relative z-50 flex h-10 w-[130px] items-center justify-between rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300 shadow-sm transition-all hover:border-[#F26A1C]/50 hover:text-[#F26A1C] focus-visible:ring-1 focus-visible:ring-[#F26A1C]"
             >
               <span className="truncate">
                 {locationValue === "all" ? "All Locations" : locationValue}
@@ -265,7 +265,7 @@ export default function DeliveryDashboard() {
 
             {/* Dropdown Menu */}
             {isLocationOpen && (
-              <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-[140px] rounded-xl border border-gray-100 bg-white shadow-xl animate-in fade-in zoom-in-95 duration-150">
+              <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-[140px] rounded-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-xl animate-in fade-in zoom-in-95 duration-150">
                 <div className="flex flex-col p-1.5">
                   {locationOptions.map((loc) => {
                     const val = loc === "all" ? "all" : loc;
@@ -280,8 +280,8 @@ export default function DeliveryDashboard() {
                         className={cn(
                           "flex w-full items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                           isSelected
-                            ? "bg-orange-50 text-[#F26A1C]"
-                            : "text-gray-700 hover:bg-gray-50 hover:text-gray-900",
+                            ? "bg-orange-50 dark:bg-orange-950/20 text-[#F26A1C]"
+                            : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white",
                         )}
                       >
                         {loc === "all" ? "All Locations" : loc}
@@ -301,14 +301,14 @@ export default function DeliveryDashboard() {
             className={cn(
               "ml-auto flex shrink-0 items-center gap-1.5 rounded-full border-2 py-1 pl-2.5 pr-1 shadow-sm transition-colors duration-200",
               online
-                ? "border-[#F26A1C] bg-white"
-                : "border-gray-300 bg-gray-200",
+                ? "border-[#F26A1C] bg-white dark:bg-gray-900"
+                : "border-gray-300 dark:border-gray-700 bg-gray-200 dark:bg-gray-800",
             )}
           >
             <span
               className={cn(
                 "text-xs font-semibold transition-colors duration-200",
-                online ? "text-gray-900" : "text-gray-600",
+                online ? "text-gray-900 dark:text-white" : "text-gray-600 dark:text-gray-400",
               )}
             >
               {online ? "Online" : "Offline"}
@@ -337,12 +337,12 @@ export default function DeliveryDashboard() {
           <button
             type="button"
             onClick={() => navigate(ROUTES.DELIVERY.AVAILABLE.LIST)}
-            className="rounded-[24px] bg-white p-4 text-left shadow-[0_6px_24px_rgba(0,0,0,0.05)]"
+            className="rounded-[24px] bg-white dark:bg-gray-900 p-4 text-left shadow-[0_6px_24px_rgba(0,0,0,0.05)]"
           >
-            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
               Available Orders
             </p>
-            <p className="mt-2 text-2xl font-black text-gray-900">
+            <p className="mt-2 text-2xl font-black text-gray-900 dark:text-white">
               {orders.length}
             </p>
             <p className="mt-1 text-sm text-[#F26A1C]">Open delivery queue</p>
@@ -350,12 +350,12 @@ export default function DeliveryDashboard() {
           <button
             type="button"
             onClick={() => navigate(ROUTES.DELIVERY.ACTIVE.LIST)}
-            className="rounded-[24px] bg-white p-4 text-left shadow-[0_6px_24px_rgba(0,0,0,0.05)]"
+            className="rounded-[24px] bg-white dark:bg-gray-900 p-4 text-left shadow-[0_6px_24px_rgba(0,0,0,0.05)]"
           >
-            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
               Active Deliveries
             </p>
-            <p className="mt-2 text-2xl font-black text-gray-900">
+            <p className="mt-2 text-2xl font-black text-gray-900 dark:text-white">
               {activeOrders.length}
             </p>
             <p className="mt-1 text-sm text-[#F26A1C]">Track current trips</p>
@@ -364,7 +364,7 @@ export default function DeliveryDashboard() {
 
         <section>
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-base font-semibold text-gray-900">
+            <h2 className="text-base font-semibold text-gray-900 dark:text-white">
               Cheap Orders
             </h2>
             <button
@@ -377,15 +377,15 @@ export default function DeliveryDashboard() {
           </div>
           <div className="-mx-1 flex gap-3 overflow-x-auto pb-2 pt-10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {filteredDashboardOrders.length === 0 ? (
-              <div className="flex w-full flex-col items-center justify-center rounded-2xl border border-dashed border-orange-200 bg-orange-50/50 py-8 text-center">
+              <div className="flex w-full flex-col items-center justify-center rounded-2xl border border-dashed border-orange-200 dark:border-orange-900/30 bg-orange-50/50 dark:bg-orange-900/10 py-8 text-center">
                 <Package size={32} className="mb-2 text-orange-300" />
-                <p className="text-sm font-medium text-gray-500">No available orders right now.</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">No available orders right now.</p>
               </div>
             ) : (
               filteredDashboardOrders.map((order) => (
                 <article
                   key={order.id}
-                  className="relative flex min-w-[158px] max-w-[158px] shrink-0 flex-col items-center overflow-visible rounded-2xl bg-white px-3 pb-3 pt-2 shadow-[0_4px_20px_rgba(0,0,0,0.08)] ring-1 ring-gray-100"
+                  className="relative flex min-w-[158px] max-w-[158px] shrink-0 flex-col items-center overflow-visible rounded-2xl bg-white dark:bg-gray-900 px-3 pb-3 pt-2 shadow-[0_4px_20px_rgba(0,0,0,0.08)] ring-1 ring-gray-100 dark:ring-gray-800"
                 >
                   <span
                     className="absolute right-3 top-3 z-[1] h-2 w-2 rounded-sm bg-[#F26A1C]"
@@ -400,14 +400,14 @@ export default function DeliveryDashboard() {
                       />
                     </div>
                   </div>
-                  <p className="mt-1 text-center text-sm font-semibold text-gray-900">
+                  <p className="mt-1 text-center text-sm font-semibold text-gray-900 dark:text-white">
                     #{order.shortId}
                   </p>
-                  <div className="mt-1 flex items-center justify-center gap-1 text-xs text-gray-600">
+                  <div className="mt-1 flex items-center justify-center gap-1 text-xs text-gray-600 dark:text-gray-400">
                     <Package className="h-3.5 w-3.5 text-[#F26A1C]" strokeWidth={2} />
                     <span>{order.itemCount} items</span>
                   </div>
-                  <p className="mt-1 text-center text-sm font-bold text-gray-900">
+                  <p className="mt-1 text-center text-sm font-bold text-gray-900 dark:text-white">
                     {order.totalAmount} ETB
                   </p>
                   <Button
@@ -432,7 +432,7 @@ export default function DeliveryDashboard() {
 
         <section className="mt-8">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-base font-semibold text-gray-900">
+            <h2 className="text-base font-semibold text-gray-900 dark:text-white">
               Restaurants With available Orders
             </h2>
             <button
@@ -448,7 +448,7 @@ export default function DeliveryDashboard() {
             {filteredRestaurants.map((restaurant) => (
               <article
                 key={restaurant.id}
-                className="overflow-hidden rounded-2xl bg-white shadow-[0_4px_24px_rgba(0,0,0,0.08)] ring-1 ring-gray-100"
+                className="overflow-hidden rounded-2xl bg-white dark:bg-gray-900 shadow-[0_4px_24px_rgba(0,0,0,0.08)] ring-1 ring-gray-100 dark:ring-gray-800"
               >
                 <div className="relative h-44 sm:h-48">
                   <img
@@ -472,12 +472,12 @@ export default function DeliveryDashboard() {
                 </div>
                 <div className="flex items-center gap-3 p-4">
                   <div className="min-w-0 flex-1">
-                    <h3 className="text-lg font-bold text-gray-900">{restaurant.name}</h3>
-                    <div className="mt-2 flex items-center gap-1.5 text-sm text-gray-600">
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">{restaurant.name}</h3>
+                    <div className="mt-2 flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
                       <Package className="h-4 w-4 shrink-0 text-[#F26A1C]" strokeWidth={2} />
                       <span>{restaurant.activeOrders} orders</span>
                     </div>
-                    <div className="mt-1.5 flex items-center gap-1.5 text-sm text-gray-600">
+                    <div className="mt-1.5 flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
                       <MapPin className="h-4 w-4 shrink-0 text-red-500" strokeWidth={2} />
                       <span>{restaurant.location}</span>
                     </div>

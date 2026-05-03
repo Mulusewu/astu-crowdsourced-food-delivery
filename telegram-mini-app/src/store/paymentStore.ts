@@ -21,13 +21,13 @@ interface PaymentStore {
 const INITIAL_PAYMENT_METHODS: PaymentMethod[] = [
   {
     id: "1",
-    type: "CBE Birr",
+    type: "Telebirr",
     accountInfo: "+251912345678",
     isSelected: true,
   },
   {
     id: "2",
-    type: "Amole",
+    type: "CBE Birr",
     accountInfo: "1000123456789",
     isSelected: false,
   },

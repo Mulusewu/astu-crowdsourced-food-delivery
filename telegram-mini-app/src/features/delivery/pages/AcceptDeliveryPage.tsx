@@ -48,7 +48,7 @@ export default function AcceptDeliveryPage() {
           </button>
           <button
             type="button"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate(ROUTES.DELIVERY.AVAILABLE.LIST)}
             className="w-full rounded-full border-2 border-[#F26A1C] py-3.5 text-sm font-bold text-[#F26A1C]"
           >
             Go Back

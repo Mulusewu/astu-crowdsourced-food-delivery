@@ -20,7 +20,7 @@ import { useCartStore } from "@/store/cart/cartStore";
 import { useSavedItemsStore } from "@/store/customer/savedItemsStore"; // Unified store
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export default function FoodDetailsPage() {
   const { foodId } = useParams<{ foodId: string }>();
@@ -182,58 +182,64 @@ export default function FoodDetailsPage() {
   return (
     <div className="min-h-screen bg-background pb-28 relative">
       {/* 1. HERO IMAGE & FLOATING HEADER */}
-      <div className="relative h-[280px] w-full">
-        <img
-          src={currentFood.image.replace("w=200", "w=800")}
-          alt={currentFood.name}
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-transparent" />
+      <div className="px-5 pt-10">
+        <div className="relative h-[300px] w-full rounded-[48px] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.12)] border-4 border-white dark:border-gray-900 group">
+          <img
+            src={currentFood.image.replace("w=200", "w=800")}
+            alt={currentFood.name}
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          />
+          {/* Darker top gradient for better contrast with white text/buttons */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-transparent" />
 
-        {hasDiscount && (
-          <div className="absolute top-20 right-4 z-10">
-            <Badge className="bg-red-500 text-white border-0 px-3 py-1.5 text-sm font-bold">
-              <Tag size={14} className="mr-1" />-{currentFood.discount}% OFF
-            </Badge>
+          {/* Navigation Buttons - Now Integrated Inside the Rounded Card */}
+          <div className="absolute top-8 left-8 right-8 flex justify-between items-center z-20">
+            <button
+              onClick={() => navigate(-1)}
+              className="w-11 h-11 bg-white dark:bg-gray-900 backdrop-blur-xl rounded-2xl flex items-center justify-center shadow-xl active:scale-90 transition-all border border-gray-100 dark:border-gray-800"
+            >
+              <ArrowLeft size={22} className="text-gray-900 dark:text-white" strokeWidth={2.5} />
+            </button>
+
+            <h1 className="text-white font-black text-lg tracking-wider drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
+              DETAILS
+            </h1>
+
+            <button
+              onClick={handleBookmark}
+              className="w-11 h-11 bg-white dark:bg-gray-900 backdrop-blur-xl rounded-2xl flex items-center justify-center shadow-xl active:scale-90 transition-all border border-gray-100 dark:border-gray-800"
+            >
+              <Heart
+                size={22}
+                strokeWidth={2.5}
+                className={cn(
+                  isFavorite ? "fill-red-500 text-red-500" : "text-gray-900 dark:text-white"
+                )}
+              />
+            </button>
           </div>
-        )}
 
-        <div className="absolute top-20 left-4 z-10 flex flex-col gap-2">
-          {currentFood.isPopular && (
-            <Badge className="bg-primary/90 text-white border-0 px-3 py-1.5 text-sm font-bold shadow-lg">
-              <Flame size={14} className="mr-1" /> Popular
-            </Badge>
+          {/* Badges repositioned slightly for the new layout */}
+          <div className="absolute bottom-6 left-6 z-10 flex flex-col gap-2">
+            {currentFood.isPopular && (
+              <Badge className="bg-primary text-white border-0 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest shadow-lg">
+                <Flame size={12} className="mr-1" /> Popular
+              </Badge>
+            )}
+            {currentFood.isFasting && (
+              <Badge className="bg-green-600 text-white border-0 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest shadow-lg">
+                <Leaf size={12} className="mr-1" /> Fasting
+              </Badge>
+            )}
+          </div>
+
+          {hasDiscount && (
+            <div className="absolute bottom-6 right-6 z-10">
+              <Badge className="bg-red-500 text-white border-0 px-4 py-2 text-[12px] font-black shadow-lg animate-pulse">
+                <Tag size={14} className="mr-1" />{currentFood.discount}% OFF
+              </Badge>
+            </div>
           )}
-          {currentFood.isFasting && (
-            <Badge className="bg-green-600/90 text-white border-0 px-3 py-1.5 text-sm font-bold shadow-lg">
-              <Leaf size={14} className="mr-1" /> Fasting
-            </Badge>
-          )}
-        </div>
-
-        <div className="absolute top-0 left-0 right-0 px-4 pt-4 pb-2 flex justify-between items-center z-10">
-          <button
-            onClick={() => navigate(-1)}
-            className="w-10 h-10 bg-background/90 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-sm active:scale-95 transition-transform"
-          >
-            <ArrowLeft size={20} className="text-foreground" />
-          </button>
-
-          <h1 className="text-white font-bold text-lg tracking-wide drop-shadow-md">
-            Details
-          </h1>
-
-          <button
-            onClick={handleBookmark}
-            className="w-10 h-10 bg-background/90 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-sm active:scale-95 transition-transform"
-          >
-            <Heart
-              size={20}
-              className={
-                isFavorite ? "fill-red-500 text-red-500" : "text-foreground"
-              }
-            />
-          </button>
         </div>
       </div>
 
@@ -247,7 +253,7 @@ export default function FoodDetailsPage() {
             {currentFood.restaurantName}
           </p>
           {currentFood.categoryName && (
-            <Badge variant="secondary" className="mt-2 text-[10px] font-bold uppercase tracking-wider bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-none">
+            <Badge variant="secondary" className="mt-2 text-[10px] font-black uppercase tracking-wider bg-orange-50 dark:bg-orange-950/20 text-[#F26A1C] border-none px-3 py-1">
               {currentFood.categoryName}
             </Badge>
           )}
@@ -256,7 +262,7 @@ export default function FoodDetailsPage() {
         <div className="w-16 h-[2px] bg-primary/30 mb-5" />
 
         {/* 3. STATS BOX */}
-        <div className="bg-muted/50 rounded-2xl p-4 flex justify-between items-center mb-6">
+        <div className="bg-gray-50 dark:bg-gray-900/50 rounded-[32px] p-5 flex justify-between items-center mb-8 border border-gray-100 dark:border-gray-800 shadow-sm">
           <div className="flex flex-col items-center justify-center flex-1">
             <div className="flex items-baseline gap-1 mb-0.5">
               {hasDiscount && (
@@ -268,7 +274,7 @@ export default function FoodDetailsPage() {
                 ETB {finalPrice}
               </span>
             </div>
-            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+            <span className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
               Price
             </span>
           </div>
@@ -282,7 +288,7 @@ export default function FoodDetailsPage() {
                 {currentFood.rating}
               </span>
             </div>
-            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+            <span className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
               {currentFood.totalReviews} Reviews
             </span>
           </div>
@@ -380,7 +386,7 @@ export default function FoodDetailsPage() {
             <h3 className="text-[18px] font-black text-gray-900 dark:text-white mb-1">
               Added to Cart!
             </h3>
-            <p className="text-[13px] font-bold text-gray-400 leading-tight">
+            <p className="text-[13px] font-bold text-gray-500 dark:text-gray-400 leading-tight">
               {quantity}x {addedItemName}
             </p>
           </div>

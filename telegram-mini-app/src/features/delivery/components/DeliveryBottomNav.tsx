@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, Bookmark, Package, ClipboardList, User } from "lucide-react";
+import { Home, Bookmark, Package, User, History } from "lucide-react";
 import { ROUTES } from "@/routes/routePaths";
 import { cn } from "@/lib/utils";
 
@@ -30,7 +30,8 @@ function DeliveryBottomNav() {
   }
 
   return (
-    <nav className="fixed bottom-6 left-[100px] right-[100px] z-50 mx-auto max-w-sm">
+    // Replaced hardcoded left/right with proper mobile-first constraints
+    <nav className="fixed bottom-6 left-4 right-4 z-50 mx-auto max-w-[375px]">
       <div className="relative w-full h-[70px]">
         {/* Wavy SVG Background (Brand Orange Solid) */}
         <svg
@@ -44,49 +45,53 @@ function DeliveryBottomNav() {
           />
         </svg>
 
-        {/* Navigation Items */}
-        <div className="absolute inset-0 flex items-center justify-around px-1 pt-1">
-          <NavIconButton
-            icon={Home}
-            active={isActive(ROUTES.DELIVERY.DASHBOARD)}
-            onClick={() => navigate(ROUTES.DELIVERY.DASHBOARD)}
-          />
-          <NavIconButton
-            icon={Bookmark}
-            active={isActive(ROUTES.DELIVERY.SAVED)}
-            onClick={() => navigate(ROUTES.DELIVERY.SAVED)}
-          />
+        {/* Navigation Items - Fluid layout */}
+        <div className="absolute inset-0 flex items-center justify-between px-3 sm:px-5 pt-1">
+          <div className="flex w-[40%] justify-around">
+            <NavIconButton
+              icon={Home}
+              active={isActive(ROUTES.DELIVERY.DASHBOARD)}
+              onClick={() => navigate(ROUTES.DELIVERY.DASHBOARD)}
+            />
+            <NavIconButton
+              icon={Bookmark}
+              active={isActive(ROUTES.DELIVERY.SAVED)}
+              onClick={() => navigate(ROUTES.DELIVERY.SAVED)}
+            />
+          </div>
 
-          {/* Spacer for the center floating button */}
-          <div className="w-10" />
+          {/* Invisible Spacer exactly matching the gap of the SVG curve */}
+          <div className="w-[20%] max-w-[80px]" />
 
-          <NavIconButton
-            icon={ClipboardList}
-            active={isActive(ROUTES.DELIVERY.HISTORY.LIST)}
-            onClick={() => navigate(ROUTES.DELIVERY.HISTORY.LIST)}
-          />
-          <NavIconButton
-            icon={User}
-            active={isActive(ROUTES.DELIVERY.PROFILE)}
-            onClick={() => navigate(ROUTES.DELIVERY.PROFILE)}
-          />
+          <div className="flex w-[40%] justify-around">
+            <NavIconButton
+              icon={History}
+              active={isActive(ROUTES.DELIVERY.HISTORY.LIST)}
+              onClick={() => navigate(ROUTES.DELIVERY.HISTORY.LIST)}
+            />
+            <NavIconButton
+              icon={User}
+              active={isActive(ROUTES.DELIVERY.PROFILE)}
+              onClick={() => navigate(ROUTES.DELIVERY.PROFILE)}
+            />
+          </div>
         </div>
 
         {/* Floating Center Action Button (Active Deliveries) */}
-        <div className="absolute left-1/2 top-[-28px] z-20 -translate-x-1/2">
+        <div className="absolute left-1/2 top-[-26px] z-20 -translate-x-1/2">
           <button
             type="button"
             onClick={() => navigate(ROUTES.DELIVERY.ACTIVE.LIST)}
-            className="relative flex h-[66px] w-[66px] items-center justify-center rounded-full bg-white shadow-xl transition-transform active:scale-90"
+            className="relative flex h-[64px] w-[64px] items-center justify-center rounded-full bg-white shadow-xl transition-transform active:scale-90"
           >
             <div
               className={cn(
-                "flex h-[54px] w-[54px] items-center justify-center rounded-full border-[2.5px] border-[#F26A1C] bg-white transition-all",
+                "flex h-[52px] w-[52px] items-center justify-center rounded-full border-[2.5px] border-[#F26A1C] bg-white transition-all",
                 isActive(ROUTES.DELIVERY.ACTIVE.LIST) && "bg-orange-50",
               )}
             >
               <Package
-                size={30}
+                size={26}
                 className="text-[#F26A1C]"
                 strokeWidth={2.5}
                 fill={
@@ -116,7 +121,7 @@ function NavIconButton({
     <button
       onClick={onClick}
       className={cn(
-        "relative flex h-[52px] w-[52px] items-center justify-center transition-all duration-300 active:scale-95",
+        "relative flex h-[48px] w-[48px] sm:h-[52px] sm:w-[52px] items-center justify-center transition-all duration-300 active:scale-95",
         active
           ? "bg-white rounded-full shadow-md scale-105"
           : "bg-transparent scale-100",

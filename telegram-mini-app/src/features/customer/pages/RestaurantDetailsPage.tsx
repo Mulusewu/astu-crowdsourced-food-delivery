@@ -11,14 +11,13 @@ import {
   MapPin,
   Check,
   Trash2,
-  X,
 } from "lucide-react";
 
 import { useRestaurantStore } from "@/store/restaurantStore";
 import { useCartStore } from "@/store/cart/cartStore";
 import { useSavedItemsStore } from "@/store/customer/savedItemsStore";
 import { ROUTES, buildRoute } from "@/routes/routePaths";
-import { toast } from "sonner";
+
 
 export default function RestaurantDetailsPage() {
   const { restaurantId } = useParams<{ restaurantId: string }>();
