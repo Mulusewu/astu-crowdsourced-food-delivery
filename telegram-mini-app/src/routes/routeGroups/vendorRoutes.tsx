@@ -37,6 +37,7 @@ const VendorEarningsPage = lazy(
 // Menu Management (CRUD)
 const VendorMenuPage = lazy(() => import("@/features/vendor/pages/MenuPage"));
 const VendorMenuFormPage = lazy(() => import("@/features/vendor/pages/MenuFormPage"));
+const VendorSavedItemsPage = lazy(() => import("@/features/vendor/pages/VendorSavedItemsPage"));
 // const VendorAddFoodPage = lazy(
 //   () => import("@/features/vendor/pages/AddFoodPage"),
 // );
@@ -233,6 +234,11 @@ export const vendorRoutes: RouteGroup[] = [
   //   },
 
   // ==================== MENU MANAGEMENT (CRUD) ====================
+  {
+    path: ROUTES.VENDOR.SAVED,
+    element: <VendorSavedItemsPage />,
+    roles: [UserRoles.VENDOR],
+  },
   {
     path: ROUTES.VENDOR.MENU.LIST,
     element: <VendorMenuPage />,

@@ -73,6 +73,7 @@ export const ROUTES = {
   VENDOR: {
     // Dashboard & Analytics
     DASHBOARD: "/vendor/dashboard",
+    SAVED: "/vendor/saved",
     ANALYTICS: "/vendor/analytics",
     EARNINGS: "/vendor/earnings",
     EARNINGS_DETAILS: "/vendor/earnings/:period",
