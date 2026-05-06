@@ -31,8 +31,8 @@ const VendorDashboard = lazy(
 //   () => import("@/features/vendor/pages/RestaurantGalleryPage"),
 // );
 
-// // Menu Management (CRUD)
-// const VendorMenuPage = lazy(() => import("@/features/vendor/pages/MenuPage"));
+// Menu Management (CRUD)
+const VendorMenuPage = lazy(() => import("@/features/vendor/pages/VendorMenuPage"));
 // const VendorAddFoodPage = lazy(
 //   () => import("@/features/vendor/pages/AddFoodPage"),
 // );
@@ -76,30 +76,15 @@ const VendorDashboard = lazy(
 // );
 
 // Order Management
-// const VendorOrdersPage = lazy(
-//   () => import("@/features/vendor/pages/OrdersPage"),
-// );
-// const VendorOrderDetailsPage = lazy(
-//   () => import("@/features/vendor/pages/OrderDetailsPage"),
-// );
-// const VendorPendingOrdersPage = lazy(
-//   () => import("@/features/vendor/pages/PendingOrdersPage"),
-// );
-// const VendorPreparingOrdersPage = lazy(
-//   () => import("@/features/vendor/pages/PreparingOrdersPage"),
-// );
-// const VendorReadyOrdersPage = lazy(
-//   () => import("@/features/vendor/pages/ReadyOrdersPage"),
-// );
-// const VendorCompletedOrdersPage = lazy(
-//   () => import("@/features/vendor/pages/CompletedOrdersPage"),
-// );
-// const VendorCancelledOrdersPage = lazy(
-//   () => import("@/features/vendor/pages/CancelledOrdersPage"),
-// );
-// const VendorOrderHistoryPage = lazy(
-//   () => import("@/features/vendor/pages/OrderHistoryPage"),
-// );
+const VendorOrderDetailsPage = lazy(
+  () => import("@/features/vendor/pages/VendorOrderDetailsPage"),
+);
+const VendorOrderStatusPage = lazy(
+  () => import("@/features/vendor/pages/VendorOrderStatusPage"),
+);
+const VendorOrdersPage = lazy(
+  () => import("@/features/vendor/pages/VendorDashboard"), // Placeholder or use dashboard as list
+);
 
 // Order Actions
 // const VendorAcceptOrderPage = lazy(
@@ -229,11 +214,11 @@ export const vendorRoutes: RouteGroup[] = [
   //   },
 
   // ==================== MENU MANAGEMENT (CRUD) ====================
-  //   {
-  //     path: ROUTES.VENDOR.MENU.LIST,
-  //     element: <VendorMenuPage />,
-  //     roles: [UserRoles.VENDOR],
-  //   },
+  {
+    path: ROUTES.VENDOR.MENU.LIST,
+    element: <VendorMenuPage />,
+    roles: [UserRoles.VENDOR_STAFF],
+  },
   //   {
   //     path: ROUTES.VENDOR.FOOD.ADD,
   //     element: <VendorAddFoodPage />,
@@ -303,16 +288,21 @@ export const vendorRoutes: RouteGroup[] = [
   //   },
 
   // ==================== ORDER MANAGEMENT ====================
-  //   {
-  //     path: ROUTES.VENDOR.ORDERS.LIST,
-  //     element: <VendorOrdersPage />,
-  //     roles: [UserRole.VENDOR],
-  //   },
-  //   {
-  //     path: ROUTES.VENDOR.ORDERS.DETAILS,
-  //     element: <VendorOrderDetailsPage />,
-  //     roles: [UserRole.VENDOR],
-  //   },
+  {
+    path: ROUTES.VENDOR.ORDERS.LIST,
+    element: <VendorOrdersPage />,
+    roles: [UserRoles.VENDOR_STAFF],
+  },
+  {
+    path: ROUTES.VENDOR.ORDERS.DETAILS,
+    element: <VendorOrderDetailsPage />,
+    roles: [UserRoles.VENDOR_STAFF],
+  },
+  {
+    path: ROUTES.VENDOR.ORDERS.ACTIVE_STATUS,
+    element: <VendorOrderStatusPage />,
+    roles: [UserRoles.VENDOR_STAFF],
+  },
   //   {
   //     path: ROUTES.VENDOR.ORDERS.PENDING,
   //     element: <VendorPendingOrdersPage />,

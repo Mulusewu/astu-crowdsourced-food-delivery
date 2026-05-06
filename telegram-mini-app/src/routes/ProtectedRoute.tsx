@@ -16,7 +16,7 @@ export default function ProtectedRoute({
   requiredMode,
   redirectPath = ROUTES.AUTH,
 }: ProtectedRouteProps) {
-  const { user, isLoading, toggleActiveMode } = useAuthStore();
+  const { user, isLoading, toggleActiveMode, logout } = useAuthStore();
   const location = useLocation();
   const [isAutoFixing, setIsAutoFixing] = useState(false);
   const lastFixedMode = useRef<string | null>(null);
@@ -106,10 +106,10 @@ export default function ProtectedRoute({
 
   // 4. Role-based Access Control
   if (guardOwnsThisPath && !hasPermission) {
-    console.warn(`[Guard] Role Access Denied: ${user.role} -> ${location.pathname}`);
-    if (user.role === "VENDOR_STAFF") return <Navigate to={ROUTES.VENDOR.DASHBOARD} replace />;
-    if (user.role === "DELIVERER") return <Navigate to={ROUTES.DELIVERY.DASHBOARD} replace />;
-    return <Navigate to={ROUTES.CUSTOMER.HOME} replace />;
+    console.warn(`[Guard] Role Access Denied: ${user.role} -> ${location.pathname}. Forcing re-auth.`);
+    // Logout and redirect to auth page so they can sign in with the correct role/account
+    logout();
+    return <Navigate to={ROUTES.AUTH} replace />;
   }
 
   // 5. Final guard for wrong mode (Wait for effect)

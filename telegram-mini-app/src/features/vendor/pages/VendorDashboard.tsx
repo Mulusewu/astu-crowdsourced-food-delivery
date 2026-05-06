@@ -1,61 +1,52 @@
 import { useEffect } from "react";
-import { 
-  ShoppingBag, 
-  Clock, 
-  CheckCircle2, 
-  TrendingUp, 
-  Users, 
-  Star,
-  ChevronRight,
-  Plus,
-  AlertCircle
-} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Search, Settings2, PackageOpen, AlertCircle } from "lucide-react";
 import { useAuthStore } from "@/store/auth/authStore";
 import { useVendorStore } from "@/store/vendorStore";
-import { useNavigate } from "react-router-dom";
-import { ROUTES } from "@/routes/routePaths";
-import { cn } from "@/lib/utils";
+import { ROUTES, buildRoute } from "@/routes/routePaths";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function VendorDashboard() {
-  const { user } = useAuthStore();
+export default function VendorDashboardPage() {
   const navigate = useNavigate();
-  const { stats, recentOrders, fetchVendorData, isLoading, error } = useVendorStore();
+  const { user } = useAuthStore();
+  const { availableOrders, stats, fetchVendorData, isLoading, error } = useVendorStore();
 
   useEffect(() => {
-    fetchVendorData();
+    if (fetchVendorData) {
+      fetchVendorData();
+    }
   }, [fetchVendorData]);
 
-  const statConfig = [
-    { label: "Today's Orders", value: stats.todayOrders.toString(), icon: ShoppingBag, color: "text-blue-500", bg: "bg-blue-50" },
-    { label: "Pending", value: stats.pendingOrders.toString(), icon: Clock, color: "text-orange-500", bg: "bg-orange-50" },
-    { label: "Completed", value: stats.completedOrders.toString(), icon: CheckCircle2, color: "text-green-500", bg: "bg-green-50" },
-    { label: "Revenue", value: `${stats.totalRevenue.toLocaleString()} ETB`, icon: TrendingUp, color: "text-purple-500", bg: "bg-purple-50" },
-  ];
-
+  // ─── Loading State (Adapted to fit Design A's Grid) ───
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 p-5 space-y-6">
-        <Skeleton className="h-20 w-full rounded-2xl" />
-        <div className="grid grid-cols-2 gap-4">
-          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32 rounded-3xl" />)}
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 font-sans pb-28 w-full max-w-md mx-auto px-5 pt-6 space-y-6">
+        <div className="flex justify-between items-center">
+          <Skeleton className="h-14 w-40 rounded-xl" />
+          <Skeleton className="h-10 w-10 rounded-full" />
         </div>
-        <Skeleton className="h-64 w-full rounded-3xl" />
+        <Skeleton className="h-12 w-full rounded-[14px]" />
+        <div className="grid grid-cols-2 gap-x-4 gap-y-10 pt-6">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-40 w-full rounded-[20px]" />
+          ))}
+        </div>
       </div>
     );
   }
 
+  // ─── Error State (From B, styled to match the app) ───
   if (error) {
     return (
-      <div className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 flex flex-col items-center justify-center p-8 text-center">
-        <div className="w-16 h-16 bg-red-50 dark:bg-red-950/20 rounded-full flex items-center justify-center mb-4">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col items-center justify-center p-8 text-center w-full max-w-md mx-auto">
+        <div className="w-16 h-16 bg-red-50 dark:bg-red-950/20 rounded-full flex items-center justify-center mb-4 border border-red-100 dark:border-red-900">
           <AlertCircle className="text-red-500" size={32} />
         </div>
         <h2 className="text-xl font-black text-gray-900 dark:text-white mb-2">Access Restricted</h2>
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">{error}</p>
-        <button 
+        <button
           onClick={() => navigate(ROUTES.AUTH)}
-          className="bg-[#F26A1C] text-white px-8 py-3 rounded-full font-bold"
+          className="bg-[#F26A1C] text-white px-8 py-3 rounded-full font-bold shadow-md active:scale-95 transition-transform"
         >
           Back to Login
         </button>
@@ -63,116 +54,129 @@ export default function VendorDashboard() {
     );
   }
 
+
+  // Filter for 'Available' orders based on backend statuses from B
+  // We already have this in the store's availableOrders
+  
+  // Dynamic user greeting
+  const vendorFirstName = user?.fullName?.split(" ")[0] || "Vendor";
+  const vendorInitial = vendorFirstName.charAt(0).toUpperCase();
+
   return (
-    <div className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 font-sans pb-10">
-      {/* ─── Top Header ─── */}
-      <header className="px-5 pt-8 pb-4 flex items-center justify-between sticky top-0 bg-[#FDFDFD]/80 dark:bg-gray-950/80 backdrop-blur-md z-20">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 font-sans pb-28 w-full max-w-md mx-auto relative">
+
+      {/* ── Header ── */}
+      <header className="px-5 pt-6 pb-4 flex items-center justify-between sticky top-0 bg-gray-50/90 dark:bg-gray-950/90 backdrop-blur-md z-30">
         <div>
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Welcome back</p>
-          <h1 className="text-2xl font-black text-gray-900 dark:text-white">
-            {user?.fullName?.split(" ")[0] || "Vendor"}
-          </h1>
+          <h1 className="text-xl font-black text-gray-900 dark:text-white leading-tight">Welcome Back,</h1>
+          <h1 className="text-xl font-black text-[#F26A1C] leading-tight">{vendorFirstName}</h1>
         </div>
-        <button 
-          onClick={() => navigate(ROUTES.VENDOR.MENU.ADD)}
-          className="w-12 h-12 bg-[#F26A1C] rounded-2xl flex items-center justify-center text-white shadow-lg shadow-orange-500/20 active:scale-95 transition-transform"
-        >
-          <Plus size={24} strokeWidth={3} />
-        </button>
+        <div className="w-11 h-11 rounded-full bg-[#F26A1C] text-white flex items-center justify-center font-black text-lg shadow-md border-2 border-white dark:border-gray-800">
+          {vendorInitial}
+        </div>
       </header>
 
-      <main className="px-5 mt-6">
-        {/* ─── Stats Grid ─── */}
-        <div className="grid grid-cols-2 gap-4">
-          {statConfig.map((stat, idx) => (
-            <div 
-              key={stat.label} 
-              onClick={() => idx === 3 && navigate(ROUTES.VENDOR.EARNINGS)}
-              className={cn(
-                "bg-white dark:bg-gray-900 p-5 rounded-[28px] shadow-sm border border-gray-50 dark:border-gray-800 transition-all active:scale-95",
-                idx === 3 && "cursor-pointer hover:border-[#F26A1C]/30"
-              )}
-            >
-              <div className={`w-10 h-10 ${stat.bg} dark:bg-gray-800 rounded-xl flex items-center justify-center ${stat.color} mb-3`}>
-                <stat.icon size={20} />
-              </div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">{stat.label}</p>
-              <h3 className="text-lg font-black text-gray-900 dark:text-white">{stat.value}</h3>
-            </div>
-          ))}
-        </div>
+      <main className="px-5 space-y-6 pt-2">
+        {/* Stats Overview */}
+        <section className="flex gap-4 overflow-x-auto pb-2 -mx-5 px-5 scrollbar-hide">
+          <div className="bg-white dark:bg-gray-900 rounded-[22px] p-4 min-w-[140px] shadow-sm border border-gray-100 dark:border-gray-800 shrink-0">
+            <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Today's Orders</p>
+            <h3 className="text-xl font-black text-gray-900 dark:text-white">{stats.todayOrders}</h3>
+          </div>
+          <div className="bg-white dark:bg-gray-900 rounded-[22px] p-4 min-w-[140px] shadow-sm border border-gray-100 dark:border-gray-800 shrink-0">
+            <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Pending Tasks</p>
+            <h3 className="text-xl font-black text-orange-500">{stats.pendingOrders}</h3>
+          </div>
+          <div className="bg-[#1A1A1A] dark:bg-white rounded-[22px] p-4 min-w-[160px] shadow-lg shrink-0">
+            <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase mb-1">Revenue</p>
+            <h3 className="text-xl font-black text-[#F26A1C]">{stats.totalRevenue.toLocaleString()} ETB</h3>
+          </div>
+        </section>
 
-        {/* ─── Quick Actions ─── */}
-        <div className="mt-8 flex items-center justify-between mb-4">
-          <h2 className="text-lg font-black text-gray-900 dark:text-white">Recent Orders</h2>
-          <button 
-            onClick={() => navigate(ROUTES.VENDOR.ORDERS.LIST)}
-            className="text-[11px] font-bold text-[#F26A1C] uppercase tracking-wider flex items-center gap-1"
-          >
-            See All <ChevronRight size={14} />
+        {/* Search Bar & Settings */}
+        <div className="flex gap-2">
+          <div className="flex-1 flex items-center bg-white dark:bg-gray-900 rounded-[14px] px-4 py-3 shadow-[0_2px_10px_rgba(0,0,0,0.03)] border border-gray-100 dark:border-gray-800">
+            <Search size={18} className="text-gray-400 mr-2 shrink-0" />
+            <input
+              type="text"
+              placeholder="Search Orders.."
+              className="bg-transparent border-none outline-none w-full text-[13px] font-semibold text-gray-700 dark:text-white placeholder:text-gray-400"
+            />
+          </div>
+          <button className="w-[50px] bg-white dark:bg-gray-900 rounded-[14px] flex items-center justify-center shadow-[0_2px_10px_rgba(0,0,0,0.03)] border border-gray-100 dark:border-gray-800 text-gray-500 active:scale-95 transition-transform shrink-0">
+            <Settings2 size={20} />
           </button>
         </div>
 
-        {/* ─── Orders List ─── */}
-        <div className="space-y-3">
-          {recentOrders.length === 0 ? (
-            <div className="bg-gray-50 dark:bg-gray-900/50 p-10 rounded-[32px] text-center border border-dashed border-gray-200 dark:border-gray-800">
-              <ShoppingBag className="mx-auto text-gray-300 mb-3" size={32} />
-              <p className="text-sm font-bold text-gray-400">No recent orders yet.</p>
-            </div>
-          ) : recentOrders.map((order) => (
-            <div key={order.id} className="bg-white dark:bg-gray-900 p-4 rounded-[24px] shadow-sm border border-gray-50 dark:border-gray-800 flex items-center justify-between active:bg-gray-50 dark:active:bg-gray-800 transition-colors cursor-pointer" onClick={() => navigate(ROUTES.VENDOR.ORDERS.LIST)}>
-              <div className="flex items-center gap-4">
-                <div className={cn(
-                  "w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xs",
-                  ["CREATED", "AWAITING_ACCEPT"].includes(order.status) ? "bg-orange-50 text-orange-500" :
-                  ["ASSIGNED", "VENDOR_BEING_PREPARED"].includes(order.status) ? "bg-blue-50 text-blue-500" : "bg-green-50 text-green-500"
-                )}>
-                  {order.shortId.split("-")[1]}
-                </div>
-                <div>
-                  <h4 className="text-sm font-black text-gray-900 dark:text-white">{order.customerName}</h4>
-                  <p className="text-[11px] font-medium text-gray-500">{order.itemCount} items · {order.totalAmount} ETB</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className={cn(
-                  "text-[10px] font-black uppercase tracking-wider mb-1",
-                   ["CREATED", "AWAITING_ACCEPT"].includes(order.status) ? "text-orange-500" :
-                   ["ASSIGNED", "VENDOR_BEING_PREPARED"].includes(order.status) ? "text-blue-500" : "text-green-500"
-                )}>{order.status.replace("_", " ")}</p>
-                <p className="text-[10px] font-medium text-gray-400">{order.time}</p>
-              </div>
-            </div>
-          ))}
+        {/* Filters */}
+        <div className="flex gap-2">
+          <button className="bg-[#F26A1C] text-white px-5 py-2 rounded-[10px] text-[12px] font-black uppercase tracking-wide shadow-sm active:scale-95 transition-transform">
+            ALL
+          </button>
+          <button className="bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 px-4 py-2 rounded-[10px] text-[12px] font-bold border border-gray-200 dark:border-gray-700 shadow-sm flex items-center gap-1 active:scale-95 transition-transform">
+            Price <span className="text-[9px] mt-0.5">▼</span>
+          </button>
         </div>
 
-        {/* ─── Store Performance ─── */}
-        <div className="mt-8 bg-gray-900 dark:bg-white rounded-[32px] p-6 text-white dark:text-gray-900 relative overflow-hidden">
-          <div className="relative z-10">
-            <h3 className="text-lg font-black mb-1">Store Performance</h3>
-            <p className="text-xs font-medium text-gray-400 mb-6">Real-time insights for your business growth.</p>
-            
-            <div className="flex gap-4">
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-1 text-orange-400">
-                  <Star size={14} className="fill-current" />
-                  <span className="text-lg font-black">4.8</span>
-                </div>
-                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Rating</p>
-              </div>
-              <div className="w-px h-8 bg-gray-800 dark:bg-gray-200 mt-1" />
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-1 text-blue-400">
-                  <Users size={14} />
-                  <span className="text-lg font-black">120</span>
-                </div>
-                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Followers</p>
-              </div>
-            </div>
-          </div>
-          <div className="absolute top-[-20px] right-[-20px] w-32 h-32 bg-[#F26A1C] rounded-full opacity-20 blur-2xl" />
+        {/* Order Grid */}
+        <div className="flex items-center justify-between mt-2">
+          <h2 className="text-[14px] font-bold text-gray-500 uppercase tracking-wider">Available Orders</h2>
+          {availableOrders.length > 0 && (
+            <span className="bg-orange-100 dark:bg-orange-900/30 text-[#F26A1C] text-[10px] font-black px-2 py-0.5 rounded-full">
+              {availableOrders.length} NEW
+            </span>
+          )}
         </div>
+
+        {availableOrders.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 opacity-70 animate-in fade-in">
+            <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
+              <PackageOpen size={36} className="text-gray-400" />
+            </div>
+            <p className="font-bold text-gray-500 dark:text-gray-400 text-[15px]">No new orders right now.</p>
+            <p className="text-[12px] font-medium text-gray-400 mt-1">Check back later.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-x-4 gap-y-12 pt-6">
+            {availableOrders.map((order) => {
+              // Safely extract backend data using B's structure but formatting it for A's UI
+              const itemImage = order.items?.[0]?.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200";
+              const totalItems = order.itemCount || order.items?.reduce((acc: number, item: any) => acc + item.qty, 0) || 1;
+              const displayId = order.shortId ? order.shortId.split("-").pop() : order.id.slice(0, 4); // e.g. "AE-1024" -> "1024"
+
+              return (
+                <div key={order.id} className="relative pt-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                  {/* Overlapping Image */}
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[85px] h-[85px] rounded-full border-[5px] border-gray-50 dark:border-gray-950 z-10 shadow-sm overflow-hidden bg-white">
+                    <img src={itemImage} alt="Food item" className="w-full h-full object-cover" />
+                  </div>
+
+                  {/* Card Body */}
+                  <div className="bg-white dark:bg-gray-900 rounded-[20px] p-4 pt-14 shadow-[0_8px_24px_rgba(0,0,0,0.05)] border border-gray-100 dark:border-gray-800 flex flex-col items-center text-center relative h-full justify-between">
+                    <div className="absolute top-3 right-3 w-3 h-3 border-[2.5px] border-[#F26A1C] rounded-[4px]" />
+
+                    <div>
+                      <h3 className="font-black text-[15px] text-gray-900 dark:text-white mb-1">Order #{displayId}</h3>
+                      <div className="flex flex-col items-center gap-0.5 mb-4">
+                        <span className="text-[11px] font-bold text-[#F26A1C] flex items-center gap-1 bg-orange-50 dark:bg-orange-900/20 px-2 py-0.5 rounded-md">
+                          <PackageOpen size={12} /> {totalItems} Items
+                        </span>
+                        <span className="text-[14px] font-black text-[#F26A1C] mt-1">{order.totalAmount || 0} ETB</span>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => navigate(buildRoute(ROUTES.VENDOR.ORDERS.DETAILS, { orderId: order.id }))}
+                      className="w-full py-2.5 bg-[#F26A1C] text-white font-black tracking-wide text-[12px] rounded-[12px] active:scale-95 transition-transform shadow-md"
+                    >
+                      View Detail
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
       </main>
     </div>
   );
