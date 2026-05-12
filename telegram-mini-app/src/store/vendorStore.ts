@@ -65,8 +65,9 @@ interface VendorState {
   updateOrderStatus: (orderId: string, newStatus: VendorOrder["status"]) => void;
   declineOrder: (orderId: string) => void;
   toggleMenuItemStock: (itemId: string) => void;
-  addMenuItem: (item: Omit<MenuItem, "id" | "inStock">) => void;
+  addMenuItem: (item: Omit<MenuItem, "id" | "inStock">, customId?: string) => void;
   updateMenuItem: (itemId: string, item: Partial<Omit<MenuItem, "id">>) => void;
+  updateVendor: (updates: Partial<VendorUser>) => Promise<void>;
   logout: () => void;
 }
 
@@ -74,12 +75,12 @@ interface VendorState {
 export const useVendorStore = create<VendorState>()(
   persist(
     (set: any, get: any) => ({
-      vendor: null,
-      isActive: true,
-      activeOrders: [],
-      menuItems: [],
-      isLoading: false,
-      error: null,
+      vendor: null as VendorUser | null,
+      isActive: true as boolean,
+      activeOrders: [] as VendorOrder[],
+      menuItems: [] as MenuItem[],
+      isLoading: false as boolean,
+      error: null as string | null,
 
       fetchVendorData: async (vendorId = "vend_001") => {
         set({ isLoading: true, error: null });
@@ -147,10 +148,10 @@ export const useVendorStore = create<VendorState>()(
         }));
       },
 
-      addMenuItem: (item: Omit<MenuItem, "id" | "inStock">) => {
+      addMenuItem: (item: Omit<MenuItem, "id" | "inStock">, customId?: string) => {
         const newItem: MenuItem = {
           ...item,
-          id: `m${Date.now()}`,
+          id: customId || `m${Date.now()}`,
           inStock: true
         };
         set((state: VendorState) => ({
@@ -164,6 +165,19 @@ export const useVendorStore = create<VendorState>()(
             item.id === itemId ? { ...item, ...updatedItem } : item
           )
         }));
+      },
+
+      updateVendor: async (updates: Partial<VendorUser>) => {
+        set({ isLoading: true });
+        try {
+          await delay(800); // Simulate network delay
+          set((state: VendorState) => ({
+            vendor: state.vendor ? { ...state.vendor, ...updates } : null,
+            isLoading: false
+          }));
+        } catch (error) {
+          set({ error: "Failed to update vendor", isLoading: false });
+        }
       },
 
       logout: () => {
@@ -181,6 +195,8 @@ export const useVendorStore = create<VendorState>()(
       partialize: (state: any) => ({
         vendor: state.vendor,
         isActive: state.isActive,
+        menuItems: state.menuItems,
+        activeOrders: state.activeOrders,
       })
     }
   )

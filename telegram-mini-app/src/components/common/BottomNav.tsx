@@ -1,13 +1,13 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { 
-  Home, 
-  Bookmark, 
-  Package, 
-  FileText, 
-  User, 
-  LayoutList, 
-  ClipboardList, 
-  Bell 
+import {
+  Home,
+  Bookmark,
+  Package,
+  FileText,
+  User,
+  LayoutList,
+  ClipboardList,
+  Bell
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth/authStore";
 import { useCartStore } from "@/store/cart/cartStore";
@@ -71,7 +71,7 @@ function BottomNav() {
     ROUTES.DELIVERY.HISTORY.LIST,
     ROUTES.DELIVERY.ACTIVE.LIST,
     ROUTES.DELIVERY.PROFILE,
-    
+
     // Vendor Routes
     ROUTES.VENDOR.DASHBOARD,
     ROUTES.VENDOR.SAVED,
@@ -122,7 +122,7 @@ function BottomNav() {
             active={isActive(config.items[1].path)}
             onClick={() => navigate(config.items[1].path)}
           />
-          
+
           {/* Spacer for the center button */}
           <div className="w-10" />
 
@@ -149,10 +149,10 @@ function BottomNav() {
               "flex h-[54px] w-[54px] items-center justify-center rounded-full border-[2.5px] border-[#F26A1C] bg-white transition-all",
               isActive(config.center.path) && "bg-orange-50"
             )}>
-              <config.center.icon 
-                size={30} 
+              <config.center.icon
+                size={30}
                 className="text-[#F26A1C]"
-                strokeWidth={2.5} 
+                strokeWidth={2.5}
                 fill={isActive(config.center.path) ? "currentColor" : "none"}
               />
             </div>

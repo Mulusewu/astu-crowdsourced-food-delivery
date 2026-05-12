@@ -2,8 +2,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Eye, EyeOff, Store } from "lucide-react";
 import { useAuthStore } from "@/store/auth/authStore";
+import { ROUTES } from "@/routes/routePaths";
 
 const signinSchema = z.object({
   email: z.string().email("Please Enter A Valid Email Address!"),
@@ -13,7 +15,8 @@ const signinSchema = z.object({
 type SigninFormData = z.infer<typeof signinSchema>;
 
 export default function SigninForm() {
-  const { signin, isLoading, error, clearError } = useAuthStore();
+  const navigate = useNavigate();
+  const { signin, isLoading, clearError } = useAuthStore();
 
   const [showPassword, setShowPassword] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
@@ -107,7 +110,7 @@ export default function SigninForm() {
                   strokeWidth="4"
                   strokeLinecap="round"
                 /> {/* Handlebars */}
-                
+
                 {/* Rider */}
                 <circle cx="65" cy="22" r="7" fill="currentColor" /> {/* Head */}
                 <path
@@ -151,9 +154,8 @@ export default function SigninForm() {
               type="email"
               {...register("email")}
               placeholder="Johndoe@Gmail.Com"
-              className={`w-full h-14 bg-white border ${
-                errors.email ? "border-red-500" : "border-gray-200"
-              } rounded-[10px] px-5 text-[15px] font-medium text-gray-900 placeholder:text-gray-300 focus:border-[#F26A1C] focus:outline-none transition-all`}
+              className={`w-full h-14 bg-white border ${errors.email ? "border-red-500" : "border-gray-200"
+                } rounded-[10px] px-5 text-[15px] font-medium text-gray-900 placeholder:text-gray-300 focus:border-[#F26A1C] focus:outline-none transition-all`}
             />
             {errors.email && (
               <p className="text-xs text-red-500 font-semibold ml-1">
@@ -172,9 +174,8 @@ export default function SigninForm() {
                 type={showPassword ? "text" : "password"}
                 {...register("password")}
                 placeholder="***********"
-                className={`w-full h-14 bg-white border ${
-                  errors.password ? "border-red-500" : "border-gray-200"
-                } rounded-[10px] px-5 text-[15px] font-medium text-gray-900 placeholder:text-gray-300 focus:border-[#F26A1C] focus:outline-none transition-all`}
+                className={`w-full h-14 bg-white border ${errors.password ? "border-red-500" : "border-gray-200"
+                  } rounded-[10px] px-5 text-[15px] font-medium text-gray-900 placeholder:text-gray-300 focus:border-[#F26A1C] focus:outline-none transition-all`}
               />
               <button
                 type="button"
@@ -197,13 +198,53 @@ export default function SigninForm() {
           </div>
 
           {/* Action Button */}
-          <div className="pt-10 flex justify-center">
+          <div className="pt-10 flex flex-col items-center space-y-6">
             <button
               type="submit"
               disabled={isLoading}
               className="bg-[#F26A1C] hover:bg-[#e05d15] text-white font-black text-[22px] px-16 py-3.5 rounded-full shadow-lg shadow-orange-500/20 active:scale-95 transition-all disabled:opacity-70 min-w-[190px]"
             >
               {isLoading ? "Wait..." : "Login"}
+            </button>
+
+            {/* Primary Signup Link */}
+            <p className="text-[15px] font-bold text-gray-400">
+              Don't Have An Account?{" "}
+              <button
+                type="button"
+                onClick={() => navigate(ROUTES.SIGNUP)}
+                className="text-[#F26A1C] font-black hover:underline"
+              >
+                Create One
+              </button>
+            </p>
+
+            {/* Divider */}
+            <div className="w-full flex items-center gap-4 py-2">
+              <div className="h-[1px] flex-1 bg-gray-100"></div>
+              <span className="text-[12px] font-black text-gray-300 uppercase tracking-widest">
+                Or
+              </span>
+              <div className="h-[1px] flex-1 bg-gray-100"></div>
+            </div>
+
+            {/* Vendor Onboarding */}
+            <button
+              type="button"
+              onClick={() => navigate(ROUTES.VENDOR.SIGNUP)}
+              className="group flex items-center justify-center gap-4 w-full py-4 px-6 rounded-[24px] border-2 border-gray-100 hover:border-orange-500/30 hover:bg-orange-50/30 transition-all active:scale-[0.98]"
+            >
+              <div className="w-11 h-11 rounded-full bg-orange-100 flex items-center justify-center text-[#F26A1C] group-hover:bg-[#F26A1C] group-hover:text-white transition-colors shadow-sm">
+                <Store size={22} className="stroke-[2.5]" />
+              </div>
+              <div className="text-left">
+                <p className="text-[16px] font-black text-gray-900 leading-tight">
+                  Apply for Vendor
+                </p>
+                <p className="text-[12px] font-bold text-gray-400">
+                  Partner with ASTU EATS
+                </p>
+              </div>
             </button>
           </div>
         </form>

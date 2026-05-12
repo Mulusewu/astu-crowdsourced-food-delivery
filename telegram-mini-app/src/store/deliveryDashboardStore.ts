@@ -18,6 +18,8 @@ export interface DeliveryPerson {
   stats: {
     deliveriesToday: number;
     earningsToday: number;
+    totalDeliveries: number;
+    totalEarnings: number;
     rating: number;
   };
 }
@@ -109,8 +111,19 @@ export const useDeliveryDashboardStore = create<DeliveryDashboardState>()(
           const dashboardData = db.deliveryDashboard;
           
           // Use auth user data if available, otherwise fallback to dashboard default
+          // Merge stats carefully to include both total stats from user and today's stats from dashboard
           const deliveryPersonData = deliveryUser 
-            ? { ...deliveryUser, ...dashboardData.deliveryPerson, id: deliveryUser.id, name: deliveryUser.name, email: deliveryUser.email }
+            ? { 
+                ...deliveryUser, 
+                ...dashboardData.deliveryPerson, 
+                id: deliveryUser.id, 
+                name: deliveryUser.name, 
+                email: deliveryUser.email,
+                stats: {
+                  ...dashboardData.deliveryPerson.stats,
+                  ...(deliveryUser.stats || {})
+                }
+              }
             : dashboardData.deliveryPerson;
 
           if (dashboardData) {

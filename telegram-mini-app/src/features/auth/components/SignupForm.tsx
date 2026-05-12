@@ -2,8 +2,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuthStore } from "@/store/auth/authStore";
+import { ROUTES } from "@/routes/routePaths";
 
 const signupSchema = z
   .object({
@@ -24,6 +26,7 @@ const signupSchema = z
 type SignupFormData = z.infer<typeof signupSchema>;
 
 export default function SignupForm() {
+  const navigate = useNavigate();
   const { signup, isLoading, clearError } = useAuthStore();
 
   const [apiError, setApiError] = useState<string | null>(null);
@@ -55,7 +58,7 @@ export default function SignupForm() {
   };
 
   return (
-    <div className="min-h-screen bg-white font-sans flex flex-col items-center pt-16">
+    <div className="min-h-[80vh] bg-white font-sans flex flex-col items-center pt-8">
       <style>{`
         @keyframes ride {
           0%, 100% { transform: translateY(0); }
@@ -198,7 +201,7 @@ export default function SignupForm() {
           </div>
 
           {/* Submit Button */}
-          <div className="pt-6 flex justify-center">
+          <div className="pt-6 flex flex-col items-center space-y-4">
             <button
               type="submit"
               disabled={isLoading}
@@ -206,10 +209,20 @@ export default function SignupForm() {
             >
               {isLoading ? "Wait..." : "Sign Up"}
             </button>
+
+            <p className="text-[15px] font-bold text-gray-400">
+              Already Have An Account?{" "}
+              <button
+                type="button"
+                onClick={() => navigate(ROUTES.SIGNIN)}
+                className="text-[#F26A1C] font-black hover:underline"
+              >
+                Sign In
+              </button>
+            </p>
           </div>
         </form>
       </div>
     </div>
   );
 }
-

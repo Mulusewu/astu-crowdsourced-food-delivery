@@ -19,10 +19,10 @@ export default function VendorDashboard() {
 
   useEffect(() => {
     // Fetch data for the currently authenticated vendor
-    if (user?.id) {
+    if (user?.id && !vendor) {
       fetchVendorData(user.id);
     }
-  }, [fetchVendorData, user?.id]);
+  }, [fetchVendorData, user?.id, vendor]);
 
   if (isLoading || !vendor) {
     return (
@@ -61,9 +61,17 @@ export default function VendorDashboard() {
         </div>
         <div className="group relative">
           <div
-            className="h-12 w-12 rounded-full bg-primary flex items-center justify-center text-white text-xl font-bold shadow-lg cursor-pointer hover:bg-primary/90 transition-all hover:scale-105 active:scale-95"
+            className="h-12 w-12 rounded-full bg-primary flex items-center justify-center text-white text-xl font-bold shadow-lg cursor-pointer hover:bg-primary/90 transition-all hover:scale-105 active:scale-95 overflow-hidden"
           >
-            {vendor.name.charAt(0)}
+            {user?.avatar || vendor.avatar ? (
+              <img 
+                src={user?.avatar || vendor.avatar} 
+                alt={vendor.name} 
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              vendor.name.charAt(0)
+            )}
           </div>
           {/* Premium Tooltip for email - Standard hover behavior */}
           <div className="absolute top-14 right-0 bg-gray-900 text-white text-[10px] py-1.5 px-3 rounded-lg opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 whitespace-nowrap z-50 shadow-2xl pointer-events-none flex items-center gap-2 border border-gray-700">

@@ -2,6 +2,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import db from "@/data/database.json";
+import { ROUTES } from "@/routes/routePaths";
 
 export type UserRole = "customer" | "vendor" | "delivery";
 
@@ -19,6 +20,7 @@ interface AuthState {
   logout: () => void;
   updatePassword: (oldPassword: string, newPassword: string) => Promise<void>;
   updateAvatar: (newAvatar: string) => void;
+  updateName: (newName: string) => void;
   clearError: () => void;
 }
 
@@ -59,21 +61,25 @@ export const useAuthStore = create<AuthState>()(
 
         await new Promise((resolve) => setTimeout(resolve, 800));
 
+        const role = data.role || "customer";
         const newUser = {
           id: `user_${Date.now()}`,
           name: data.name,
           email: data.email,
-          password: data.password, // Store password for signin verification
-          roles: ["customer"] as UserRole[],
-          activeRole: "customer",
+          password: data.password,
+          roles: [role] as UserRole[],
+          activeRole: role as UserRole,
           avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.name}`,
           createdAt: new Date().toISOString(),
-          isVerified: true, // Mock verification
+          isVerified: true,
+          ...data, // Spread extra fields like status, address, etc.
         };
 
         // Prevent duplicate signup entries
         const existingUsers = [
           ...(db.users.customers || []),
+          ...(db.users.vendors || []),
+          ...(db.users.delivery || []),
           ...(JSON.parse(localStorage.getItem("additional_users") || "[]") ||
             []),
         ];
@@ -91,16 +97,13 @@ export const useAuthStore = create<AuthState>()(
 
         set({
           user: newUser,
-          roles: ["customer"],
-          activeRole: "customer",
+          roles: [role],
+          activeRole: role,
           token: `mock_token_${Date.now()}`,
           isLoading: false,
         });
 
         console.log("✅ Mock Signup successful", newUser);
-
-        // Keep the user logged in and redirect to the customer dashboard
-        window.location.href = "/customer/home";
       },
 
       // ====================== SIGNIN ======================
@@ -168,11 +171,11 @@ export const useAuthStore = create<AuthState>()(
 
         // Redirect to appropriate dashboard based on active role
         if (activeRole === "delivery") {
-          window.location.href = "/delivery/dashboard";
+          window.location.href = ROUTES.DELIVERY.DASHBOARD;
         } else if (activeRole === "vendor") {
-          window.location.href = "/vendor/dashboard";
+          window.location.href = ROUTES.VENDOR.DASHBOARD;
         } else {
-          window.location.href = "/customer/home"; // Customer dashboard
+          window.location.href = ROUTES.CUSTOMER.HOME; // Customer dashboard
         }
       },
 
@@ -196,11 +199,11 @@ export const useAuthStore = create<AuthState>()(
 
         // Redirect to correct dashboard based on active role
         if (newRole === "delivery") {
-          window.location.href = "/delivery/dashboard";
+          window.location.href = ROUTES.DELIVERY.DASHBOARD;
         } else if (newRole === "vendor") {
-          window.location.href = "/vendor/dashboard";
+          window.location.href = ROUTES.VENDOR.DASHBOARD;
         } else {
-          window.location.href = "/"; // Customer home
+          window.location.href = ROUTES.CUSTOMER.HOME;
         }
       },
 
@@ -236,6 +239,20 @@ export const useAuthStore = create<AuthState>()(
 
           set({
             user: { ...user, avatar: newAvatar }
+          });
+        }
+      },
+
+      updateName: (newName: string) => {
+        const { user } = get();
+        if (user) {
+          // Save to override dict in localStorage to persist across signouts
+          const overrides = JSON.parse(localStorage.getItem("user_overrides") || "{}");
+          overrides[user.email] = { ...overrides[user.email], name: newName };
+          localStorage.setItem("user_overrides", JSON.stringify(overrides));
+
+          set({
+            user: { ...user, name: newName }
           });
         }
       },

@@ -1,7 +1,7 @@
 import { lazy } from "react";
 import type { RouteGroup } from "../types/routes.types";
 import { ROUTES } from "../routePaths";
-import { type UserRole, UserRoles } from "@/types/user.types";
+import { UserRoles } from "@/types/user.types";
 
 // Dashboard & Analytics
 const VendorDashboard = lazy(
@@ -12,6 +12,12 @@ const VendorDashboard = lazy(
 // );
 const VendorEarningsPage = lazy(
   () => import("@/features/vendor/pages/EarningsPage"),
+);
+const VendorSignupPage = lazy(
+  () => import("@/features/vendor/pages/VendorSignupPage"),
+);
+const PendingApprovalPage = lazy(
+  () => import("@/features/vendor/pages/PendingApprovalPage"),
 );
 // const VendorEarningsDetailsPage = lazy(
 //   () => import("@/features/vendor/pages/EarningsDetailsPage"),
@@ -81,9 +87,6 @@ const VendorSavedItemsPage = lazy(() => import("@/features/vendor/pages/VendorSa
 // );
 
 // Order Management
-const VendorOrdersPage = lazy(
-  () => import("@/features/vendor/pages/OrdersPage"),
-);
 const VendorOrderDetailsPage = lazy(
   () => import("@/features/vendor/pages/OrderDetailsPage"),
 );
@@ -189,6 +192,16 @@ export const vendorRoutes: RouteGroup[] = [
     path: ROUTES.VENDOR.DASHBOARD,
     element: <VendorDashboard />,
     roles: [UserRoles.VENDOR],
+  },
+  {
+    path: ROUTES.VENDOR.SIGNUP,
+    element: <VendorSignupPage />,
+    // Signup is public, but we group it here or in authRoutes.
+    // Given the prompt, I'll put it here but it might need to be accessible without VENDOR role depending on how it's used.
+  },
+  {
+    path: ROUTES.VENDOR.PENDING,
+    element: <PendingApprovalPage />,
   },
   //   {
   //     path: ROUTES.VENDOR.ANALYTICS,

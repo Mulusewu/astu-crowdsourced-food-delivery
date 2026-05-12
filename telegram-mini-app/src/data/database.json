@@ -12,8 +12,8 @@
   "deliveryDashboard": {
     "deliveryPerson": {
       "id": "1",
-      "name": "Nati Hailu",
-      "email": "nati@example.com",
+      "name": "john",
+      "email": "john@example.com",
       "isActive": true,
       "currentLocation": {
         "lat": 9.0222,
@@ -114,7 +114,6 @@
       }
     ]
   },
-
   "vendorDashboard": {
     "activeOrders": [
       {
@@ -179,36 +178,120 @@
       }
     ],
     "menuItems": [
-      { "id": "m1", "name": "Special Burger", "price": 200, "inStock": true, "image": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd" },
-      { "id": "m2", "name": "Fries", "price": 60, "inStock": true, "image": "https://images.unsplash.com/photo-1576107232684-1279f3908594" },
-      { "id": "m3", "name": "Coca Cola", "price": 50, "inStock": false, "image": "https://images.unsplash.com/photo-1622483767028-3f66f32aef97" },
-      { "id": "m4", "name": "Normal Ferfer", "price": 110, "inStock": true, "image": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd" },
-      { "id": "m5", "name": "Pasta Besego", "price": 100, "inStock": true, "image": "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38" },
-      { "id": "m6", "name": "Shiro", "price": 120, "inStock": true, "image": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c" },
-      { "id": "m7", "name": "Special Tibs", "price": 225, "inStock": true, "image": "https://images.unsplash.com/photo-1544025162-d76694265947" },
-      { "id": "m8", "name": "Large Pizza", "price": 180, "inStock": true, "image": "https://images.unsplash.com/photo-1567620905732-2d1ec7bb7445" }
+      {
+        "id": "m1",
+        "name": "Special Burger",
+        "price": 200,
+        "inStock": true,
+        "image": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd"
+      },
+      {
+        "id": "m2",
+        "name": "Fries",
+        "price": 60,
+        "inStock": true,
+        "image": "https://images.unsplash.com/photo-1576107232684-1279f3908594"
+      },
+      {
+        "id": "m3",
+        "name": "Coca Cola",
+        "price": 50,
+        "inStock": false,
+        "image": "https://images.unsplash.com/photo-1622483767028-3f66f32aef97"
+      },
+      {
+        "id": "m4",
+        "name": "Normal Ferfer",
+        "price": 110,
+        "inStock": true,
+        "image": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd"
+      },
+      {
+        "id": "m5",
+        "name": "Pasta Besego",
+        "price": 100,
+        "inStock": true,
+        "image": "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38"
+      },
+      {
+        "id": "m6",
+        "name": "Shiro",
+        "price": 120,
+        "inStock": true,
+        "image": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c"
+      },
+      {
+        "id": "m7",
+        "name": "Special Tibs",
+        "price": 225,
+        "inStock": true,
+        "image": "https://images.unsplash.com/photo-1544025162-d76694265947"
+      },
+      {
+        "id": "m8",
+        "name": "Large Pizza",
+        "price": 180,
+        "inStock": true,
+        "image": "https://images.unsplash.com/photo-1567620905732-2d1ec7bb7445"
+      }
     ],
     "orderDetails": {
       "o1": [
-        { "id": "m1", "quantity": 1, "outOfStock": false },
-        { "id": "m2", "quantity": 1, "outOfStock": false },
-        { "id": "m3", "quantity": 1, "outOfStock": false }
+        {
+          "id": "m1",
+          "quantity": 1,
+          "outOfStock": false
+        },
+        {
+          "id": "m2",
+          "quantity": 1,
+          "outOfStock": false
+        },
+        {
+          "id": "m3",
+          "quantity": 1,
+          "outOfStock": false
+        }
       ],
       "o2": [
-        { "id": "m4", "quantity": 1, "outOfStock": false }
+        {
+          "id": "m4",
+          "quantity": 1,
+          "outOfStock": false
+        }
       ],
       "o3": [
-        { "id": "m4", "quantity": 1, "outOfStock": false },
-        { "id": "m5", "quantity": 1, "outOfStock": false }
+        {
+          "id": "m4",
+          "quantity": 1,
+          "outOfStock": false
+        },
+        {
+          "id": "m5",
+          "quantity": 1,
+          "outOfStock": false
+        }
       ],
       "o4": [
-        { "id": "m6", "quantity": 1, "outOfStock": false }
+        {
+          "id": "m6",
+          "quantity": 1,
+          "outOfStock": false
+        }
       ],
       "o5": [
-        { "id": "m7", "quantity": 2, "outOfStock": false }
+        {
+          "id": "m7",
+          "quantity": 2,
+          "outOfStock": false
+        }
       ],
       "o6": [
-        { "id": "m8", "quantity": 1, "outOfStock": false }
+        {
+          "id": "m8",
+          "quantity": 1,
+          "outOfStock": false
+        }
       ]
     }
   },
@@ -485,7 +568,7 @@
     "delivery": [
       {
         "id": "del_001",
-        "name": "Nati Wondimu",
+        "name": "john",
         "email": "nati.w@example.com",
         "password": "delivery1234",
         "phone": "+251914567890",
@@ -1643,7 +1726,7 @@
         "subtotal": 45,
         "deliveryFee": 30,
         "totalAmount": 75,
-        "status": "in_transit",
+        "status": "confirmed",
         "paymentMethod": "cash",
         "paymentStatus": "pending",
         "createdAt": "2024-04-04T11:00:00Z",

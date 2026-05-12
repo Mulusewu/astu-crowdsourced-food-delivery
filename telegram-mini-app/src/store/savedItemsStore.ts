@@ -4,8 +4,10 @@ import { persist } from "zustand/middleware";
 export interface SavedItem {
   id: string;
   name: string;
-  location: string;
   image: string;
+  price?: number;
+  category?: string;
+  location?: string;
 }
 
 interface SavedItemsStore {

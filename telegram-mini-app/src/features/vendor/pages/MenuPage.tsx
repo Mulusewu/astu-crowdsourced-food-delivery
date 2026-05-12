@@ -12,10 +12,10 @@ export default function MenuPage() {
   const [activeTab, setActiveTab] = useState<"available" | "unavailable">("available");
 
   useEffect(() => {
-    if (user?.id) {
+    if (user?.id && menuItems.length === 0) {
       fetchVendorData(user.id);
     }
-  }, [fetchVendorData, user?.id]);
+  }, [fetchVendorData, user?.id, menuItems.length]);
 
   const filteredItems = menuItems.filter((item: MenuItem) => 
     activeTab === "available" ? item.inStock : !item.inStock
@@ -66,13 +66,7 @@ export default function MenuPage() {
               <Plus className="h-3.5 w-3.5 stroke-[3]" /> Add Item
             </button>
           </div>
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-40 h-40">
-             <img 
-               src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80" 
-               className="w-full h-full object-contain drop-shadow-2xl" 
-               alt="Decorative Food"
-             />
-          </div>
+          {/* Decorative Food image removed as per user request */}
         </div>
       </div>
 

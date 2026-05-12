@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { ArrowLeft, MapPin, CheckCircle2, Star, Mail } from "lucide-react";
+import { ArrowLeft, MapPin, CheckCircle2, Star, Mail, Bookmark } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import db from "@/data/database.json";
 import { useVendorStore } from "@/store/vendorStore";
+import { useSavedItemsStore } from "@/store/savedItemsStore";
 
 export default function OrderDetailsPage() {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ export default function OrderDetailsPage() {
   
   const [isDeclining, setIsDeclining] = useState(false);
   const [showDeclineMsg, setShowDeclineMsg] = useState(false);
+  const { toggleItem, isSaved } = useSavedItemsStore();
   
   // Use data from store to stay perfectly synced with dashboard
   const orderNumber = order?.orderNo || "123";
@@ -91,13 +93,32 @@ export default function OrderDetailsPage() {
               <span className="text-[10px] text-orange-500 font-semibold">Out Of Stock?</span>
             </div>
 
-            {/* Circular Image */}
-            <div className="w-20 h-20 shrink-0 mr-4 mt-2">
+            {/* Circular Image and Save Icon */}
+            <div className="w-20 h-20 shrink-0 mr-4 mt-2 relative">
               <img 
                 src={item.image} 
                 alt={item.name} 
                 className={`w-full h-full object-cover rounded-full shadow-md border-2 border-white ${item.outOfStock ? 'opacity-50 grayscale' : ''}`}
               />
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleItem({
+                    id: item.id,
+                    name: item.name,
+                    price: item.price,
+                    image: item.image,
+                    category: "Main Dish"
+                  });
+                }}
+                className={`absolute -bottom-1 -right-1 w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-90 ${
+                  isSaved(item.id) 
+                    ? "bg-orange-500 text-white" 
+                    : "bg-white text-gray-400 border border-gray-100"
+                }`}
+              >
+                <Bookmark className={`w-4 h-4 ${isSaved(item.id) ? "fill-white" : ""}`} />
+              </button>
             </div>
 
             {/* Details */}

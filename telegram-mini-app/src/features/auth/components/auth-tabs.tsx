@@ -1,13 +1,26 @@
-// src/pages/auth/AuthPage.tsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { ROUTES } from "@/routes/routePaths";
 
 import SigninForm from "./SigninForm";
 import SignupForm from "./SignupForm";
-import { BrandCard } from "@/components/brand/BrandCard";
 
 export default function TabsLine() {
-  const [activeTab, setActiveTab] = useState<"signin" | "signup">("signin");
+  const location = useLocation();
+  const isSignup = location.pathname.includes(ROUTES.SIGNUP);
+  
+  const [activeTab, setActiveTab] = useState<"signin" | "signup">(
+    isSignup ? "signup" : "signin"
+  );
+
+  useEffect(() => {
+    if (location.pathname.includes(ROUTES.SIGNUP)) {
+      setActiveTab("signup");
+    } else if (location.pathname.includes(ROUTES.SIGNIN) || location.pathname === ROUTES.AUTH) {
+      setActiveTab("signin");
+    }
+  }, [location.pathname]);
 
   return (
     <div className="min-h-screen bg-white px-4 py-8">

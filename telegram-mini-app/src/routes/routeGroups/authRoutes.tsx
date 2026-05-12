@@ -23,14 +23,14 @@ export const authRoutes: RouteGroup[] = [
     path: ROUTES.AUTH,
     element: <AuthPage />,
   },
-  // {
-  //   path: ROUTES.SIGNIN,
-  //   element: <SigninPage />,
-  // },
-  // {
-  //   path: ROUTES.SIGNUP,
-  //   element: <SignupPage />,
-  // },
+  {
+    path: ROUTES.SIGNIN,
+    element: <AuthPage />,
+  },
+  {
+    path: ROUTES.SIGNUP,
+    element: <AuthPage />,
+  },
   {
     path: ROUTES.FORGOT_PASSWORD,
     element: <ForgotPasswordPage />,
