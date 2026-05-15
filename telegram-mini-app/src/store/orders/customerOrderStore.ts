@@ -20,7 +20,7 @@ export interface OrderSummary {
   totalAmount: number;
   createdAt: string;
   restaurant: { name: string };
-  customer: { user: { fullName: string } };
+  customer?: { user: { fullName: string }, defaultLocation: string };
   _count: { items: number };
   estimatedDeliveryTime?: string; // Optional if you add ETA fields to list later
 }
@@ -179,7 +179,7 @@ export const useCustomerOrderStore = create<CustomerOrderState>()(
         });
 
         // Listen for status bumps from Vendor or Deliverer
-        newSocket.on('ORDER_STATUS_UPDATE', (payload) => async () => {
+        newSocket.on('ORDER_STATUS_UPDATE', async (payload) => {
           console.log('[WS] Order Update Received:', payload);
           get().updateOrderStatusFromSocket(payload.orderId, payload.status);
 

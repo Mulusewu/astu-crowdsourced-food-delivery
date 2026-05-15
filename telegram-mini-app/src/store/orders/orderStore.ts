@@ -2,7 +2,6 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { apiClient } from "@/api/client/axiosInstance";
 import { io, Socket } from "socket.io-client";
-import { useAuthStore } from "@/store/auth/authStore";
 import { useDeliveryDashboardStore } from "../deliveryDashboardStore";
 
 // ─── Backend Aligned Types ─────────────────────────────────────────────────────
@@ -310,7 +309,7 @@ export const useOrderStore = create<OrderStoreState>()(
           await apiClient.post(`/orders/${orderId}/confirm-handshake`, { otpCode });
 
           // Refresh state completely
-          // await get().fetchActiveOrders(); // Will clear activeOrders array
+          await get().fetchActiveOrders(); // Will clear activeOrders array
           set((s) => ({
             currentOrder: s.currentOrder ? { ...s.currentOrder, status: 'COMPLETED' } : null,
             // Remove from active list
@@ -352,7 +351,7 @@ export const useOrderStore = create<OrderStoreState>()(
         let token = '';
         if (storageStr) token = JSON.parse(storageStr).state?.token || '';
 
-        const newSocket = io(BASE_URL, { auth: { token }, withCredentials: true });
+        const newSocket = io(BASE_URL, { auth: { token }, query:{mode:'DELIVERER'}, withCredentials: true });
 
         newSocket.on('connect', () => console.log('[WS] Connected to Dispatch Engine'));
 
@@ -376,6 +375,25 @@ export const useOrderStore = create<OrderStoreState>()(
             };
 
             const updatedRaw = [newAvailable, ...s.rawOrders];
+
+             const { dashboardOrders } = useDeliveryDashboardStore.getState();
+            useDeliveryDashboardStore.setState({
+              dashboardOrders: [
+                {
+                  id: newAvailable.id,
+                  shortId: newAvailable.shortId,
+                  restaurantName: newAvailable.restaurantName,
+                  restaurantImageUrl: newAvailable.restaurantImageUrl,
+                  itemCount: newAvailable.itemCount,
+                  totalAmount: newAvailable.totalAmount,
+                  deliveryFee: newAvailable.deliveryFee,
+                  firstItemImageUrl: newAvailable.restaurantImageUrl
+                },
+                ...dashboardOrders
+              ].slice(0, 6) // Keep dashboard limited to 6 items
+            });
+
+
             return {
               rawOrders: updatedRaw,
               filteredOrders: get()._applyLocalSort(updatedRaw, s.secondaryFilter)
@@ -388,6 +406,10 @@ export const useOrderStore = create<OrderStoreState>()(
           if (payload.status !== 'AWAITING_ACCEPT') {
             set(s => {
               const updatedRaw = s.rawOrders.filter(o => o.id !== payload.orderId);
+               const { dashboardOrders } = useDeliveryDashboardStore.getState();
+              useDeliveryDashboardStore.setState({
+                dashboardOrders: dashboardOrders.filter(o => o.id !== payload.orderId)
+              });
               return {
                 rawOrders: updatedRaw,
                 filteredOrders: get()._applyLocalSort(updatedRaw, s.secondaryFilter)
