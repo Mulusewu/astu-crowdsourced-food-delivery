@@ -1,15 +1,9 @@
-// src/store/deliveryDashboardStore.ts
-// Aligned with Prisma schema — reads delivererProfiles and restaurants from database.json
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import db from "@/data/database.json";
+import { apiClient } from "@/api/client/axiosInstance";
 import { ROUTES } from "@/routes/routePaths";
 import { useAuthStore } from "@/store/auth/authStore";
 import type { DelivererProfile } from "@/types/user.types";
-
-const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-// ─── Restaurant shape (from Prisma Restaurant model) ──────────────────────────
 
 export interface Restaurant {
   id: string;
@@ -21,18 +15,14 @@ export interface Restaurant {
   lng: number;
   isOpen: boolean;
   isActive: boolean;
-  openingTime: string | null;
-  closingTime: string | null;
   imageUrl: string | null;
   minOrderValue: number;
   avgRating: number;
-  totalReviews: number;
   tags: string[];
-  activeOrders: number;   // computed — orders in progress at this restaurant
-  isBookmarked: boolean;  // local-only
+  activeOrders: number;   // Computed from available orders
+  isBookmarked: boolean;  // Computed from backend bookmarks
 }
 
-// Cheap/quick orders displayed on the dashboard
 export interface DashboardOrder {
   id: string;
   shortId: string;
@@ -44,44 +34,19 @@ export interface DashboardOrder {
   firstItemImageUrl: string | null;
 }
 
-// Payment-waiting UI state (unchanged from old store)
-type OrderStatus = "pending" | "accepted" | "awaiting_payment" | "paid" | "in_progress" | "completed" | "cancelled";
-type CustomerActivity = "idle" | "viewing" | "paying";
-
 interface DeliveryDashboardState {
-  // Deliverer profile
   delivererProfile: DelivererProfile | null;
-  // Restaurant list (server-sourced, enriched with computed fields)
   restaurants: Restaurant[];
-  // Available orders shown on dashboard (AWAITING_ACCEPT, low total)
   dashboardOrders: DashboardOrder[];
   isLoading: boolean;
+  error: string | null;
 
-  // Payment-waiting state
-  orderStatus: OrderStatus;
-  paymentTimer: number;
-  customerActivity: CustomerActivity;
-
-  // Actions
   fetchDashboardData: () => Promise<void>;
-  toggleActiveStatus: (navigate?: (path: string) => void) => void;
-  toggleBookmark: (restaurantId: string) => void;
-  setOrderStatus: (status: OrderStatus) => void;
-  decreasePaymentTimer: () => void;
-  resetPaymentTimer: (seconds?: number) => void;
-  setCustomerActivity: (activity: CustomerActivity) => void;
-  updateDelivererStats: (earnings: number) => void;
-  updateCurrentLocation: (location: string) => Promise<void>;
+  toggleActiveStatus: (navigate?: (path: string) => void) => Promise<void>;
+  toggleBookmark: (restaurantId: string) => Promise<void>;
+  
+  clearError: () => void;
 }
-
-// Statuses that count as "active" at a restaurant
-const RESTAURANT_ACTIVE_STATUSES = new Set([
-  "AWAITING_ACCEPT",
-  "ASSIGNED",
-  "VENDOR_BEING_PREPARED",
-  "VENDOR_FINISHED",
-  "VENDOR_READY_FOR_PICKUP",
-]);
 
 export const useDeliveryDashboardStore = create<DeliveryDashboardState>()(
   persist(
@@ -90,85 +55,80 @@ export const useDeliveryDashboardStore = create<DeliveryDashboardState>()(
       restaurants: [],
       dashboardOrders: [],
       isLoading: true,
-
-      orderStatus: "pending",
-      paymentTimer: 300,
-      customerActivity: "idle",
+      error: null,
 
       fetchDashboardData: async () => {
-        set({ isLoading: true });
+        set({ isLoading: true, error: null });
         try {
-          await delay(600);
+          // 1. Fetch data in parallel for speed
+          const [userRes, restsRes, ordersRes, bookmarksRes] = await Promise.all([
+            apiClient.get('/users/me'),
+            apiClient.get('/restaurants', { params: { isOpen: 'true', limit: 20 } }),
+            apiClient.get('/orders', { params: { status: 'AWAITING_ACCEPT', roleAs: 'DELIVERER', limit: 10 } }),
+            apiClient.get('/users/me/bookmarks', { params: { type: 'RESTAURANT' } })
+          ]);
 
-          // Get the logged-in user from authStore
-          const { user } = useAuthStore.getState();
-          const userId = user?.id ?? "";
+          const profile = userRes.data.data.delivererProfile;
+          const bookmarkedIds = bookmarksRes.data.data.map((b: any) => b.targetId);
+          const availableOrders = ordersRes.data.orders;
 
-          // Find deliverer profile
-          const rawProfile = db.delivererProfiles.find((dp) => dp.userId === userId);
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const delivererProfile: DelivererProfile | null = rawProfile
-            ? { ...(rawProfile as any) }
-            : null;
+          console.log("here is teh dashboard orders", availableOrders);
 
-          // Build restaurant list with active-order counts
-          const restaurants: Restaurant[] = db.restaurants.map((r) => {
-            const activeOrders = db.orders.filter(
-              (o) =>
-                o.restaurantId === r.id &&
-                RESTAURANT_ACTIVE_STATUSES.has(o.status),
-            ).length;
+          // 2. Map Dashboard Orders (Cheap/Quick orders logic)
+          const mappedOrders: DashboardOrder[] = availableOrders
+            .sort((a: any, b: any) => Number(a.totalAmount) - Number(b.totalAmount)) // Sort lowest price first
+            .slice(0, 6)
+            .map((o: any) => ({
+              id: o.id,
+              shortId: o.shortId,
+              restaurantName: o.restaurant?.name || "Restaurant",
+              restaurantImageUrl: o.restaurant?.imageUrl || "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500",
+              itemCount: o._count?.items || 1,
+              totalAmount: Number(o.totalAmount),
+              deliveryFee: Number(o.deliveryFee) || 33,
+              firstItemImageUrl: o.restaurant?.imageUrl || "https://images.unsplash.com/photo-1544025162-831e5088eb7e?w=200", // Fallback to restaurant image
+            }));
 
+          // 3. Map Restaurants and compute active orders per restaurant
+          const mappedRestaurants: Restaurant[] = restsRes.data.restaurants.map((r: any) => {
+            const activeCount = availableOrders.filter((o: any) => o.restaurant?.name === r.name).length;
+            
             return {
               id: r.id,
               name: r.name,
-              phone: r.phone,
-              mode: r.mode as Restaurant["mode"],
+              phone: r.phone || "",
+              mode: r.mode,
               location: r.location,
               lat: r.lat,
               lng: r.lng,
               isOpen: r.isOpen,
               isActive: r.isActive,
-              openingTime: r.openingTime ?? null,
-              closingTime: r.closingTime ?? null,
-              imageUrl: r.imageUrl ?? null,
-              minOrderValue: r.minOrderValue,
-              avgRating: r.avgRating,
-              totalReviews: r.totalReviews,
-              tags: r.tags,
-              activeOrders,
-              isBookmarked: false,
+              imageUrl: r.imageUrl || "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500",
+              minOrderValue: Number(r.minOrderValue) || 0,
+              avgRating: Number(r.avgRating) || 5.0,
+              tags: r.tags || [],
+              activeOrders: activeCount,
+              isBookmarked: bookmarkedIds.includes(r.id),
             };
           });
 
-          // Build dashboard orders from AWAITING_ACCEPT (low-amount ones first)
-          const dashboardOrders: DashboardOrder[] = db.orders
-            .filter((o) => o.status === "AWAITING_ACCEPT")
-            .sort((a, b) => a.totalAmount - b.totalAmount)
-            .slice(0, 6)
-            .map((o) => {
-              const restaurant = db.restaurants.find((r) => r.id === o.restaurantId);
-              const items = db.orderItems.filter((oi) => oi.orderId === o.id);
-              const firstMenuId = items[0]?.menuId;
-              const firstMenuItem = firstMenuId
-                ? db.menuItems.find((mi) => mi.id === firstMenuId)
-                : null;
-              return {
-                id: o.id,
-                shortId: o.shortId,
-                restaurantName: restaurant?.name ?? "Restaurant",
-                restaurantImageUrl: restaurant?.imageUrl ?? null,
-                itemCount: items.length,
-                totalAmount: o.totalAmount,
-                deliveryFee: o.deliveryFee,
-                firstItemImageUrl: firstMenuItem?.imageUrl ?? null,
-              };
-            });
+          // Sort restaurants to show bookmarked ones or ones with active orders first
+          mappedRestaurants.sort((a, b) => {
+            if (a.isBookmarked && !b.isBookmarked) return -1;
+            if (!a.isBookmarked && b.isBookmarked) return 1;
+            return b.activeOrders - a.activeOrders;
+          });
 
-          set({ delivererProfile, restaurants, dashboardOrders, isLoading: false });
-        } catch (error) {
+          set({ 
+            delivererProfile: profile, 
+            restaurants: mappedRestaurants, 
+            dashboardOrders: mappedOrders, 
+            isLoading: false 
+          });
+
+        } catch (error: any) {
           console.error("Failed to fetch dashboard data:", error);
-          set({ isLoading: false });
+          set({ isLoading: false, error: error.response?.data?.message || "Failed to load dashboard" });
         }
       },
 
@@ -176,76 +136,58 @@ export const useDeliveryDashboardStore = create<DeliveryDashboardState>()(
         const { delivererProfile } = get();
         if (!delivererProfile) return;
 
-        const willBeOnline = !delivererProfile.isOnline;
-        // Simulate backend API call
-        set({ isLoading: true });
-        await delay(400);
-
+        const willBeOnline = !delivererProfile.isAvailable;
+        
+        // Optimistic UI Update
         set({
-          delivererProfile: {
-            ...delivererProfile,
-            isOnline: willBeOnline,
-            isAvailable: willBeOnline,
-          },
-          isLoading: false,
+          delivererProfile: { ...delivererProfile, isAvailable: willBeOnline }
         });
 
-        if (!willBeOnline && navigate) {
-          navigate(ROUTES.DELIVERY.OFFLINE);
+        try {
+          // Backend API Call (Strict DB field: isAvailable)
+          await apiClient.patch('/users/me/availability', { isAvailable: willBeOnline });
+          
+          if (!willBeOnline && navigate) {
+            navigate(ROUTES.DELIVERY.OFFLINE);
+          }
+        } catch (error: any) {
+          // Rollback on failure (e.g., Payout account not set up)
+          set({
+            delivererProfile: { ...delivererProfile, isAvailable: !willBeOnline },
+            error: error.response?.data?.message || "Failed to go online. Check payout details."
+          });
+          throw error; // Throw so UI can toast
         }
       },
 
-      toggleBookmark: (restaurantId: string) => {
-        set((state) => ({
-          restaurants: state.restaurants.map((r) =>
+      toggleBookmark: async (restaurantId: string) => {
+        const { restaurants } = get();
+        
+        // Optimistic Update
+        set({
+          restaurants: restaurants.map((r) =>
             r.id === restaurantId ? { ...r, isBookmarked: !r.isBookmarked } : r,
           ),
-        }));
-      },
-
-      setOrderStatus: (status) => set({ orderStatus: status }),
-
-      decreasePaymentTimer: () =>
-        set((s) => ({ paymentTimer: Math.max(0, s.paymentTimer - 1) })),
-
-      resetPaymentTimer: (seconds = 300) => set({ paymentTimer: seconds }),
-
-      setCustomerActivity: (activity) => set({ customerActivity: activity }),
-      updateDelivererStats: (earnings) => {
-        set((s) => {
-          if (!s.delivererProfile) return {};
-          return {
-            delivererProfile: {
-              ...s.delivererProfile,
-              totalDeliveries: (s.delivererProfile.totalDeliveries || 0) + 1,
-              totalEarnings: (Number(s.delivererProfile.totalEarnings) || 0) + earnings,
-            },
-          };
         });
+
+        try {
+          await apiClient.post('/users/me/bookmarks', {
+            type: 'RESTAURANT',
+            targetId: restaurantId
+          });
+        } catch (error) {
+          // Rollback
+          set({ restaurants });
+        }
       },
-      updateCurrentLocation: async (location) => {
-        set({ isLoading: true });
-        await delay(500);
-        set((s) => {
-          if (!s.delivererProfile) return { isLoading: false };
-          return {
-            delivererProfile: {
-              ...s.delivererProfile,
-              currentLocation: location,
-            },
-            isLoading: false,
-          };
-        });
-      },
+
+      clearError: () => set({ error: null })
     }),
 
     {
       name: "delivery-dashboard-storage",
       partialize: (s) => ({
-        delivererProfile: s.delivererProfile,
-        orderStatus: s.orderStatus,
-        paymentTimer: s.paymentTimer,
-        customerActivity: s.customerActivity,
+        // We do not persist orders or restaurants to ensure fresh real-time data on reload
       }),
     },
   ),

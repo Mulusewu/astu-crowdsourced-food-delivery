@@ -73,7 +73,7 @@ export default function SharedProfilePage() {
               strokeWidth={1.5}
             />
             <span className="text-[14px] font-medium text-gray-500 dark:text-gray-400">
-              {user?.email || "Johndoe@Gmail.Com"}
+              {user?.astuEmail || user?.email|| "Johndoe@Gmail.Com"}
             </span>
           </div>
           <ChevronRight size={18} className="text-gray-400" />

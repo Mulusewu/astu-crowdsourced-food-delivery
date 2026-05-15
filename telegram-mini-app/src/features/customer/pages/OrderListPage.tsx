@@ -8,32 +8,18 @@ import {
   XCircle,
 } from "lucide-react";
 
-// Assuming you have this store. If not, use your actual orders store.
-import {
-  useCustomerOrderStore,
-} from "@/store/orders/customerOrderStore";
+import { useCustomerOrderStore, type OrderSummary } from "@/store/orders/customerOrderStore";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CustomerOrdersPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"active" | "history">("active");
-  const [isLoading, setIsLoading] = useState(true);
 
-  // Pull orders from your Zustand store
-  // Assuming the store has an array of orders or a fetch function
-
-  const rawOrders = useCustomerOrderStore((state) => state.orders);
-  const fetchOrders = useCustomerOrderStore((state) => state.fetchCustomerOrders);
-  const orders = rawOrders || [];
+  const { orders, isLoading, fetchCustomerOrders } = useCustomerOrderStore();
 
   useEffect(() => {
-    const loadOrders = async () => {
-      setIsLoading(true);
-      await fetchOrders();
-      setTimeout(() => setIsLoading(false), 400);
-    };
-    loadOrders();
-  }, []);
+    fetchCustomerOrders();
+  }, [fetchCustomerOrders]);
 
   // Prisma OrderStatus: active vs. completed/failed
   const ACTIVE_STATUSES = [
@@ -72,14 +58,15 @@ export default function CustomerOrdersPage() {
 
   // --- UI Sub-components ---
 
-  const ActiveOrderCard = ({ order }: { order: any }) => {
+  const ActiveOrderCard = ({ order }: { order: OrderSummary }) => {
     const status = getStatusDisplay(order.status);
     return (
       <div className="bg-white dark:bg-gray-900 rounded-[24px] p-5 mb-4 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100 dark:border-gray-800">
         <div className="flex justify-between items-start mb-3">
           <div>
+            {/* BACKEND ALIGNMENT: order.restaurant.name */}
             <h3 className="font-black text-lg text-gray-900 dark:text-white leading-tight">
-              {order.restaurantName || "Restaurant"}
+              {order.restaurant?.name || "Restaurant"}
             </h3>
             <p className="text-xs font-bold text-gray-400 mt-0.5 uppercase tracking-wider">
               #{order.shortId || order.id}
@@ -100,11 +87,12 @@ export default function CustomerOrdersPage() {
         </div>
 
         <div className="flex justify-between items-center mb-4">
+          {/* BACKEND ALIGNMENT: order._count.items */}
           <p className="text-sm font-bold text-gray-500">
-            {order.items?.length ?? 0} Item{order.items?.length !== 1 ? "s" : ""}
+            {order._count?.items ?? 0} Item{order._count?.items !== 1 ? "s" : ""}
           </p>
           <p className="text-lg font-black text-[#F26A1C]">
-            {order.totalAmount?.toFixed(0) || "0"} ETB
+            {Number(order.totalAmount).toFixed(0) || "0"} ETB
           </p>
         </div>
 
@@ -118,20 +106,24 @@ export default function CustomerOrdersPage() {
     );
   };
 
-  const PastOrderCard = ({ order }: { order: any }) => {
+  const PastOrderCard = ({ order }: { order: OrderSummary }) => {
     const status = getStatusDisplay(order.status);
     const isDelivered = ["DELIVERED", "COMPLETED", "RECEIVED"].includes(order.status);
 
     return (
-      <div className="bg-white dark:bg-gray-900 rounded-[20px] p-4 mb-4 shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col cursor-pointer active:bg-gray-50 dark:active:bg-gray-800 transition-colors">
+      <div 
+        className="bg-white dark:bg-gray-900 rounded-[20px] p-4 mb-4 shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col cursor-pointer active:bg-gray-50 dark:active:bg-gray-800 transition-colors"
+        onClick={() => navigate(buildRoute(ROUTES.CUSTOMER.ORDERS.DETAILS, { orderId: order.id }))}
+      >
         <div className="flex justify-between items-start mb-2">
           <div className="flex items-center gap-3">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center ${status.bg} ${status.color}`}>
               {isDelivered ? <CheckCircle2 size={20} /> : <XCircle size={20} />}
             </div>
             <div>
+              {/* BACKEND ALIGNMENT: order.restaurant.name */}
               <h3 className="font-bold text-[15px] text-gray-900 dark:text-white">
-                {order.restaurantName || "Restaurant"}
+                {order.restaurant?.name || "Restaurant"}
               </h3>
               <p className="text-xs font-medium text-gray-500">
                 #{order.shortId} · {new Date(order.createdAt).toLocaleDateString()}
@@ -139,13 +131,12 @@ export default function CustomerOrdersPage() {
             </div>
           </div>
           <p className="font-black text-[15px] text-gray-900 dark:text-white">
-            {order.totalAmount?.toFixed(0) || "0"} ETB
+            {Number(order.totalAmount).toFixed(0) || "0"} ETB
           </p>
         </div>
 
         <div className="mt-3">
           <button
-            onClick={() => navigate(buildRoute(ROUTES.CUSTOMER.ORDERS.DETAILS, { orderId: order.id }))}
             className="w-full flex items-center justify-center gap-1.5 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold text-[13px] py-2.5 rounded-[12px] active:scale-95 transition-transform"
           >
             View Details
@@ -217,7 +208,7 @@ export default function CustomerOrdersPage() {
         </div>
 
         {/* LOADING SKELETON */}
-        {isLoading ? (
+        {isLoading && orders.length === 0 ? (
           <div className="space-y-4">
             <Skeleton className="h-[200px] w-full rounded-[24px]" />
             <Skeleton className="h-[200px] w-full rounded-[24px]" />

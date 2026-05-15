@@ -1,208 +1,174 @@
-import { useEffect, useRef, useState, useMemo } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import type { KeyboardEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, CheckCircle2, ShieldCheck, AlertCircle, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
-import { ROUTES, buildRoute } from "@/routes/routePaths";
 import { useOrderStore } from "@/store/orders/orderStore";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { ROUTES } from "@/routes/routePaths";
 
-export default function OTPVerificationPage() {
+const OTPVerificationPage: React.FC = () => {
   const navigate = useNavigate();
   const { orderId } = useParams<{ orderId: string }>();
-  const { 
-    activeOrders, 
-    currentOrder, 
-    fetchOrderById, 
-    completeOrder, 
-    isLoading,
-    error: storeError,
-    clearError
-  } = useOrderStore();
   
-  const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
-  const [localError, setLocalError] = useState("");
+  // Backend Integration Hooks
+  const { completeOrder } = useOrderStore();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // CRITICAL FIX: Changed to 6 digits to match Backend schema
+  const [otp, setOtp] = useState<string[]>(['', '', '', '', '', '']);
   const inputRefs = [
     useRef<HTMLInputElement>(null),
     useRef<HTMLInputElement>(null),
     useRef<HTMLInputElement>(null),
     useRef<HTMLInputElement>(null),
     useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null)
   ];
 
-  const order = useMemo(() => 
-    activeOrders.find((item) => item.id === orderId) ??
-    (currentOrder?.id === orderId ? currentOrder : null),
-  [activeOrders, currentOrder, orderId]);
-
+  // Authorization/Route guard
   useEffect(() => {
-    if (orderId && !order) {
-      fetchOrderById(orderId);
+    if (!orderId) {
+      toast.error("Invalid delivery session.");
+      navigate(-1);
     }
-  }, [orderId, order, fetchOrderById]);
-
-  // Clear errors on mount
-  useEffect(() => {
-    clearError();
-  }, [clearError]);
+  }, [orderId, navigate]);
 
   const handleBack = () => {
-    navigate(buildRoute(ROUTES.DELIVERY.ACTIVE.DETAILS, { orderId }));
+    navigate(-1);
   };
 
   const handleChange = (index: number, value: string) => {
-    const newOtp = [...otp];
     if (value.length > 1) {
-      const pasted = value.slice(0, 6 - index).split("");
+      // Handle paste scenario roughly (Adapted for 6 digits)
+      const pasted = value.slice(0, 6).split('');
+      const newOtp = [...otp];
       pasted.forEach((char, i) => {
-        newOtp[index + i] = char;
+        if (index + i < 6) newOtp[index + i] = char;
       });
       setOtp(newOtp);
-      const nextIndex = Math.min(index + pasted.length, 5);
-      inputRefs[nextIndex]?.current?.focus();
+      // Focus the last filled input
+      const lastIndex = Math.min(index + pasted.length, 5);
+      inputRefs[lastIndex]?.current?.focus();
       return;
     }
 
+    const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
 
-    if (value !== "" && index < 5) {
+    // Auto-focus next input
+    if (value !== '' && index < 5) {
       inputRefs[index + 1]?.current?.focus();
     }
   };
 
   const handleKeyDown = (index: number, e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Backspace" && otp[index] === "" && index > 0) {
+    // Auto-focus previous input on Backspace
+    if (e.key === 'Backspace' && otp[index] === '' && index > 0) {
       inputRefs[index - 1]?.current?.focus();
     }
   };
 
   const handleConfirm = async () => {
-    const otpValue = otp.join("");
-    if (!orderId) return;
-
+    const otpValue = otp.join('');
+    
+    // Zod Backend requires exactly 6 digits
     if (otpValue.length !== 6) {
-      setLocalError("Please enter the 6-digit code provided by the customer.");
+      toast.error("Please enter the full 6-digit code.");
       return;
     }
 
-    setLocalError("");
-    await completeOrder(orderId, otpValue);
-    
-    // The store updates and if successful, we should navigate
-    // Checking for error after completion
-  };
+    if (!orderId) return;
 
-  // Effect to navigate on success
-  useEffect(() => {
-    if (!isLoading && !storeError && otp.join("").length === 6 && order?.status === "DELIVERED") {
-       navigate(ROUTES.DELIVERY.HISTORY.LIST);
+    setIsSubmitting(true);
+    try {
+      // Execute the cryptographic handshake with the backend
+      await completeOrder(orderId, otpValue);
+      
+      toast.success("Delivery Confirmed! Payout initiated.");
+      
+      // Navigate to a success screen or back to dashboard
+      navigate(ROUTES.DELIVERY.DASHBOARD);
+      
+    } catch (error: any) {
+      // The store catches the 422 or 409 error from the backend
+      toast.error(error.message || "Invalid OTP Code. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
-  }, [isLoading, storeError, order?.status, navigate]);
-
-  if (!order && !isLoading) {
-    return (
-      <div className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 flex flex-col items-center justify-center px-8 text-center">
-        <AlertCircle className="text-red-500 mb-4" size={48} />
-        <h2 className="text-xl font-black text-gray-900 dark:text-white">Order Context Lost</h2>
-        <Button onClick={() => navigate(ROUTES.DELIVERY.ACTIVE.LIST)} className="mt-6 bg-[#F26A1C] text-white rounded-full px-8 py-3 font-bold">
-          Back to Active Orders
-        </Button>
-      </div>
-    );
-  }
+  };
 
   return (
     <div className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 flex flex-col px-6 font-sans">
-      {/* Header */}
-      <header className="pt-[max(1.5rem,env(safe-area-inset-top))] pb-8">
-        <button
+      
+      {/* Top Header - Back Button */}
+      <div className="mt-14 mb-10">
+        <button 
           onClick={handleBack}
-          className="h-11 w-11 flex items-center justify-center rounded-2xl bg-orange-50 dark:bg-orange-950/30 text-[#F26A1C] active:scale-95 transition-transform"
+          className="w-[45px] h-[45px] flex items-center justify-center rounded-xl bg-orange-50 dark:bg-gray-900 border border-orange-100 dark:border-gray-800 text-[#F26A1C] hover:bg-orange-100 dark:hover:bg-gray-800 active:scale-95 transition-all shadow-sm"
+          aria-label="Go Back"
         >
-          <ArrowLeft size={22} strokeWidth={2.5} />
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            width="24" 
+            height="24" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            strokeWidth="2.5" 
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+          >
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
         </button>
-      </header>
-
-      <div className="flex-1 max-w-[400px] mx-auto w-full">
-        {/* Shield Icon */}
-        <div className="flex justify-center mb-8">
-          <div className="h-20 w-20 rounded-[28px] bg-green-50 dark:bg-green-950/20 flex items-center justify-center text-green-600">
-            <ShieldCheck size={40} strokeWidth={2} />
-          </div>
-        </div>
-
-        <div className="text-center mb-10">
-          <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">Delivery Verification</h1>
-          <p className="mt-3 text-base font-medium text-gray-500 dark:text-gray-400 leading-relaxed">
-            Please enter the 6-digit verification code from <b>{order?.customer.fullName}</b> to complete the delivery.
-          </p>
-        </div>
-
-        {/* OTP Input Grid */}
-        <div className="grid grid-cols-6 gap-2 sm:gap-3 mb-8">
-          {otp.map((digit, index) => (
-            <input
-              key={index}
-              ref={inputRefs[index]}
-              type="text"
-              inputMode="numeric"
-              maxLength={1}
-              value={digit}
-              onChange={(e) => handleChange(index, e.target.value.replace(/[^0-9]/g, ""))}
-              onKeyDown={(e) => handleKeyDown(index, e)}
-              className={cn(
-                "w-full aspect-square border-2 rounded-2xl bg-white dark:bg-gray-900 text-center text-2xl font-black text-gray-900 dark:text-white transition-all outline-none",
-                digit ? "border-[#F26A1C]" : "border-gray-100 dark:border-gray-800 focus:border-orange-200 dark:focus:border-orange-900/50"
-              )}
-            />
-          ))}
-        </div>
-
-        {(localError || storeError) && (
-          <div className="flex items-center gap-2 justify-center p-4 rounded-2xl bg-red-50 dark:bg-red-950/20 text-red-500 mb-8 border border-red-100 dark:border-red-900/30">
-            <AlertCircle size={18} />
-            <p className="text-sm font-bold">{localError || storeError}</p>
-          </div>
-        )}
-
-        <div className="text-center">
-          <p className="text-[13px] font-black text-gray-400 uppercase tracking-widest mb-4">Verification Steps</p>
-          <div className="space-y-3">
-             <div className="flex items-center gap-3 text-sm font-bold text-gray-600 dark:text-gray-400">
-                <div className="h-2 w-2 rounded-full bg-green-500" />
-                <span>Customer receives code on arrival</span>
-             </div>
-             <div className="flex items-center gap-3 text-sm font-bold text-gray-600 dark:text-gray-400">
-                <div className="h-2 w-2 rounded-full bg-green-500" />
-                <span>Input code here to verify handover</span>
-             </div>
-          </div>
-        </div>
       </div>
 
-      {/* Action Button */}
-      <div className="pb-[max(2rem,env(safe-area-inset-bottom))] mt-8">
-        <Button
+      {/* Title */}
+      <h1 className="text-[28px] font-black text-gray-900 dark:text-white leading-tight mb-3">
+        Delivery Handshake
+      </h1>
+
+      {/* Description */}
+      <p className="text-gray-500 dark:text-gray-400 text-[14px] font-medium leading-relaxed mb-10">
+        Please ask the customer to read you the <strong className="text-[#F26A1C]">6-digit PIN</strong> displayed on their screen to confirm you have handed over the food.
+      </p>
+
+      {/* OTP Input Fields */}
+      <div className="flex justify-between items-center mb-10 w-full max-w-md mx-auto gap-2">
+        {otp.map((digit, index) => (
+          <input
+            key={index}
+            ref={inputRefs[index]}
+            type="text"
+            inputMode="numeric"
+            maxLength={1}
+            value={digit}
+            onChange={(e) => handleChange(index, e.target.value.replace(/[^0-9]/g, ''))}
+            onKeyDown={(e) => handleKeyDown(index, e)}
+            className="w-full aspect-square border-2 border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 rounded-[16px] text-center text-2xl font-black text-[#F26A1C] shadow-sm focus:border-[#F26A1C] focus:ring-4 focus:ring-orange-500/20 dark:focus:ring-orange-500/10 outline-none transition-all"
+          />
+        ))}
+      </div>
+
+      {/* Confirm Button */}
+      <div className="mt-auto mb-16 flex justify-center w-full max-w-md mx-auto">
+        <button 
           onClick={handleConfirm}
-          disabled={isLoading || otp.join("").length < 6}
-          className="w-full h-16 rounded-full bg-[#F26A1C] hover:bg-[#e05d15] text-white text-lg font-black shadow-[0_12px_32px_rgba(242,106,28,0.25)] active:scale-[0.98] transition-all disabled:opacity-50"
+          disabled={isSubmitting || otp.join('').length !== 6}
+          className="w-full bg-[#F26A1C] hover:bg-[#e05d15] text-white font-black text-[17px] py-[18px] rounded-[20px] shadow-[0_8px_24px_rgba(242,106,28,0.25)] transition-all active:scale-[0.98] disabled:opacity-50 disabled:shadow-none flex items-center justify-center gap-2"
         >
-          {isLoading ? (
-            <div className="flex items-center gap-2">
-              <Loader2 className="animate-spin" size={20} />
-              Verifying...
-            </div>
+          {isSubmitting ? (
+            <Loader2 size={24} className="animate-spin" />
           ) : (
-            <div className="flex items-center gap-2">
-              <CheckCircle2 size={20} />
-              Complete Delivery
-            </div>
+            "Confirm Handshake"
           )}
-        </Button>
+        </button>
       </div>
+
     </div>
   );
-}
+};
+
+export default OTPVerificationPage;

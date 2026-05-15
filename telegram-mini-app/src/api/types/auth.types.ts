@@ -1,7 +1,9 @@
 import { type User } from "@/types/user.types";
 
 export interface LoginRequest {
-  email: string;
+  email?: string;
+  astuEmail?: string; // Optional for ASTU email login
+  phoneNumber?: string; // Optional for phone number login
   password: string;
 }
 

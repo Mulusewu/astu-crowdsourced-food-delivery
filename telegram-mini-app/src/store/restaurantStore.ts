@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { create } from "zustand";
-import db from "@/data/database.json";
+import { apiClient } from "@/api/client/axiosInstance";
 
 export interface FoodItem {
   id: string;
@@ -43,14 +44,7 @@ export interface Restaurant {
     email: string;
   };
   hours: Record<string, string>;
-  features: {
-    acceptsCash: boolean;
-    acceptsCard: boolean;
-    acceptsTelegramStars: boolean;
-    hasDelivery: boolean;
-    hasPickup: boolean;
-    hasDineIn: boolean;
-  };
+  features: any;
   categories: any[];
   offers: any[];
   deliveryZones: string[];
@@ -77,15 +71,57 @@ interface RestaurantState {
   clearError: () => void;
 }
 
-const delay = (ms: number = 500) =>
-  new Promise((resolve) => setTimeout(resolve, ms));
+const mapBackendRestaurant = (rest: any): Restaurant => ({
+  id: rest.id,
+  name: rest.name,
+  description: "A wonderful place to eat in ASTU.",
+  shortDescription: "",
+  cuisine: rest.tags || [],
+  image: rest.imageUrl || "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&fit=crop",
+  coverImage: rest.imageUrl || "",
+  logo: "",
+  rating: Number(rest.avgRating) || 5.0,
+  totalReviews: Number(rest.totalReviews) || 0,
+  priceLevel: "$$",
+  deliveryTime: "15-25 min",
+  deliveryFee: 33, // Default backend minimum
+  minimumOrder: Number(rest.minOrderValue) || 0,
+  freeDeliveryThreshold: 0,
+  isOpen: rest.effectiveIsOpen ?? (rest.isOpen !== false), // Uses backend computed schedule
+  location: rest.location || "ASTU Campus",
+  contact: { phone: rest.phone || "", email: "", website: "" },
+  hours: { open: rest.openingTime || "00:00", close: rest.closingTime || "23:59" },
+  features: { acceptsCash: true, acceptsCard: true, hasDelivery: true },
+  categories: rest.categories || [],
+  offers: [],
+  deliveryZones: ["ASTU Campus"],
+  estimatedDeliveryTime: { min: 15, max: 30 },
+  popularityScore: Number(rest.totalReviews) || 0,
+  isFeatured: false,
+  menu: [] // Will be populated in details fetch
+});
 
-// Safe location parser
-const parseLocation = (loc: any): string => {
-  if (typeof loc === "string") return loc;
-  if (loc && typeof loc === "object" && loc.area) return loc.area;
-  return "Adama";
-};
+const mapBackendMenuItem = (item: any, restaurantName: string, location: string): FoodItem => ({
+  id: item.id,
+  name: item.name,
+  restaurant: restaurantName,
+  restaurantId: item.restaurantId,
+  location: location,
+  price: Number(item.price) || 0,
+  rating: 5.0, // Backend reviews are aggregated at restaurant/deliverer level, items inherit 5.0 in UI
+  image: item.imageUrl || "https://images.unsplash.com/photo-1541544741938-0af808871cc0?w=200&fit=crop",
+  description: item.description || "",
+  categoryId: item.categoryId,
+  isFasting: item.isFasting || false,
+  prepTimeMins: item.prepTimeMins || 15,
+  isAvailable: item.effectiveAvailability ?? item.isAvailable, // Uses backend computed state
+  availabilityReason: item.availabilityReason || null,
+  isPromo: false
+});
+
+
+
+const resId = "699a2770-c44b-4521-aa91-1916269a10d9";
 
 export const useRestaurantStore = create<RestaurantState>((set) => ({
   restaurants: [],
@@ -93,230 +129,81 @@ export const useRestaurantStore = create<RestaurantState>((set) => ({
   currentRestaurant: null,
   isLoading: false,
   error: null,
-
-  fetchRestaurants: async (filters) => {
+  
+  //for testing we use specific resturants menus for teh popular food part
+  
+  fetchRestaurants: async (filters = {}) => {
     set({ isLoading: true, error: null });
     try {
-      await delay(400);
-
-      let rawRestaurants = [...(db.restaurants as any[] || [])];
-
-      // Apply Filters
-      if (filters?.searchQuery) {
-        const query = filters.searchQuery.toLowerCase();
-        rawRestaurants = rawRestaurants.filter(r => 
-          r.name.toLowerCase().includes(query) || 
-          r.location.toLowerCase().includes(query) ||
-          r.tags?.some((t: string) => t.toLowerCase().includes(query))
-        );
-      }
-
-      if (filters?.location && filters.location !== "Any") {
-        const loc = filters.location.replace(" Gate", "").toLowerCase();
-        rawRestaurants = rawRestaurants.filter(r => 
-          r.location.toLowerCase().includes(loc)
-        );
-      }
-
-      // Apply Sorting
-      if (filters?.sortBy === "Rating") {
-        rawRestaurants.sort((a, b) => (b.avgRating || 0) - (a.avgRating || 0));
-      } else if (filters?.sortBy === "Newest To Oldest") {
-        // Fallback to ID sorting if createdAt doesn't exist
-        rawRestaurants.sort((a, b) => b.id.localeCompare(a.id));
-      } else if (filters?.sortBy === "Oldest To Newest") {
-        rawRestaurants.sort((a, b) => a.id.localeCompare(b.id));
-      }
-
-      const restaurants: Restaurant[] = rawRestaurants.map(
-        (rest: any) => ({
-          ...rest,
-          description: rest.description || "A wonderful place to eat.",
-          shortDescription: rest.shortDescription || "",
-          cuisine: rest.tags || rest.cuisine || [],
-          image:
-            rest.imageUrl ||
-            rest.image ||
-            rest.coverImage ||
-            "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&fit=crop",
-          coverImage: rest.coverImage || rest.imageUrl || "",
-          logo: rest.logo || "",
-          rating: Number(rest.avgRating) || Number(rest.rating) || 4.0,
-          totalReviews: Number(rest.totalReviews) || 0,
-          priceLevel: rest.priceLevel || "$$",
-          deliveryTime: rest.deliveryTime || "15-25 min",
-          deliveryFee: Number(rest.deliveryFee) || 0,
-          minimumOrder: Number(rest.minOrderValue) || Number(rest.minimumOrder) || 0,
-          freeDeliveryThreshold: Number(rest.freeDeliveryThreshold) || 0,
-          isOpen: rest.isOpen !== false,
-          location: parseLocation(rest.location),
-          contact: {
-            phone: rest.phone || rest.contact?.phone || "",
-            email: rest.email || rest.contact?.email || "",
-            website: rest.website || rest.contact?.website || "",
-          },
-          hours: rest.hours || {},
-          features: rest.features || {
-            acceptsCash: true,
-            acceptsCard: false,
-            acceptsTelegramStars: false,
-            hasDelivery: true,
-            hasPickup: false,
-            hasDineIn: false,
-          },
-          categories: rest.categories || [],
-          offers: rest.offers || [],
-          deliveryZones: rest.deliveryZones || [],
-          estimatedDeliveryTime: rest.estimatedDeliveryTime || {
-            min: 15,
-            max: 25,
-          },
-          popularityScore: rest.popularityScore || 0,
-          isFeatured: rest.isFeatured || false,
-          menu: [],
-        }),
-      );
-
+      // Build API query parameters
+      const params: any = { limit: 20 };
+      if (filters.searchQuery) params.search = filters.searchQuery;
+      if (filters.sortBy === "Rating") params.sortBy = "rating";
+      // To support Location sorting, we would pass userLat & userLng here
+      
+      const response = await apiClient.get('/restaurants', { params });
+      
+      const restaurants = response.data.restaurants.map(mapBackendRestaurant);
       set({ restaurants, isLoading: false });
-    } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : "Failed to load",
-        isLoading: false,
-      });
+    } catch (error: any) {
+      set({ error: error.message || "Failed to load restaurants", isLoading: false });
     }
   },
 
-  fetchPopularFoods: async (filters) => {
+  fetchPopularFoods: async (filters = {}) => {
     set({ isLoading: true, error: null });
     try {
-      await delay(400);
-
-      let rawFoods = [...(db.menuItems as any[])].filter((item) => item.isAvailable);
-
-      // Apply Filters
-      if (filters?.searchQuery) {
-        const query = filters.searchQuery.toLowerCase();
-        rawFoods = rawFoods.filter(f => 
-          f.name.toLowerCase().includes(query) || 
-          f.description?.toLowerCase().includes(query)
-        );
+      const params: any = { limit: 8 };
+      if (filters.searchQuery) params.search = filters.searchQuery;
+      if (filters.priceRange && filters.priceRange !== "Any") {
+        const [min, max] = filters.priceRange.split("-");
+        params.minPrice = min;
+        params.maxPrice = max;
       }
 
-      if (filters?.location && filters.location !== "Any") {
-        const loc = filters.location.replace(" Gate", "").toLowerCase();
-        rawFoods = rawFoods.filter(f => {
-          const rest = db.restaurants.find(r => r.id === f.restaurantId);
-          return (rest as any)?.location.toLowerCase().includes(loc);
-        });
-      }
-
-      if (filters?.priceRange && filters.priceRange !== "Any") {
-        const [minStr, maxStr] = filters.priceRange.split("-");
-        const min = parseInt(minStr, 10);
-        const max = parseInt(maxStr, 10);
-        rawFoods = rawFoods.filter(f => f.price >= min && f.price <= max);
-      }
-
-      const popularFoods: FoodItem[] = rawFoods
-        .slice(0, 20)
-        .map((item) => {
-          const rest = db.restaurants.find((r) => r.id === item.restaurantId) as any;
-          return {
-            id: item.id,
-            name: item.name,
-            restaurant: rest?.name ?? "Restaurant",
-            restaurantId: item.restaurantId,
-            location: parseLocation(rest?.location),
-            price: Number(item.price) || 0,
-            rating: Number(item.rating) || Number(rest?.avgRating) || 4.0,
-            image: item.imageUrl || item.image || "",
-            description: item.description || "",
-            categoryId: item.categoryId,
-            isFasting: item.isFasting ?? false,
-            prepTimeMins: item.prepTimeMins ?? 15,
-            isAvailable: item.isAvailable ?? true,
-            availabilityReason: item.availabilityReason ?? null,
-          };
-        });
+      // Hit our powerful Global Discovery Search endpoint
+      const response = await apiClient.get(`/restaurants/${resId}/items`, { params });
+      
+      const popularFoods = response.data.items.map((item: any) => 
+        mapBackendMenuItem(item, item.restaurant?.name || "Restaurant", item.restaurant?.location || "ASTU")
+      );
 
       set({ popularFoods, isLoading: false });
-    } catch (error) {
+    } catch (error: any) {
       set({ error: "Failed to load popular foods", isLoading: false });
+      console.log(error);
     }
   },
 
   fetchRestaurantDetails: async (id: string) => {
     set({ isLoading: true, error: null });
     try {
-      await delay(400);
+      const response = await apiClient.get(`/restaurants/${id}`);
+      const rawRest = response.data.data;
+      
+      const mappedRest = mapBackendRestaurant(rawRest);
 
-      const restBase = ((db.restaurants as any[]) || []).find(
-        (r) => r.id === id,
-      );
-
-      if (!restBase) {
-        set({
-          error: "Restaurant not found",
-          isLoading: false,
-          currentRestaurant: null,
+      // Flatten nested categories into the menu array the UI expects
+      let flattenedMenu: FoodItem[] = [];
+      if (rawRest.categories) {
+        rawRest.categories.forEach((cat: any) => {
+          if (cat.products) {
+            const mappedItems = cat.products.map((p: any) => ({
+              ...mapBackendMenuItem(p, rawRest.name, rawRest.location),
+              categoryId: cat.id
+            }));
+            flattenedMenu = [...flattenedMenu, ...mappedItems];
+          }
         });
-        return;
       }
 
-      // Fetch menu items from flat db.menuItems array (Prisma-aligned)
-      let rawMenu: any[] = [];
-      if (Array.isArray(restBase.menu)) {
-        rawMenu = restBase.menu; // Nested inside restaurant (legacy)
-      } else {
-        rawMenu = (db.menuItems as any[]).filter((m) => m.restaurantId === id);
-      }
+      mappedRest.menu = flattenedMenu;
+      // Preserve category structure for UI tabs
+      mappedRest.categories = rawRest.categories || [];
 
-      const menuItems: FoodItem[] = rawMenu.map((item) => ({
-        id: item.id,
-        name: item.name || "Menu Item",
-        restaurant: restBase.name,
-        restaurantId: restBase.id,
-        location: parseLocation(restBase.location),
-        price: Number(item.price) || 0,
-        rating: Number(item.rating) || Number(restBase.avgRating) || 4.0,
-        image:
-          item.imageUrl ||
-          item.image ||
-          "https://images.unsplash.com/photo-1541544741938-0af808871cc0?w=200&fit=crop",
-        description:
-          item.description || "Delicious special from " + restBase.name,
-        categoryId: item.categoryId,
-        isFasting: item.isFasting ?? false,
-        prepTimeMins: item.prepTimeMins ?? 15,
-        isAvailable: item.isAvailable ?? true,
-        availabilityReason: item.availabilityReason ?? null,
-      }));
-
-      const fullRestaurant: Restaurant = {
-        ...restBase,
-        description:
-          restBase.description || "A wonderful place to eat in Adama.",
-        cuisine: restBase.tags || restBase.cuisine || [],
-        image:
-          restBase.imageUrl ||
-          restBase.image ||
-          restBase.coverImage ||
-          "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&fit=crop",
-        rating: Number(restBase.avgRating) || Number(restBase.rating) || 4.0,
-        totalReviews: Number(restBase.totalReviews) || 0,
-        minimumOrder: Number(restBase.minOrderValue) || Number(restBase.minimumOrder) || 0,
-        location: parseLocation(restBase.location),
-        contact: {
-          phone: restBase.phone || restBase.contact?.phone || "",
-          email: restBase.email || restBase.contact?.email || "",
-          website: restBase.website || restBase.contact?.website || "",
-        },
-        menu: menuItems,
-      } as Restaurant;
-
-      set({ currentRestaurant: fullRestaurant, isLoading: false });
-    } catch (error) {
-      set({ error: "Failed to load restaurant details", isLoading: false });
+      set({ currentRestaurant: mappedRest, isLoading: false });
+    } catch (error: any) {
+      set({ error: "Failed to load restaurant details", isLoading: false, currentRestaurant: null });
     }
   },
 

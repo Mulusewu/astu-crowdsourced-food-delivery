@@ -18,7 +18,7 @@ const signinSchema = z.object({
 type SigninFormData = z.infer<typeof signinSchema>;
 
 export default function SigninForm() {
-  const { signin, isLoading, error: _error, clearError } = useAuthStore();
+  const { signin, isLoading, clearError } = useAuthStore();
 
   const [showPassword, setShowPassword] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
@@ -43,7 +43,8 @@ export default function SigninForm() {
       if (errorMsg.toLowerCase().includes("password")) {
         setApiError("Incorrect Password!");
       } else {
-        setApiError("Email Doesn't Exist!");
+        setApiError("An error occurred during sign in. Please try again.");
+        console.error("Sign in error:", err);
       }
     }
   };

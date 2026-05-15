@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { CreditCard } from "lucide-react";
+
 import { useParams, useNavigate } from "react-router-dom";
 import {
     ArrowLeft,
@@ -26,38 +28,42 @@ export default function OrderDetailsPage() {
     const navigate = useNavigate();
 
     const [showCancelModal, setShowCancelModal] = useState(false);
-    const [showCompleteModal, setShowCompleteModal] = useState(false);
     const [isLoadingAction, setIsLoadingAction] = useState(false);
-    const [dataReady, setDataReady] = useState(false);
 
     // ── Store selectors ────────────────────────────────────────────────────────
-    const order = useCustomerOrderStore((state) =>
-        state.orders.find((o) => o.id === orderId)
-    );
-    const cancelOrder = useCustomerOrderStore((state) => state.cancelOrder);
-    const updateOrderStatus = useCustomerOrderStore((state) => state.updateOrderStatus);
-    const fetchOrders = useCustomerOrderStore((state) => state.fetchCustomerOrders);
+    const {
+      currentOrderDetails: order,
+      isLoading,
+      fetchOrderDetails,
+      cancelOrder,
+      connectToTracking,
+      disconnectTracking
+    } = useCustomerOrderStore();
+
     const addToCart = useCartStore((state) => state.addToCart);
     const existingDispute = useDisputeStore((state) =>
         state.getDisputeByOrderId(orderId || "")
     );
 
-    // Load orders if not already present (e.g. deep-linked)
+    // ── Lifecycle Hooks ────────────────────────────────────────────────────────
     useEffect(() => {
-        const load = async () => {
-            if (!order) await fetchOrders();
-            setTimeout(() => setDataReady(true), 300);
+        if (orderId) {
+            fetchOrderDetails(orderId); // Fetch deep payload from backend
+            connectToTracking(orderId); // Open live socket
+        }
+
+        return () => {
+          disconnectTracking(); // Close socket when leaving page
         };
-        load();
     }, [orderId]);
 
     // ── Derived state ──────────────────────────────────────────────────────────
     const isCancellable = order
-        ? ["CREATED", "AWAITING_ACCEPT", "ASSIGNED"].includes(order.status)
+        ? ["CREATED", "AWAITING_ACCEPT", "ASSIGNED", "AWAITING_PAYMENT"].includes(order.status)
         : false;
-    const isCompletable = order
-        ? ["EN_ROUTE", "ARRIVED"].includes(order.status)
-        : false;
+    
+    // Notice: isCompletable is REMOVED. Customer cannot click complete.
+    
     const isFinished = order
         ? ["DELIVERED", "COMPLETED", "RECEIVED"].includes(order.status)
         : false;
@@ -104,30 +110,27 @@ export default function OrderDetailsPage() {
     const handleCancel = async () => {
         if (!orderId) return;
         setIsLoadingAction(true);
-        await cancelOrder(orderId);
-        setIsLoadingAction(false);
-        setShowCancelModal(false);
-        navigate(ROUTES.CUSTOMER.ORDERS.LIST);
-    };
-
-    const handleComplete = async () => {
-        if (!orderId) return;
-        setIsLoadingAction(true);
-        await updateOrderStatus(orderId, "COMPLETED");
-        setIsLoadingAction(false);
-        setShowCompleteModal(false);
+        try {
+          await cancelOrder(orderId);
+          setShowCancelModal(false);
+          navigate(ROUTES.CUSTOMER.ORDERS.LIST);
+        } catch (error) {
+          // Toast is handled by service throwing error
+        } finally {
+          setIsLoadingAction(false);
+        }
     };
 
     const handleReorder = () => {
         if (!order) return;
         order.items.forEach((item) => {
+            // CRITICAL FIX: Add expectedUnitPrice to comply with backend anti-spoofing
             addToCart({
-                id: item.menuId,
+                menuId: item.menuId,
                 name: item.name,
-                price: item.unitPrice,
+                expectedUnitPrice: item.unitPrice, 
                 image: item.imageUrl ?? undefined,
-                restaurantId: order.restaurantId,
-                restaurantName: order.restaurantName,
+                restaurantId: "N/A", // Handled by cart store logic
                 quantity: item.quantity,
             });
         });
@@ -135,7 +138,7 @@ export default function OrderDetailsPage() {
     };
 
     // ── Loading skeleton ───────────────────────────────────────────────────────
-    if (!dataReady) {
+    if (isLoading) {
         return (
             <div className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 p-5 flex flex-col gap-4">
                 <Skeleton className="h-12 w-full rounded-xl" />
@@ -196,24 +199,20 @@ export default function OrderDetailsPage() {
                             </div>
                         </div>
                         <h2 className="text-[16px] font-black text-gray-900 dark:text-white leading-tight truncate">
-                            {order.restaurantName}
+                            {order.restaurant?.name}
                         </h2>
                         <p className="text-[11px] font-bold text-gray-400">
                             Order Code: <span className="text-gray-600 dark:text-gray-300">{order.shortId}</span>
                         </p>
                     </div>
 
-                    {/* OTP Block */}
-                    <div className="flex flex-col items-center justify-center shrink-0">
-                        {(order.status === "PICKED_UP" || order.status === "EN_ROUTE" || order.status === "ARRIVED") && (
-                            <div className="w-12 h-12 bg-orange-50 dark:bg-gray-800 rounded-xl flex items-center justify-center mb-1.5 border border-orange-100 dark:border-gray-700">
-                                <QrCode size={22} className="text-[#F26A1C]" />
-                            </div>
-                        )}
-                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">OTP Code</span>
-                        <span className="text-[17px] font-black tracking-[0.2em] text-gray-900 dark:text-white mt-0.5">
+                    {/* OTP Block - ALWAYS SHOW SO CUSTOMER CAN READ IT TO DELIVERER */}
+                    <div className="flex flex-col items-center justify-center shrink-0 bg-white dark:bg-gray-900 p-3 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Your PIN</span>
+                        <span className="text-[20px] font-black tracking-[0.2em] text-[#F26A1C]">
                             {order.otpCode}
                         </span>
+                        <span className="text-[9px] text-gray-400 text-center mt-1 leading-tight">Show to Deliverer</span>
                     </div>
                 </div>
 
@@ -242,7 +241,7 @@ export default function OrderDetailsPage() {
                         <div>
                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Delivery Address</p>
                             <p className="text-[13px] font-semibold text-gray-900 dark:text-white">
-                                {order.deliveryAddress || "ASTU Campus, Adama"}
+                                {order.customer?.defaultDormBlock || "ASTU Campus"}
                             </p>
                         </div>
                     </div>
@@ -256,15 +255,15 @@ export default function OrderDetailsPage() {
                             </p>
                         </div>
                     </div>
-                    {order.estimatedDeliveryTime && (
+                    {order.estimatedReadyAt && (
                         <>
                             <div className="w-full h-px bg-gray-100 dark:bg-gray-800" />
                             <div className="flex items-start gap-2.5">
-                                <Clock size={16} className="text-green-500 mt-0.5 shrink-0" />
+                                <Clock size={16} className="text-orange-500 mt-0.5 shrink-0" />
                                 <div>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Estimated Delivery</p>
-                                    <p className="text-[13px] font-semibold text-green-600 dark:text-green-400">
-                                        {formatDate(order.estimatedDeliveryTime)}
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Estimated Prep Time</p>
+                                    <p className="text-[13px] font-semibold text-orange-600 dark:text-orange-400">
+                                        {formatDate(order.estimatedReadyAt)}
                                     </p>
                                 </div>
                             </div>
@@ -275,26 +274,25 @@ export default function OrderDetailsPage() {
                 {/* ── Deliverer Info ── */}
                 {order.deliverer ? (
                     <div className="bg-gray-50 dark:bg-gray-900/50 rounded-[18px] border border-gray-100 dark:border-gray-800 overflow-hidden">
-                        {/* Top row: avatar + name + call button */}
                         <div className="flex items-center justify-between p-3.5">
                             <div className="flex items-center gap-3">
                                 <img
-                                    src={order.deliverer.avatarUrl || FALLBACK_AVATAR}
-                                    alt={order.deliverer.name}
+                                    src={order.deliverer.user.avatarUrl || FALLBACK_AVATAR}
+                                    alt={order.deliverer.user.fullName}
                                     className="w-11 h-11 rounded-full object-cover border-2 border-orange-100 dark:border-gray-700 shrink-0"
                                 />
                                 <div>
-                                    <h4 className="text-[13px] font-bold text-gray-900 dark:text-white">{order.deliverer.name}</h4>
+                                    <h4 className="text-[13px] font-bold text-gray-900 dark:text-white">{order.deliverer.user.fullName}</h4>
                                     <div className="flex items-center gap-1 text-[11px] font-semibold text-[#F26A1C]">
                                         <Star size={10} className="fill-[#F26A1C]" />
-                                        <span>{order.deliverer.rating.toFixed(1)}</span>
+                                        <span>{order.deliverer.rating?.toFixed(1)}</span>
                                         <span className="text-gray-400 dark:text-gray-500 ml-1">• Delivery Partner</span>
                                     </div>
                                 </div>
                             </div>
-                            {order.deliverer.phone && (
+                            {order.deliverer.user.phoneNumber && (
                                 <a
-                                    href={`tel:${order.deliverer.phone}`}
+                                    href={`tel:${order.deliverer.user.phoneNumber}`}
                                     className="w-10 h-10 rounded-[14px] bg-white dark:bg-gray-800 border border-orange-100 dark:border-gray-700 flex items-center justify-center active:scale-95 transition-transform shadow-sm shrink-0"
                                 >
                                     <Phone size={18} className="text-[#F26A1C]" />
@@ -302,15 +300,14 @@ export default function OrderDetailsPage() {
                             )}
                         </div>
 
-                        {/* Bottom row: phone number */}
-                        {order.deliverer.phone && (
+                        {order.deliverer.user.phoneNumber && (
                             <a
-                                href={`tel:${order.deliverer.phone}`}
+                                href={`tel:${order.deliverer.user.phoneNumber}`}
                                 className="flex items-center gap-2 px-3.5 py-2.5 bg-orange-50 dark:bg-orange-900/20 border-t border-orange-100 dark:border-orange-800/30 active:bg-orange-100 dark:active:bg-orange-900/40 transition-colors"
                             >
                                 <Phone size={13} className="text-[#F26A1C] shrink-0" />
                                 <span className="text-[13px] font-bold text-[#F26A1C] tracking-wide">
-                                    {order.deliverer.phone}
+                                    {order.deliverer.user.phoneNumber}
                                 </span>
                                 <span className="ml-auto text-[11px] font-semibold text-orange-400 dark:text-orange-500">
                                     Tap to call
@@ -336,9 +333,9 @@ export default function OrderDetailsPage() {
                         Order Items <span className="text-gray-400 font-medium">({order.items.length})</span>
                     </h3>
                     <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                        {order.items.map((item) => (
+                        {order.items.map((item: any) => (
                             <div
-                                key={item.id}
+                                key={item.menuId}
                                 onClick={() => navigate(buildRoute(ROUTES.CUSTOMER.FOOD.DETAILS, { foodId: item.menuId }))}
                                 className="w-[100px] shrink-0 flex flex-col gap-1.5 cursor-pointer active:opacity-70 transition-opacity"
                             >
@@ -355,7 +352,7 @@ export default function OrderDetailsPage() {
                                 </div>
                                 <p className="text-[11px] font-bold text-gray-900 dark:text-white leading-tight truncate">{item.name}</p>
                                 <div className="flex justify-between items-center text-[11px] font-bold text-[#F26A1C]">
-                                    <span>{item.unitPrice.toFixed(0)} ETB</span>
+                                    <span>{Number(item.unitPrice).toFixed(0)} ETB</span>
                                     <span className="text-gray-500 dark:text-gray-400">x{item.quantity}</span>
                                 </div>
                             </div>
@@ -368,57 +365,27 @@ export default function OrderDetailsPage() {
                     <h3 className="text-[13px] font-bold text-gray-900 dark:text-white mb-1">Price Breakdown</h3>
                     <div className="flex justify-between text-[13px] font-semibold text-gray-600 dark:text-gray-400">
                         <span>Food Subtotal</span>
-                        <span>{order.foodPrice.toFixed(2)} ETB</span>
+                        <span>{Number(order.foodPrice).toFixed(2)} ETB</span>
                     </div>
                     <div className="flex justify-between text-[13px] font-semibold text-gray-600 dark:text-gray-400">
                         <span>Delivery Fee</span>
-                        <span>{order.deliveryFee.toFixed(2)} ETB</span>
+                        <span>{Number(order.deliveryFee).toFixed(2)} ETB</span>
                     </div>
-                    {order.serviceFee > 0 && (
+                    {Number(order.serviceFee) > 0 && (
                         <div className="flex justify-between text-[13px] font-semibold text-gray-600 dark:text-gray-400">
                             <span>Service Fee</span>
-                            <span>{order.serviceFee.toFixed(2)} ETB</span>
-                        </div>
-                    )}
-                    {order.transactionFee > 0 && (
-                        <div className="flex justify-between text-[13px] font-semibold text-gray-600 dark:text-gray-400">
-                            <span>Transaction Fee</span>
-                            <span>{order.transactionFee.toFixed(2)} ETB</span>
-                        </div>
-                    )}
-                    {order.tip > 0 && (
-                        <div className="flex justify-between text-[13px] font-semibold text-gray-600 dark:text-gray-400">
-                            <span>Driver Tip</span>
-                            <span>{order.tip.toFixed(2)} ETB</span>
+                            <span>{Number(order.serviceFee).toFixed(2)} ETB</span>
                         </div>
                     )}
                     <div className="w-full h-px bg-gray-200 dark:bg-gray-700" />
                     <div className="flex justify-between items-center">
                         <span className="text-[15px] font-black text-gray-900 dark:text-white">Total</span>
-                        <span className="text-[18px] font-black text-[#F26A1C]">{order.totalAmount.toFixed(2)} ETB</span>
+                        <span className="text-[18px] font-black text-[#F26A1C]">{Number(order.totalAmount).toFixed(2)} ETB</span>
                     </div>
                 </div>
 
                 {/* ── Action Buttons ── */}
                 <div className="space-y-3 pb-4">
-                    {isActive && (
-                        <button
-                            onClick={() => navigate(buildRoute(ROUTES.CUSTOMER.ORDERS.TRACK, { orderId: order.id }))}
-                            className="w-full py-4 bg-[#F26A1C] hover:bg-[#e05d15] text-white font-bold rounded-[20px] text-[15px] shadow-[0_8px_20px_rgba(242,106,28,0.25)] active:scale-[0.98] transition-transform"
-                        >
-                            Track Order
-                        </button>
-                    )}
-
-                    {isCompletable && (
-                        <button
-                            onClick={() => setShowCompleteModal(true)}
-                            className="w-full py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-[20px] text-[15px] shadow-md active:scale-[0.98] transition-transform"
-                        >
-                            Confirm Receipt
-                        </button>
-                    )}
-
                     {isFinished && (
                         <>
                             <button
@@ -452,6 +419,32 @@ export default function OrderDetailsPage() {
                             Cancel Order
                         </button>
                     )}
+
+                    {isActive && (
+                        <button
+  onClick={() => navigate(buildRoute(ROUTES.CUSTOMER.ORDERS.TRACK, { orderId: order.id }))}
+  className="w-full py-4 bg-[#F26A1C]..."
+>
+  Track Order
+</button>
+                    )}
+{order.status === "ASSIGNED" && (
+  <div className="px-5 mt-6 relative z-10">
+    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-5 border border-blue-100 dark:border-blue-800 flex items-center justify-between shadow-sm">
+      <div>
+        <p className="text-[12px] font-bold text-blue-600 uppercase tracking-widest mb-1">Deliverer Found!</p>
+        <p className="text-xs font-semibold text-blue-800 dark:text-blue-300">Pay now to secure your order.</p>
+      </div>
+      <button 
+        onClick={() => navigate(buildRoute(ROUTES.CUSTOMER.PAYMENT.PROCESS, { orderId: order.id }))}
+        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-transform active:scale-95"
+      >
+        <CreditCard size={18} /> Pay Now
+      </button>
+    </div>
+  </div>
+)}
+
                 </div>
             </main>
 
@@ -484,44 +477,6 @@ export default function OrderDetailsPage() {
                             >
                                 {isLoadingAction ? <Loader2 size={16} className="animate-spin" /> : null}
                                 Cancel Order
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* ── Confirm Receipt Modal ── */}
-            {showCompleteModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center px-6">
-                    <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" onClick={() => setShowCompleteModal(false)} />
-                    <div className="bg-white dark:bg-gray-900 rounded-[24px] p-6 w-full max-w-sm relative z-10 animate-in zoom-in-95 duration-200 text-center shadow-2xl">
-                        <div className="w-14 h-14 bg-green-50 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <QrCode size={28} className="text-green-600" />
-                        </div>
-                        <h3 className="text-[17px] font-black text-gray-900 dark:text-white mb-2 leading-tight">
-                            Confirm You Received Your Order?
-                        </h3>
-                        <p className="text-[12px] font-semibold text-gray-500 mb-1 px-2">
-                            Your OTP code is:
-                        </p>
-                        <p className="text-[24px] font-black tracking-[0.25em] text-[#F26A1C] mb-6">
-                            {order.otpCode}
-                        </p>
-                        <div className="flex gap-3">
-                            <button
-                                disabled={isLoadingAction}
-                                onClick={() => setShowCompleteModal(false)}
-                                className="flex-1 py-3.5 border-2 border-orange-100 dark:border-gray-700 text-[#F26A1C] font-bold rounded-[16px] text-[13px] active:scale-95 transition-transform disabled:opacity-50"
-                            >
-                                Return
-                            </button>
-                            <button
-                                disabled={isLoadingAction}
-                                onClick={handleComplete}
-                                className="flex-1 py-3.5 bg-green-600 text-white font-bold rounded-[16px] text-[13px] shadow-md active:scale-95 transition-transform disabled:opacity-70 flex items-center justify-center gap-2"
-                            >
-                                {isLoadingAction ? <Loader2 size={16} className="animate-spin" /> : null}
-                                Confirm
                             </button>
                         </div>
                     </div>

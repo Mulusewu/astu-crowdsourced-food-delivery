@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // src/store/auth/authStore.ts — aligned with Prisma schema
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import db from "@/data/database.json";
-import type { User, UserRole, CustomerProfile, DelivererProfile, ActiveMode } from "@/types/user.types";
-import { getRoleRedirectPath, canSwitchRoles } from "@/types/user.types";
+import { authApi } from "@/api/endpoints/auth";
+import type { User, CustomerProfile, DelivererProfile, ActiveMode } from "@/types/user.types";
+import { getRoleRedirectPath } from "@/types/user.types";
 
 export interface UpdateProfileData {
   // User-level fields
@@ -33,12 +35,17 @@ interface SigninData {
 interface AuthState {
   user: User | null;
   token: string | null;
+  activeMode: ActiveMode | null;
   isLoading: boolean;
   error: string | null;
+
   signup: (data: SignupData, navigate?: (path: string) => void) => Promise<void>;
   signin: (data: SigninData, navigate?: (path: string) => void) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   updatePassword: (oldPw: string, newPw: string) => Promise<void>;
+
+  setToken: (token: string) => void;
+  setUser: (user: User) => void;
   updateProfile: (data: UpdateProfileData) => Promise<void>;
   toggleActiveMode: (targetMode?: ActiveMode) => Promise<void>;
   clearError: () => void;
@@ -46,91 +53,53 @@ interface AuthState {
 
 const delay = (ms = 700) => new Promise((r) => setTimeout(r, ms));
 
-const buildUserWithProfile = (raw: (typeof db.users)[number]): User => {
-  const role = raw.role as UserRole;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const base: User = { ...(raw as any), role };
 
-  if (role === "DELIVERER") {
-    const p = db.delivererProfiles.find((dp) => dp.userId === raw.id);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (p) base.delivererProfile = { ...(p as any) };
-  }
-  if (role === "CUSTOMER") {
-    const p = db.customerProfiles.find((cp) => cp.userId === raw.id);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (p) base.customerProfile = { ...(p as any) };
-  }
-  if (role === "VENDOR_STAFF") {
-    const p = db.vendorProfiles.find((vp) => vp.userId === raw.id);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (p) base.vendorProfile = { ...(p as any) };
-  }
-  return base;
-};
 
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       user: null,
       token: null,
+      activeMode: null,
       isLoading: false,
       error: null,
 
+      setToken: (token: string) => set({ token }),
+
+      setUser: (user: User) => set({ user }),
+
       signup: async (data, navigate) => {
         set({ isLoading: true, error: null });
-        await delay(800);
-        const duplicate = db.users.find(
-          (u) =>
-            (data.email && u.email === data.email) ||
-            (data.astuEmail && u.astuEmail === data.astuEmail),
-        );
-        if (duplicate) {
-          set({ isLoading: false, error: "An account with this email already exists." });
-          throw new Error("User already exists");
+
+      try {
+          await authApi.register(data);
+          set({ isLoading: false });
+          // Navigate to OTP verification page
+          if (navigate) navigate(`/verify-email`);
+        } catch (error: any) {
+          set({ isLoading: false, error: error.message });
+          throw error;
         }
-        const newUser: User = {
-          id: `usr_${Date.now()}`,
-          telegramId: Date.now(),
-          astuEmail: data.astuEmail ?? null,
-          email: data.email ?? null,
-          fullName: data.fullName,
-          phoneNumber: data.phoneNumber ?? null,
-          avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(data.fullName)}`,
-          status: "ACTIVE",
-          isEmailVerified: false,
-          isPhoneVerified: false,
-          role: "CUSTOMER",
-          activeMode: "CUSTOMER",
-          lastActiveAt: new Date().toISOString(),
-          failedLoginAttempts: 0,
-          lockedUntil: null,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-        // Mock user creation but do not log them in automatically (email verification required)
-        set({ isLoading: false });
-        console.log("✅ Signup", newUser.fullName, "| role:", newUser.role);
-        if (navigate) navigate(`/verify-email/${encodeURIComponent(newUser.email || newUser.astuEmail || "default")}`);
       },
 
       signin: async (data, navigate) => {
-        set({ isLoading: true, error: null });
-        await delay(700);
-        const raw = db.users.find(
-          (u) => u.email === data.email || u.astuEmail === data.email,
-        );
-        if (!raw || !data.password) {
-          set({ isLoading: false, error: "Invalid email or password." });
-          throw new Error("Invalid email or password");
-        }
-        const user = buildUserWithProfile(raw);
-        set({ user, token: `mock_token_${user.id}`, isLoading: false });
-        console.log("✅ Signin", user.fullName, "| role:", user.role, "| activeMode:", user.activeMode);
-        if (navigate) navigate(getRoleRedirectPath(user.role, user.activeMode));
-      },
+        try {
+          const response = await authApi.login(data);
+          const { accessToken, user } = response.data;
 
-      logout: () => set({ user: null, token: null, error: null }),
+          set({ 
+            user, 
+            token: accessToken, 
+            activeMode: user.activeMode as ActiveMode,
+            isLoading: false 
+          });
+
+          if (navigate) navigate(getRoleRedirectPath(user.role, user.activeMode));
+        } catch (error: any) {
+          set({ isLoading: false, error: error.message });
+          throw error;
+        }
+      },
 
       updatePassword: async (_old, _new) => {
         set({ isLoading: true, error: null });
@@ -171,49 +140,51 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      toggleActiveMode: async (targetMode) => {
-        const currentUser = get().user;
-        if (!currentUser || !canSwitchRoles(currentUser)) {
-          console.warn("[Auth] User not authorized to switch roles or not logged in");
-          return;
-        }
+      toggleActiveMode: async (targetMode: ActiveMode = "CUSTOMER") => {
+        const { user } = get();
+        if (!user) return;
 
-        const oldMode = currentUser.activeMode;
-        const newMode = targetMode || (oldMode === "CUSTOMER" ? "DELIVERER" : "CUSTOMER");
-
-        if (oldMode === newMode) {
-          console.log(`[Auth] Mode already set to ${newMode}, skipping switch.`);
-          return;
-        }
-
-        set({ isLoading: true });
+        set({ isLoading: true, error: null });
         try {
-          console.log(`[Auth] Initiating switch: ${oldMode} -> ${newMode}`);
-          // Simulate API call to backend expressjs
-          await delay(400);
+          // Tell backend to update DB mode (so Dispatch Engine knows we are available)
+          await authApi.toggleMode(targetMode as string);
           
-          set({
-            user: { 
-              ...currentUser, 
-              activeMode: newMode,
-              updatedAt: new Date().toISOString()
-            },
-            isLoading: false,
+          set({ 
+            activeMode: targetMode,
+            user: { ...user, activeMode: targetMode },
+            isLoading: false 
           });
 
-          console.log(`[Auth] Mode switch success: ${newMode}`);
-        } catch (e) {
-          console.error("[Auth] Mode switch failed:", e);
-          set({ isLoading: false, error: "Failed to switch role." });
-          throw e;
+          // Handle Redirects
+          if (targetMode === "DELIVERER") window.location.href = "/delivery/dashboard";
+          else window.location.href = "/";
+          
+        } catch (error: any) {
+          set({ isLoading: false, error: error.message });
+          throw error;
         }
       },
 
-      clearError: () => set({ error: null }),
+       logout: async () => {
+        try {
+          await authApi.logout(); // Tells backend to clear the HttpOnly cookie
+        } catch (e) {
+          console.error("Backend logout failed, clearing local state.");
+        } finally {
+          set({ user: null, token: null, activeMode: null, error: null });
+          window.location.href = "/signin";
+        }
+      },
+
+     clearError: () => set({ error: null }),
     }),
     {
       name: "auth-storage",
-      partialize: (s) => ({ user: s.user, token: s.token }),
-    },
-  ),
+      partialize: (state) => ({ 
+        user: state.user, 
+        token: state.token, 
+        activeMode: state.activeMode 
+      }),
+    }
+  )
 );

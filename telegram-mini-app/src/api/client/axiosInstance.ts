@@ -4,8 +4,9 @@ import axios, {
   type InternalAxiosRequestConfig,
 } from "axios";
 import type { ApiError } from "../types/common.types";
+import { useAuthStore } from "../../store/auth/authStore";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1";
 
 // Create axios instance
 export const apiClient: AxiosInstance = axios.create({
@@ -14,20 +15,20 @@ export const apiClient: AxiosInstance = axios.create({
     "Content-Type": "application/json",
   },
   timeout: 10000, // 10 seconds
+  withCredentials: true, 
 });
 
 // Request interceptor to add token
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem("token");
+    // Read from Zustand state directly instead of localStorage
+    const token = useAuthStore.getState().token;
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  },
+  (error) => Promise.reject(error),
 );
 
 // Response interceptor for error handling
@@ -43,27 +44,21 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const refreshToken = localStorage.getItem("refreshToken");
-        if (!refreshToken) {
-          // No refresh token, redirect to login
-          window.location.href = "/signin";
-          return Promise.reject(error);
-        }
-
-        const response = await axios.post(`${API_URL}/auth/refresh`, {
-          refreshToken,
+         const response = await axios.post(`${API_URL}/auth/refresh`, {}, { 
+          withCredentials: true 
         });
 
-        const { token } = response.data;
-        localStorage.setItem("token", token);
+        const newAccessToken = response.data.data.accessToken;
+        
+        // Update Zustand Store
+        useAuthStore.getState().setToken(newAccessToken);
 
-        // Retry original request with new token
-        originalRequest.headers.Authorization = `Bearer ${token}`;
+        // Retry original request
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return apiClient(originalRequest);
       } catch (refreshError) {
         // Refresh failed, redirect to login
-        localStorage.removeItem("token");
-        localStorage.removeItem("refreshToken");
+        useAuthStore.getState().logout();
         window.location.href = "/signin";
         return Promise.reject(refreshError);
       }

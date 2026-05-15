@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Star, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ROUTES } from "@/routes/routePaths";
 
 import { useOrderStore } from "@/store/orders/orderStore";
 
@@ -10,8 +9,20 @@ import { useOrderStore } from "@/store/orders/orderStore";
 const ORANGE = "#F27420";
 const ORANGE_SOFT = "#FFF0E6";
 
-// Use OrderHistoryItem from orderStore — imported for type safety
-import type { OrderHistoryItem } from "@/store/orders/orderStore";
+// ─── types ────────────────────────────────────────────────────────────────────
+type OrderStatus = "delivered" | "cancelled";
+
+interface OrderHistoryItem {
+  id: string;
+  restaurantName: string;
+  orderNumber: string;
+  foodImage: string;
+  foodName: string;
+  quantity: number;
+  priceEtb: number;
+  rating: number | null;
+  status: OrderStatus;
+}
 
 // ─── StarRating ───────────────────────────────────────────────────────────────
 function StarRating({ rating, max = 5 }: { rating: number; max?: number }) {
@@ -35,16 +46,15 @@ function StarRating({ rating, max = 5 }: { rating: number; max?: number }) {
 }
 
 // ─── StatusBadge ──────────────────────────────────────────────────────────────
-function StatusBadge({ status }: { status: OrderHistoryItem["status"] }) {
-  const isGood = status === "DELIVERED" || status === "COMPLETED";
+function StatusBadge({ status }: { status: OrderStatus }) {
   return (
     <span
       className={cn(
         "inline-flex items-center justify-center rounded-lg px-5 py-2 text-sm font-semibold text-white shadow-sm",
-        isGood ? "bg-[#28A745]" : "bg-[#DC3545]",
+        status === "delivered" ? "bg-[#28A745]" : "bg-[#DC3545]",
       )}
     >
-      {isGood ? "Delivered" : status === "CANCELLED" ? "Cancelled" : "Disputed"}
+      {status === "delivered" ? "Delivered" : "Cancelled"}
     </span>
   );
 }
@@ -52,44 +62,49 @@ function StatusBadge({ status }: { status: OrderHistoryItem["status"] }) {
 // ─── OrderCard ────────────────────────────────────────────────────────────────
 function OrderCard({ item }: { item: OrderHistoryItem }) {
   return (
-    <article className="overflow-hidden rounded-2xl bg-white dark:bg-gray-900 shadow-[0_2px_16px_rgba(0,0,0,0.08)] ring-1 ring-gray-100 dark:ring-gray-800">
+    <article className="overflow-hidden rounded-2xl bg-white shadow-[0_2px_16px_rgba(0,0,0,0.08)] ring-1 ring-gray-100">
       <div className="px-4 pt-4 pb-5">
-        {/* Row 1 — Restaurant name + shortId */}
+        {/* Row 1 — Restaurant name + Order number */}
         <div className="flex items-start justify-between gap-2">
-          <h2 className="text-base font-bold text-gray-900 dark:text-white leading-tight">
+          <h2 className="text-base font-bold text-gray-900 leading-tight">
             {item.restaurantName}
           </h2>
           <span className="shrink-0 text-sm text-gray-400">
-            #{item.shortId}
+            Order #{item.orderNumber}
           </span>
         </div>
 
-        {/* Row 2 — Food image + name + price */}
+        {/* Row 2 — Food image + name/qty + price */}
         <div className="mt-3 flex items-center gap-3">
+          {/* Food image — stacked double card effect like the design */}
           <div className="relative shrink-0">
-            <div className="absolute -bottom-1 left-1 h-14 w-14 rounded-xl bg-gray-200/60 dark:bg-gray-800/60" />
-            <div className="relative h-14 w-14 overflow-hidden rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 shadow-sm">
+            <div className="absolute -bottom-1 left-1 h-14 w-14 rounded-xl bg-gray-200/60" />
+            <div className="relative h-14 w-14 overflow-hidden rounded-xl border border-gray-100 bg-gray-50 shadow-sm">
               <img
-                src={item.firstItemImageUrl ?? "https://images.unsplash.com/photo-1544025162-831e5088eb7e?w=200"}
-                alt={item.firstItemName}
+                src={item.foodImage}
+                alt={item.foodName}
                 className="h-full w-full object-cover object-center"
               />
             </div>
           </div>
+
+          {/* Name + qty */}
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-gray-800 dark:text-gray-200 leading-snug">
-              {item.firstItemName}
+            <p className="text-sm font-medium text-gray-800 leading-snug">
+              {item.foodName}
             </p>
-            <p className="mt-0.5 text-xs text-gray-400">Delivery: {item.deliveryFee} ETB</p>
+            <p className="mt-0.5 text-xs text-gray-400">{item.quantity} PCS</p>
           </div>
+
+          {/* Price */}
           <p className="shrink-0 text-base font-bold" style={{ color: ORANGE }}>
-            {item.totalAmount} Birr
+            {item.priceEtb} Birr
           </p>
         </div>
 
-        {/* Row 3 — Stars + Status */}
+        {/* Row 3 — Stars + Status button */}
         <div className="mt-4 flex items-center justify-between gap-2">
-          {item.rating !== null ? <StarRating rating={item.rating ?? 0} /> : <div />}
+          {item.rating !== null ? <StarRating rating={item.rating} /> : <div />}
           <StatusBadge status={item.status} />
         </div>
       </div>
@@ -107,14 +122,14 @@ export default function HistoryPage() {
   }, [fetchOrderHistory]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-white dark:bg-gray-950">
+    <div className="flex min-h-screen flex-col bg-white">
       {/* ── Header ── */}
-      <header className="sticky top-0 z-20 bg-white dark:bg-gray-950 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] shadow-[0_1px_0_rgba(0,0,0,0.06)] dark:border-b dark:border-gray-800">
+      <header className="sticky top-0 z-20 bg-white px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] shadow-[0_1px_0_rgba(0,0,0,0.06)]">
         <div className="relative flex h-12 items-center justify-center">
           {/* Back button */}
           <button
             type="button"
-            onClick={() => navigate(ROUTES.DELIVERY.DASHBOARD)}
+            onClick={() => navigate(-1)}
             className="absolute left-0 flex h-10 w-10 items-center justify-center rounded-xl border border-[#F27420]/30 transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F27420]/40"
             style={{ backgroundColor: ORANGE_SOFT }}
             aria-label="Go back"
@@ -127,7 +142,7 @@ export default function HistoryPage() {
           </button>
 
           {/* Title */}
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">History</h1>
+          <h1 className="text-xl font-bold text-gray-900">History</h1>
         </div>
       </header>
 

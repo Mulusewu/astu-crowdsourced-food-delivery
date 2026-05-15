@@ -1,28 +1,36 @@
 import { apiClient } from "../client/axiosInstance";
-import type {
-  LoginRequest,
-  LoginResponse,
-  SignupRequest,
-  SignupResponse,
-} from "../types/auth.types";
 
 export const authApi = {
-  login: async (data: LoginRequest): Promise<LoginResponse> => {
-    const response = await apiClient.post("/auth/login", data);
+  login: async (data: any) => {
+    // Backend expects 'identifier', mapping email to identifier
+    const payload = {
+      identifier: data.email || data.astuEmail,
+      password: data.password
+    };
+    const response = await apiClient.post("/auth/login", payload);
     return response.data;
   },
 
-  signup: async (data: SignupRequest): Promise<SignupResponse> => {
-    const response = await apiClient.post("/auth/signup", data);
+  register: async (data: any) => {
+    // Contract mapping: Backend requires telegramId, mapped to 0 if unused on web
+    const payload = {
+      telegramId: 0, 
+      astuEmail: data.astuEmail || data.email, // Maps to backend schema
+      fullName: data.fullName,
+      phoneNumber: data.phoneNumber || "0900000000", // Required by backend
+      password: data.password
+    };
+    // Backend route is /register, not /signup
+    const response = await apiClient.post("/auth/register", payload);
     return response.data;
   },
 
-  logout: async (): Promise<void> => {
+  logout: async () => {
     await apiClient.post("/auth/logout");
   },
 
-  refreshToken: async (): Promise<{ token: string }> => {
-    const response = await apiClient.post("/auth/refresh");
+  toggleMode: async (mode: string) => {
+    const response = await apiClient.patch("/users/me/toggle-mode", { mode });
     return response.data;
-  },
+  }
 };

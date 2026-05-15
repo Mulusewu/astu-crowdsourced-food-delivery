@@ -1,277 +1,98 @@
-// src/store/orders/orderStore.ts
-// Aligned with Prisma schema — relational data joined from database.json
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import db from "@/data/database.json";
+import { apiClient } from "@/api/client/axiosInstance";
+import { io, Socket } from "socket.io-client";
 import { useAuthStore } from "@/store/auth/authStore";
-import { useDeliveryDashboardStore } from "@/store/deliveryDashboardStore";
+import { useDeliveryDashboardStore } from "../deliveryDashboardStore";
 
-// ─── Prisma-aligned types ─────────────────────────────────────────────────────
+// ─── Backend Aligned Types ─────────────────────────────────────────────────────
 
 export type OrderStatus =
-  | "CREATED"
-  | "AWAITING_ACCEPT"
-  | "ASSIGNED"
-  | "AWAITING_PAYMENT"
-  | "PAYMENT_RECEIVED"
-  | "VENDOR_BEING_PREPARED"
-  | "VENDOR_FINISHED"
-  | "VENDOR_READY_FOR_PICKUP"
-  | "PICKED_UP"
-  | "EN_ROUTE"
-  | "ARRIVED"
-  | "RECEIVED"
-  | "DELIVERED"
-  | "COMPLETED"
-  | "DISPUTED"
-  | "CANCELLED"
+  | "CREATED" | "AWAITING_ACCEPT" | "ASSIGNED" | "AWAITING_PAYMENT"
+  | "PAYMENT_RECEIVED" | "VENDOR_BEING_PREPARED" | "VENDOR_FINISHED"
+  | "VENDOR_READY_FOR_PICKUP" | "PICKED_UP" | "EN_ROUTE" | "ARRIVED"
+  | "RECEIVED" | "DELIVERED" | "COMPLETED" | "DISPUTED" | "CANCELLED"
   | "NO_DELIVERER_FOUND";
 
-export type PaymentStatus =
-  | "AWAITING_PAYMENT"
-  | "PENDING"
-  | "AUTHORIZED"
-  | "CAPTURED"
-  | "FAILED"
-  | "REFUNDED";
-
-export interface OrderMenuItem {
-  id: string;        // orderItem id
-  menuId: string;
-  name: string;
-  unitPrice: number;
-  quantity: number;
-  imageUrl: string | null;
-}
-
-export interface OrderCustomer {
-  id: string;
-  fullName: string;
-  phoneNumber: string | null;
-  avatarUrl: string | null;
-  deliveryAddress: string | null;
-}
-
-export interface OrderRestaurant {
-  id: string;
-  name: string;
-  imageUrl: string | null;
-  location: string;
-  lat: number;
-  lng: number;
-  phone: string;
-}
-
-export interface Order {
+export interface AvailableOrder {
   id: string;
   shortId: string;
-  status: OrderStatus;
-  paymentStatus: PaymentStatus;
-  restaurant: OrderRestaurant;
-  customer: OrderCustomer;
-  delivererId: string | null;
-  items: OrderMenuItem[];
-  // Financials
-  foodPrice: number;
-  deliveryFee: number;
-  transactionFee: number;
-  serviceFee: number;
-  tip: number;
   totalAmount: number;
-  // Location
-  pickupLat: number | null;
-  pickupLng: number | null;
-  // Timing
-  estimatedDeliveryTime: string | null;
-  estimatedReadyAt: string | null;
+  deliveryFee: number;
+  itemCount: number;
+  restaurantName: string;
+  restaurantImageUrl: string | null;
   createdAt: string;
-  updatedAt: string;
-  // OTP
-  otpCode: string;
-  otpVerifiedAt: string | null;
-  // UI helpers (local-only)
-  isBookmarked: boolean;
-  distance: string | null;
+  lat?: number;
+  lng?: number;
+  distanceToRestaurantMeters?: number; // Injected by WS Broadcast
 }
 
-// History item: simplified view for the history page
 export interface OrderHistoryItem {
   id: string;
   shortId: string;
   restaurantName: string;
   restaurantImageUrl: string | null;
-  firstItemName: string;
+  firstItemName: string; // Mapped to "X Items" from backend summary
   firstItemImageUrl: string | null;
   totalAmount: number;
   deliveryFee: number;
-  status: "DELIVERED" | "COMPLETED" | "CANCELLED" | "DISPUTED";
+  status: OrderStatus;
   createdAt: string;
   rating: number | null;
 }
 
 type SecondaryFilterType = "price_asc" | "price_desc" | "nearby" | "priority";
 
-// Statuses that indicate an order is "in progress" for a deliverer
-const ACTIVE_STATUSES: OrderStatus[] = [
-  "ASSIGNED",
-  "VENDOR_BEING_PREPARED",
-  "VENDOR_FINISHED",
-  "VENDOR_READY_FOR_PICKUP",
-  "PICKED_UP",
-  "EN_ROUTE",
-  "ARRIVED",
-  "RECEIVED",
-];
-
-const HISTORY_STATUSES: OrderStatus[] = [
-  "DELIVERED",
-  "COMPLETED",
-  "CANCELLED",
-  "DISPUTED",
-];
-
-// ─── Relational join helper ───────────────────────────────────────────────────
-
-const buildOrderView = (raw: (typeof db.orders)[number]): Order => {
-  const restaurant = db.restaurants.find((r) => r.id === raw.restaurantId);
-  const customerUser = db.users.find((u) => u.id === raw.customerId);
-  const customerProfile = db.customerProfiles.find(
-    (cp) => cp.userId === raw.customerId,
-  );
-  const rawItems = db.orderItems.filter((oi) => oi.orderId === raw.id);
-
-  const items: OrderMenuItem[] = rawItems.map((oi) => {
-    const mi = db.menuItems.find((m) => m.id === oi.menuId);
-    return {
-      id: oi.id,
-      menuId: oi.menuId,
-      name: mi?.name ?? "Unknown Item",
-      unitPrice: oi.unitPrice,
-      quantity: oi.quantity,
-      imageUrl: mi?.imageUrl ?? null,
-    };
-  });
-
-  return {
-    id: raw.id,
-    shortId: raw.shortId,
-    status: raw.status as OrderStatus,
-    paymentStatus: raw.paymentStatus as PaymentStatus,
-    restaurant: {
-      id: restaurant?.id ?? raw.restaurantId,
-      name: restaurant?.name ?? "Unknown Restaurant",
-      imageUrl: restaurant?.imageUrl ?? null,
-      location: restaurant?.location ?? "",
-      lat: restaurant?.lat ?? 0,
-      lng: restaurant?.lng ?? 0,
-      phone: restaurant?.phone ?? "",
-    },
-    customer: {
-      id: customerUser?.id ?? raw.customerId,
-      fullName: customerUser?.fullName ?? "Customer",
-      phoneNumber: customerUser?.phoneNumber ?? null,
-      avatarUrl: customerUser?.avatarUrl ?? null,
-      deliveryAddress: customerProfile?.defaultLocation ?? null,
-    },
-    delivererId: raw.delivererId ?? null,
-    items,
-    foodPrice: raw.foodPrice,
-    deliveryFee: raw.deliveryFee,
-    transactionFee: raw.transactionFee,
-    serviceFee: raw.serviceFee,
-    tip: raw.tip,
-    totalAmount: raw.totalAmount,
-    pickupLat: raw.pickupLat ?? null,
-    pickupLng: raw.pickupLng ?? null,
-    estimatedDeliveryTime: raw.estimatedDeliveryTime ?? null,
-    estimatedReadyAt: raw.estimatedReadyAt ?? null,
-    createdAt: raw.createdAt,
-    updatedAt: raw.updatedAt,
-    otpCode: raw.otpCode,
-    otpVerifiedAt: raw.otpVerifiedAt ?? null,
-    isBookmarked: false,
-    distance: null,
-  };
-};
-
-const toHistoryItem = (order: Order): OrderHistoryItem => ({
-  id: order.id,
-  shortId: order.shortId,
-  restaurantName: order.restaurant.name,
-  restaurantImageUrl: order.restaurant.imageUrl,
-  firstItemName: order.items[0]?.name ?? "Order",
-  firstItemImageUrl: order.items[0]?.imageUrl ?? null,
-  totalAmount: order.totalAmount,
-  deliveryFee: order.deliveryFee,
-  status: (["DELIVERED", "COMPLETED", "CANCELLED", "DISPUTED"].includes(order.status)
-    ? order.status
-    : "DELIVERED") as OrderHistoryItem["status"],
-  createdAt: order.createdAt,
-  rating: null,
-});
-
-const filterOrders = (
-  orders: Order[],
-  selectedCafe: string,
-  secondaryFilter: SecondaryFilterType,
-): Order[] => {
-  let filtered = [...orders];
-  if (selectedCafe !== "all") {
-    filtered = filtered.filter((o) => o.restaurant.id === selectedCafe);
-  }
-  switch (secondaryFilter) {
-    case "price_asc":
-      filtered.sort((a, b) => a.totalAmount - b.totalAmount);
-      break;
-    case "price_desc":
-      filtered.sort((a, b) => b.totalAmount - a.totalAmount);
-      break;
-    default:
-      break;
-  }
-  return filtered;
-};
-
-const delay = (ms = 500) => new Promise((r) => setTimeout(r, ms));
-
-// ─── Store ────────────────────────────────────────────────────────────────────
-
-interface OrderStore {
-  orders: Order[];           // available (AWAITING_ACCEPT)
-  filteredOrders: Order[];
-  activeOrders: Order[];
+interface OrderStoreState {
+  // States
+  rawOrders: AvailableOrder[];
+  filteredOrders: AvailableOrder[];
+  activeOrders: any[]; // Array of 0 or 1 to satisfy UI iterators
   orderHistory: OrderHistoryItem[];
-  currentOrder: Order | null;
+  currentOrder: any | null; // Deep details view
+  
   isLoading: boolean;
   isLoadingMore: boolean;
   error: string | null;
   page: number;
   hasMore: boolean;
+  
   selectedCafe: string;
   secondaryFilter: SecondaryFilterType;
+  socket: Socket | null;
 
+  // Fetchers
   fetchAvailableOrders: () => Promise<void>;
-  fetchActiveOrders: () => Promise<void>;
+  loadMoreOrders: () => Promise<void>;
+  fetchActiveOrders: () => Promise<void>; // Fetches the single active delivery
   fetchOrderHistory: () => Promise<void>;
   fetchOrderById: (orderId: string) => Promise<void>;
-  loadMoreOrders: () => Promise<void>;
+  
+  // UI Filters
   setSelectedCafe: (cafeId: string) => void;
   setSecondaryFilter: (filter: SecondaryFilterType) => void;
-  toggleBookmark: (orderId: string) => void;
+  _applyLocalSort: (orders: AvailableOrder[], filter: SecondaryFilterType) => AvailableOrder[];
+
+  // Deliverer Logistics Actions
   acceptOrder: (orderId: string) => Promise<void>;
-  rejectOrder: (orderId: string, reason: string) => Promise<void>;
-  updateOrderStatus: (orderId: string, status: OrderStatus) => Promise<void>;
+  dropOrder: (orderId: string, reason: string) => Promise<void>; // Replaces rejectOrder
+  updateOrderStatus: (orderId: string, status: OrderStatus, lat?: number, lng?: number) => Promise<void>;
   completeOrder: (orderId: string, otpCode: string) => Promise<void>;
-  cancelOrder: (orderId: string, reason: string) => Promise<void>;
-  submitOrderIssue: (orderId: string, details: { type: string; description: string }) => Promise<void>;
+  reportUnfulfillable: (orderId: string, reason: string, details?: string) => Promise<void>; // Replaces submitOrderIssue
+  
+  // WebSockets
+  connectDispatchSocket: () => void;
+  disconnectDispatchSocket: () => void;
+
   clearError: () => void;
   clearCurrentOrder: () => void;
 }
 
-export const useOrderStore = create<OrderStore>()(
+export const useOrderStore = create<OrderStoreState>()(
   persist(
     (set, get) => ({
-      orders: [],
+      rawOrders: [],
       filteredOrders: [],
       activeOrders: [],
       orderHistory: [],
@@ -282,267 +103,328 @@ export const useOrderStore = create<OrderStore>()(
       page: 1,
       hasMore: false,
       selectedCafe: "all",
-      secondaryFilter: "nearby",
+      secondaryFilter: "priority",
+      socket: null,
 
+      _applyLocalSort: (orders, filter) => {
+        const sorted = [...orders];
+        switch (filter) {
+          case "price_asc": return sorted.sort((a, b) => a.totalAmount - b.totalAmount);
+          case "price_desc": return sorted.sort((a, b) => b.totalAmount - a.totalAmount);
+          case "nearby":
+            return sorted.sort((a, b) => (a.distanceToRestaurantMeters || 9999) - (b.distanceToRestaurantMeters || 9999));
+          case "priority":
+          default:
+            return sorted.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        }
+      },
+
+      // ==========================================
+      // FETCHERS
+      // ==========================================
       fetchAvailableOrders: async () => {
-        set({ isLoading: true, error: null });
+        const { selectedCafe, secondaryFilter } = get();
+        set({ isLoading: true, error: null, page: 1 });
+
         try {
-          await delay(600);
-          const activeIds = new Set(get().activeOrders.map(o => o.id));
-          const available = db.orders
-            .filter((o) => o.status === "AWAITING_ACCEPT" && !activeIds.has(o.id))
-            .map(buildOrderView);
-          set({
-            orders: available,
-            filteredOrders: filterOrders(available, get().selectedCafe, get().secondaryFilter),
-            isLoading: false,
-            page: 1,
-            hasMore: false,
-          });
+          const params: any = { status: "AWAITING_ACCEPT", roleAs: "DELIVERER", limit: 20, page: 1 };
+          if (selectedCafe !== "all") params.restaurantId = selectedCafe;
+
+          const res = await apiClient.get('/orders', { params });
+          
+          const mappedOrders: AvailableOrder[] = res.data.orders.map((o: any) => ({
+            id: o.id,
+            shortId: o.shortId,
+            totalAmount: Number(o.totalAmount),
+            deliveryFee: Number(o.deliveryFee),
+            itemCount: o._count?.items || 1,
+            restaurantName: o.restaurant?.name || "Restaurant",
+            createdAt: o.createdAt,
+            restaurantImageUrl: "https://images.unsplash.com/photo-1544025162-831e5088eb7e?q=80&w=200"
+          }));
+
+          const sortedOrders = get()._applyLocalSort(mappedOrders, secondaryFilter);
+          set({ rawOrders: mappedOrders, filteredOrders: sortedOrders, isLoading: false, hasMore: res.data.orders.length === 20 });
+        } catch (e: any) {
+          set({ error: e.response?.data?.message || "Failed to fetch orders", isLoading: false });
+        }
+      },
+
+      loadMoreOrders: async () => {
+        const { selectedCafe, secondaryFilter, page, hasMore, isLoadingMore, rawOrders } = get();
+        if (!hasMore || isLoadingMore) return;
+
+        set({ isLoadingMore: true });
+        const nextPage = page + 1;
+
+        try {
+          const params: any = { status: "AWAITING_ACCEPT", roleAs: "DELIVERER", limit: 20, page: nextPage };
+          if (selectedCafe !== "all") params.restaurantId = selectedCafe;
+
+          const res = await apiClient.get('/orders', { params });
+          
+          const mappedOrders: AvailableOrder[] = res.data.orders.map((o: any) => ({
+            id: o.id,
+            shortId: o.shortId,
+            totalAmount: Number(o.totalAmount),
+            deliveryFee: Number(o.deliveryFee),
+            itemCount: o._count?.items || 1,
+            restaurantName: o.restaurant?.name || "Restaurant",
+            createdAt: o.createdAt,
+            restaurantImageUrl: "https://images.unsplash.com/photo-1544025162-831e5088eb7e?q=80&w=200"
+          }));
+
+          const combined = [...rawOrders, ...mappedOrders];
+          set({ rawOrders: combined, filteredOrders: get()._applyLocalSort(combined, secondaryFilter), page: nextPage, isLoadingMore: false, hasMore: res.data.orders.length === 20 });
         } catch (e) {
-          set({ error: e instanceof Error ? e.message : "Failed to fetch orders", isLoading: false });
+          set({ isLoadingMore: false });
         }
       },
 
       fetchActiveOrders: async () => {
-        // If we already have active orders in state, don't overwrite them with stale DB data
-        // in mock mode. This allows local mutations to persist.
-        if (get().activeOrders.length > 0) {
-          return;
-        }
-
         set({ isLoading: true, error: null });
         try {
-          await delay(500);
-          const { user } = useAuthStore.getState();
-          const delivererUserId = user?.id ?? "";
-          const active = db.orders
-            .filter(
-              (o) =>
-                ACTIVE_STATUSES.includes(o.status as OrderStatus) &&
-                (o.delivererId === delivererUserId ||
-                  o.delivererId === user?.delivererProfile?.id),
-            )
-            .map(buildOrderView);
-          set({ activeOrders: active, isLoading: false });
-        } catch (e) {
-          set({ error: e instanceof Error ? e.message : "Failed to fetch active orders", isLoading: false });
+          // Backend ensures a deliverer only has ONE active delivery
+          const res = await apiClient.get('/orders/active-delivery');
+          const activeOrder = res.data.data;
+          
+          set({ 
+            activeOrders: activeOrder ? [activeOrder] : [], 
+            isLoading: false 
+          });
+        } catch (e: any) {
+          set({ error: e.response?.data?.message || "Failed to fetch active delivery", isLoading: false });
         }
       },
 
       fetchOrderHistory: async () => {
         set({ isLoading: true, error: null });
         try {
-          await delay(500);
-          const { user } = useAuthStore.getState();
-          const delivererUserId = user?.id ?? "";
-          const history = db.orders
-            .filter(
-              (o) =>
-                HISTORY_STATUSES.includes(o.status as OrderStatus) &&
-                (o.delivererId === delivererUserId ||
-                  o.delivererId === user?.delivererProfile?.id),
-            )
-            .map(buildOrderView)
-            .map(toHistoryItem);
+          // Fetch past orders
+          const params = { roleAs: "DELIVERER", limit: 50 }; // Add status filter array if backend supports it, otherwise backend returns all
+          const res = await apiClient.get('/orders', { params });
+          
+          const historyStatuses = ["DELIVERED", "COMPLETED", "CANCELLED", "DISPUTED", "NO_DELIVERER_FOUND"];
+          const history = res.data.orders
+            .filter((o: any) => historyStatuses.includes(o.status))
+            .map((o: any): OrderHistoryItem => ({
+              id: o.id,
+              shortId: o.shortId,
+              restaurantName: o.restaurant?.name || "Restaurant",
+              restaurantImageUrl: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=200",
+              firstItemName: `${o._count?.items || 1} Items`, // UI Fallback
+              firstItemImageUrl: "https://images.unsplash.com/photo-1541544741938-0af808871cc0?w=200",
+              totalAmount: Number(o.totalAmount),
+              deliveryFee: Number(o.deliveryFee),
+              status: o.status,
+              createdAt: o.createdAt,
+              rating: null // Could pull from detailed fetch if needed
+            }));
+
           set({ orderHistory: history, isLoading: false });
-        } catch (e) {
-          set({ error: e instanceof Error ? e.message : "Failed to fetch history", isLoading: false });
+        } catch (e: any) {
+          set({ error: e.response?.data?.message || "Failed to fetch history", isLoading: false });
         }
       },
 
       fetchOrderById: async (orderId) => {
         set({ isLoading: true, error: null });
         try {
-          await delay(400);
-          const inState = [...get().orders, ...get().activeOrders].find((o) => o.id === orderId);
-          if (inState) {
-            set({ currentOrder: inState, isLoading: false });
-            return;
-          }
-          const raw = db.orders.find((o) => o.id === orderId);
-          if (!raw) throw new Error("Order not found");
-          set({ currentOrder: buildOrderView(raw), isLoading: false });
-        } catch (e) {
-          set({ error: e instanceof Error ? e.message : "Failed to fetch order", isLoading: false });
+          const res = await apiClient.get(`/orders/${orderId}`);
+          set({ currentOrder: res.data.data, isLoading: false });
+        } catch (e: any) {
+          set({ error: e.response?.data?.message || "Failed to load details", isLoading: false });
         }
       },
 
-      loadMoreOrders: async () => {
-        if (!get().hasMore || get().isLoadingMore) return;
-        set({ isLoadingMore: true });
-        await delay(800);
-        set({ isLoadingMore: false, hasMore: false });
-      },
-
-      setSelectedCafe: (cafeId) => {
-        set({ selectedCafe: cafeId });
-        set({ filteredOrders: filterOrders(get().orders, cafeId, get().secondaryFilter) });
-      },
-
-      setSecondaryFilter: (filter) => {
-        set({ secondaryFilter: filter });
-        set({ filteredOrders: filterOrders(get().orders, get().selectedCafe, filter) });
-      },
-
-      toggleBookmark: (orderId) => {
-        set((s) => {
-          const updated = s.orders.map((o) =>
-            o.id === orderId ? { ...o, isBookmarked: !o.isBookmarked } : o,
-          );
-          return {
-            orders: updated,
-            filteredOrders: filterOrders(updated, s.selectedCafe, s.secondaryFilter),
-          };
-        });
-      },
-
+      // ==========================================
+      // LOGISTICS ACTIONS
+      // ==========================================
       acceptOrder: async (orderId) => {
+        const { activeOrders } = get();
+        if (activeOrders.length > 0) {
+          set({ error: "You already have an active delivery. Complete it first." });
+          throw new Error("ACTIVE_DELIVERY_EXISTS");
+        }
+
         set({ isLoading: true, error: null });
         try {
-          await delay(600);
-          const { user } = useAuthStore.getState();
-          set((s) => {
-            const order = s.orders.find((o) => o.id === orderId);
-            if (!order) return { isLoading: false };
-            const accepted: Order = {
-              ...order,
-              status: "ASSIGNED",
-              delivererId: user?.id ?? null,
-              customer: {
-                ...order.customer,
-                deliveryAddress: order.customer.deliveryAddress ?? user?.customerProfile?.defaultLocation ?? null,
-              },
-            };
-            const updatedOrders = s.orders.filter((o) => o.id !== orderId);
+          // Atomic Lock in Backend
+          await apiClient.post(`/dispatch/${orderId}/accept`);
+          
+          // Refresh state
+          await get().fetchActiveOrders();
+          
+          // Remove from available lists
+          set(s => {
+            const updatedRaw = s.rawOrders.filter(o => o.id !== orderId);
             return {
-              orders: updatedOrders,
-              filteredOrders: filterOrders(updatedOrders, s.selectedCafe, s.secondaryFilter),
-              activeOrders: [...s.activeOrders, accepted],
-              currentOrder: accepted,
-              isLoading: false,
+              rawOrders: updatedRaw,
+              filteredOrders: get()._applyLocalSort(updatedRaw, s.secondaryFilter),
+              isLoading: false
             };
           });
-        } catch (e) {
-          set({ error: e instanceof Error ? e.message : "Failed to accept order", isLoading: false });
+        } catch (e: any) {
+          set({ error: e.response?.data?.message || "Failed to accept order. Someone else may have taken it.", isLoading: false });
+          throw e;
         }
       },
 
-      rejectOrder: async (orderId, _reason) => {
+      dropOrder: async (orderId, reason) => {
         set({ isLoading: true, error: null });
         try {
-          await delay(500);
-          set((s) => {
-            const updated = s.orders.filter((o) => o.id !== orderId);
-            return {
-              orders: updated,
-              filteredOrders: filterOrders(updated, s.selectedCafe, s.secondaryFilter),
-              currentOrder: s.currentOrder?.id === orderId ? null : s.currentOrder,
-              isLoading: false,
-            };
-          });
-        } catch (e) {
-          set({ error: e instanceof Error ? e.message : "Failed to decline order", isLoading: false });
+          await apiClient.post(`/orders/${orderId}/drop`, { reason });
+          
+          set({ activeOrders: [], currentOrder: null, isLoading: false });
+          get().fetchAvailableOrders(); // Refresh available pool
+        } catch (e: any) {
+          set({ error: e.response?.data?.message || "Failed to drop order", isLoading: false });
+          throw e;
         }
       },
 
-      updateOrderStatus: async (orderId, status) => {
+      updateOrderStatus: async (orderId, status, lat = 0, lng = 0) => {
         set({ isLoading: true, error: null });
         try {
-          await delay(400);
-          set((s) => ({
-            activeOrders: s.activeOrders.map((o) =>
-              o.id === orderId ? { ...o, status } : o,
-            ),
-            currentOrder:
-              s.currentOrder?.id === orderId
-                ? { ...s.currentOrder, status }
-                : s.currentOrder,
-            isLoading: false,
+          // Backend expects GPS coordinates for fraud check if status === 'PICKED_UP'
+          await apiClient.patch(`/orders/${orderId}/state/deliverer`, { 
+            status, currentLat: lat, currentLng: lng 
+          });
+
+          // Optimistic UI Update
+          set(s => ({
+            activeOrders: s.activeOrders.map(o => o.id === orderId ? { ...o, status } : o),
+            currentOrder: s.currentOrder?.id === orderId ? { ...s.currentOrder, status } : s.currentOrder,
+            isLoading: false
           }));
-        } catch (e) {
-          set({ error: e instanceof Error ? e.message : "Failed to update status", isLoading: false });
+        } catch (e: any) {
+          set({ error: e.response?.data?.message || "State transition failed", isLoading: false });
+          throw e;
         }
       },
 
       completeOrder: async (orderId, otpCode) => {
         set({ isLoading: true, error: null });
         try {
-          await delay(500);
-          // Validate OTP against the stored code
-          const order = get().activeOrders.find((o) => o.id === orderId)
-            ?? get().currentOrder;
-          if (order && order.otpCode !== otpCode) {
-            set({ error: "Incorrect OTP. Please ask the customer for the correct code.", isLoading: false });
-            return;
+          // Cryptographic Handshake
+          await apiClient.post(`/orders/${orderId}/confirm-handshake`, { otpCode });
+
+          // Refresh state completely
+          // await get().fetchActiveOrders(); // Will clear activeOrders array
+          set((s) => ({
+            currentOrder: s.currentOrder ? { ...s.currentOrder, status: 'COMPLETED' } : null,
+            // Remove from active list
+            activeOrders: s.activeOrders.filter(o => o.id !== orderId) 
+          }));
+          await get().fetchOrderHistory(); // Will move it to history
+
+          set({  isLoading: false });
+        } catch (e: any) {
+          set({ error: e.response?.data?.message || "Handshake failed. Invalid PIN.", isLoading: false });
+          throw e;
+        }
+      },
+
+      reportUnfulfillable: async (orderId, reason, details) => {
+        set({ isLoading: true, error: null });
+        try {
+          // Maps to 'RESTAURANT_CLOSED' | 'OUT_OF_STOCK' | 'PRICE_MISMATCH'
+          await apiClient.post(`/orders/${orderId}/unfulfillable`, { reason, details });
+          
+          set({ activeOrders: [], currentOrder: null, isLoading: false });
+        } catch (e: any) {
+          set({ error: e.response?.data?.message || "Failed to report issue", isLoading: false });
+          throw e;
+        }
+      },
+
+      // ==========================================
+      // WEBSOCKET BROADCAST ENGINE
+      // ==========================================
+      connectDispatchSocket: () => {
+        const { socket: currentSocket } = get();
+        if (currentSocket) currentSocket.disconnect();
+
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+        const BASE_URL = API_URL.replace('/api/v1', '');
+        
+        const storageStr = localStorage.getItem('auth-storage');
+        let token = '';
+        if (storageStr) token = JSON.parse(storageStr).state?.token || '';
+
+        const newSocket = io(BASE_URL, { auth: { token }, withCredentials: true });
+
+        newSocket.on('connect', () => console.log('[WS] Connected to Dispatch Engine'));
+
+        // Listen for new orders popping up!
+        newSocket.on('ORDER_BROADCAST', (payload) => {
+          console.log('🚨 NEW ORDER BROADCAST RECEIVED:', payload);
+          set(s => {
+            // Prevent duplicate injections
+            if (s.rawOrders.some(o => o.id === payload.orderId)) return s;
+
+            const newAvailable: AvailableOrder = {
+              id: payload.orderId,
+              shortId: payload.shortId,
+              totalAmount: payload.earnings.totalPayout,
+              deliveryFee: payload.earnings.deliveryFee,
+              itemCount: payload.itemCount,
+              restaurantName: payload.restaurant.name,
+              restaurantImageUrl: "https://images.unsplash.com/photo-1544025162-831e5088eb7e?q=80",
+              createdAt: payload.createdAt,
+              distanceToRestaurantMeters: payload.distanceToRestaurantMeters
+            };
+
+            const updatedRaw = [newAvailable, ...s.rawOrders];
+            return {
+              rawOrders: updatedRaw,
+              filteredOrders: get()._applyLocalSort(updatedRaw, s.secondaryFilter)
+            };
+          });
+        });
+
+        // Listen for orders being taken by others or cancelled
+        newSocket.on('ORDER_STATUS_UPDATE', (payload) => {
+          if (payload.status !== 'AWAITING_ACCEPT') {
+            set(s => {
+              const updatedRaw = s.rawOrders.filter(o => o.id !== payload.orderId);
+              return {
+                rawOrders: updatedRaw,
+                filteredOrders: get()._applyLocalSort(updatedRaw, s.secondaryFilter)
+              };
+            });
           }
-          set((s) => {
-            const o = s.activeOrders.find((x) => x.id === orderId);
-            if (!o) return { isLoading: false };
+        });
 
-            // Update deliverer stats in dashboard store
-            const { updateDelivererStats } = useDeliveryDashboardStore.getState();
-            updateDelivererStats(o.deliveryFee);
+        set({ socket: newSocket });
+      },
 
-            const completed: Order = {
-              ...o,
-              status: "DELIVERED",
-              otpVerifiedAt: new Date().toISOString(),
-            };
-            return {
-              activeOrders: s.activeOrders.filter((x) => x.id !== orderId),
-              currentOrder: s.currentOrder?.id === orderId ? completed : s.currentOrder,
-              orderHistory: [toHistoryItem(completed), ...s.orderHistory],
-              isLoading: false,
-            };
-          });
-        } catch (e) {
-          set({ error: e instanceof Error ? e.message : "Failed to complete order", isLoading: false });
+      disconnectDispatchSocket: () => {
+        const { socket } = get();
+        if (socket) {
+          socket.disconnect();
+          set({ socket: null });
         }
       },
 
-      cancelOrder: async (orderId, reason) => {
-        set({ isLoading: true, error: null });
-        try {
-          await delay(600);
-          set((s) => {
-            const o = s.activeOrders.find((x) => x.id === orderId);
-            const cancelled = o ? { ...o, status: "CANCELLED" as OrderStatus } : null;
-            return {
-              activeOrders: s.activeOrders.filter((x) => x.id !== orderId),
-              currentOrder: s.currentOrder?.id === orderId ? cancelled : s.currentOrder,
-              orderHistory: cancelled
-                ? [toHistoryItem(cancelled), ...s.orderHistory]
-                : s.orderHistory,
-              isLoading: false,
-            };
-          });
-          console.log("Order cancelled:", orderId, reason);
-        } catch (e) {
-          set({ error: e instanceof Error ? e.message : "Failed to cancel order", isLoading: false });
-        }
+      // UI Helpers
+      setSelectedCafe: (cafeId) => {
+        set({ selectedCafe: cafeId });
+        set({ filteredOrders: get()._applyLocalSort(get().rawOrders.filter(o => cafeId === 'all' || o.id === cafeId), get().secondaryFilter) });
       },
-
-      submitOrderIssue: async (orderId, details) => {
-        set({ isLoading: true, error: null });
-        try {
-          await delay(800);
-          console.log("Issue submitted for order:", orderId, details);
-          set({ isLoading: false });
-        } catch (e) {
-          set({ error: e instanceof Error ? e.message : "Failed to submit issue", isLoading: false });
-        }
+      setSecondaryFilter: (filter) => {
+        set({ secondaryFilter: filter });
+        set({ filteredOrders: get()._applyLocalSort(get().rawOrders, filter) });
       },
-
       clearError: () => set({ error: null }),
       clearCurrentOrder: () => set({ currentOrder: null }),
     }),
     {
-      name: "order-storage",
+      name: "deliverer-order-storage",
       partialize: (s) => ({
         selectedCafe: s.selectedCafe,
         secondaryFilter: s.secondaryFilter,
       }),
-    },
-  ),
+    }
+  )
 );

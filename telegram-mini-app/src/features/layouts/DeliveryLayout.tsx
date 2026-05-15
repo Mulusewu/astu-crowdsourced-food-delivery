@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
 import { useAuthStore } from "@/store/auth/authStore";
-import DeliveryBottomNav from "@/features/delivery/components/DeliveryBottomNav";
+import DeliveryBottomNav from "@/features/mule_delivery/components/DeliveryBottomNav";
 
 /**
  * DeliveryLayout

@@ -130,7 +130,8 @@ export default function CustomerProfilePage() {
               <Star size={14} className="text-[#F26A1C]" />
             </div>
             <p className="text-[18px] font-black text-gray-900 dark:text-white">
-              {profile.rating.toFixed(1)}
+              
+              {profile.rating}
             </p>
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mt-0.5">
               Rating
@@ -168,7 +169,8 @@ export default function CustomerProfilePage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {user?.isEmailVerified && (
+            {/* {user?.isEmailVerified && ( */}
+            {user?.status === "ACTIVE" && (
               <span className="rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-bold text-green-600">
                 Verified
               </span>
@@ -193,7 +195,8 @@ export default function CustomerProfilePage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {user?.isPhoneVerified && (
+            {user?.status === "ACTIVE" && (
+            // {user?.isPhoneVerified && (
               <span className="rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-bold text-green-600">
                 Verified
               </span>

@@ -9,7 +9,7 @@ import {
   ChevronRight,
   Camera,
 } from "lucide-react";
-import DeliveryBottomNav from "@/features/delivery/components/DeliveryBottomNav";
+import DeliveryBottomNav from "@/features/mule_delivery/components/DeliveryBottomNav";
 import { ROUTES } from "@/routes/routePaths";
 import { cn } from "@/lib/utils";
 

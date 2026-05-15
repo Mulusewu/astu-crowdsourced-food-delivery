@@ -2,6 +2,7 @@ import { lazy } from "react";
 import type { RouteGroup } from "../types/routes.types";
 import { ROUTES } from "../routePaths";
 import { UserRoles } from "@/types/user.types";
+import PaymentPage from "@/features/payment/pages/PaymentPage";
 
 // Core
 const CustomerHomePage = lazy(
@@ -70,9 +71,9 @@ const CheckoutPage = lazy(
 // const CheckoutSuccessPage = lazy(
 //   () => import("@/features/customer/pages/CheckoutSuccessPage"),
 // );
-// const OrderListPage = lazy(
-//   () => import("@/features/customer/pages/OrderListPage"),
-// );
+const OrderListPage = lazy(
+  () => import("@/features/customer/pages/OrderListPage"),
+);
 const OrderDetailsPage = lazy(
   () => import("@/features/customer/pages/OrderDetailsPage"),
 );
@@ -157,7 +158,7 @@ export const customerRoutes: RouteGroup[] = [
   },
   {
     path: ROUTES.CUSTOMER.RESTAURANT.DETAILS,
-    element: <RestaurantDetailsPage />,
+    element: <RestaurantDetailsPage />, 
     roles: [UserRoles.CUSTOMER],
   },
   // {
@@ -226,11 +227,11 @@ export const customerRoutes: RouteGroup[] = [
   // },
 
   // Order History & Tracking
-  // {
-  //   path: ROUTES.CUSTOMER.ORDERS.LIST,
-  //   element: <OrderListPage />,
-  //   roles: [UserRole.CUSTOMER],
-  // },
+  {
+    path: ROUTES.CUSTOMER.ORDERS.LIST,
+    element: <OrderListPage />,
+    roles: [UserRoles.CUSTOMER],
+  },
   {
     path: ROUTES.CUSTOMER.ORDERS.DETAILS,
     element: <OrderDetailsPage />,
@@ -264,6 +265,17 @@ export const customerRoutes: RouteGroup[] = [
     element: <PaymentMethodsPage />,
     roles: [UserRoles.CUSTOMER],
   },
+  {
+    path: ROUTES.CUSTOMER.PAYMENT.PROCESS,
+    element: <PaymentPage />,
+    roles: [UserRoles.CUSTOMER],
+  },
+  // {
+  //   path: ROUTES.CUSTOMER.PAYMENT.HISTORY,
+  //   element: <PaymentHistoryPage />,
+  //   roles: [UserRoles.CUSTOMER],
+  // },
+
   //   {
   //     path: ROUTES.CUSTOMER.PAYMENT.ADD_METHOD,
   //     element: <AddPaymentMethodPage />,

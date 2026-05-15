@@ -1,5 +1,4 @@
-import { Suspense } from "react";
-import { AuthProvider } from "./contexts/AuthContext";
+import { Suspense, useEffect } from "react";
 import { CartProvider } from "./contexts/CartContext";
 import { LocationProvider } from "./contexts/LocationContext";
 import { TelegramProvider } from "./contexts/TelegramContext";
@@ -10,6 +9,8 @@ import LoadingSkeleton from "./components/common/LoadingSkeleton";
 import WaitingForPaymentModal from "./components/delivery-person/WaitingForPaymentModal";
 import PaymentSuccessModal from "./components/delivery-person/PaymentSuccessModal";
 import { Toaster } from "@/components/ui/sonner";
+import { useAuthStore } from "@/store/auth/authStore";
+import { apiClient } from "@/api/client/axiosInstance";
 
 /**
  * AppContent
@@ -17,10 +18,27 @@ import { Toaster } from "@/components/ui/sonner";
  * Telegram initialization is now handled within TelegramProvider.
  */
 function AppContent() {
+   const { token, logout, setUser } = useAuthStore();
+
+    useEffect(() => {
+    const validateSession = async () => {
+      if (token) {
+        try {
+          // Hit the backend to get the actual, untampered user profile
+          const res = await apiClient.get('/users/me');
+          setUser(res.data.data); // Hydrate Zustand with real DB data
+        } catch (error) {
+          console.error("Session invalid or expired", error);
+          logout(); // Force them out if token is dead
+        }
+      }
+    };
+    validateSession();
+  }, []);
+
   return (
     <ErrorBoundary>
       <TelegramProvider>
-        <AuthProvider>
           <LocationProvider>
             <CartProvider>
               <Suspense fallback={<LoadingSkeleton />}>
@@ -34,7 +52,6 @@ function AppContent() {
               <Toaster position="top-center" expand={false} richColors />
             </CartProvider>
           </LocationProvider>
-        </AuthProvider>
       </TelegramProvider>
     </ErrorBoundary>
   );

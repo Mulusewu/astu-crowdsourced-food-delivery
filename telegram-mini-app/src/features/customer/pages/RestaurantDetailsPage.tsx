@@ -19,10 +19,6 @@ import { useSavedItemsStore } from "@/store/customer/savedItemsStore";
 import { ROUTES, buildRoute } from "@/routes/routePaths";
 import { useTelegram } from "@/contexts/TelegramContext";
 
-/**
- * RestaurantDetailsPage
- * Integrated with Telegram BackButton and Haptic Feedback for a premium TMA experience.
- */
 export default function RestaurantDetailsPage() {
   const { restaurantId } = useParams<{ restaurantId: string }>();
   const navigate = useNavigate();
@@ -38,18 +34,21 @@ export default function RestaurantDetailsPage() {
     fetchRestaurantDetails,
     clearCurrentRestaurant,
   } = useRestaurantStore();
-
+ 
+  // Unified Cart Operations
   const addToCart = useCartStore((state) => state.addToCart);
-  const { items: savedItems, addItem: saveItem, removeItem: unsaveItem } = useSavedItemsStore();
-  const cartRestaurant = useCartStore((state) => state.restaurant);
+  const cartRestaurantId = useCartStore((state) => state.restaurantId);
   const clearCart = useCartStore((state) => state.clearCart);
+
+  // Unified Bookmark Operations
+  const { isSaved: checkIsSaved, addItem: saveItem, removeItem: unsaveItem } = useSavedItemsStore();
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showSwitchModal, setShowSwitchModal] = useState(false);
   const [pendingItem, setPendingItem] = useState<any>(null);
   const [addedItemName, setAddedItemName] = useState("");
 
-  const isSaved = restaurantId ? savedItems.some((item) => item.id === restaurantId) : false;
+  const isSaved = restaurantId ? checkIsSaved(restaurantId) : false;
 
   const handleBack = useCallback(() => {
     hapticFeedback.impact("light");
@@ -72,10 +71,11 @@ export default function RestaurantDetailsPage() {
     if (!restaurant) return;
     hapticFeedback.impact("medium");
     if (isSaved) {
-      unsaveItem(restaurant.id);
+      unsaveItem(restaurant.id, "RESTAURANT");
     } else {
       saveItem({
         id: restaurant.id,
+        type: "RESTAURANT",
         name: restaurant.name,
         location: restaurant.location || "Adama",
         image: restaurant.image,
@@ -86,7 +86,8 @@ export default function RestaurantDetailsPage() {
   const handleAddToCart = (menuItem: any) => {
     if (!restaurant) return;
 
-    if (cartRestaurant && cartRestaurant.id !== restaurant.id) {
+    // Cart Lock: Prevent ordering from two different restaurants
+    if (cartRestaurantId && cartRestaurantId !== restaurant.id) {
       setPendingItem(menuItem);
       setShowSwitchModal(true);
       return;
@@ -99,14 +100,13 @@ export default function RestaurantDetailsPage() {
     if (!restaurant) return;
     hapticFeedback.notification("success");
     
+    // CRITICAL FIX: Align with strict backend DTO (menuId and expectedUnitPrice)
     addToCart({
-      id: menuItem.id,
+      menuId: menuItem.id,
       name: menuItem.name,
-      price: menuItem.price,
-      description: menuItem.description,
+      expectedUnitPrice: menuItem.price, // Anti-Spoofing requirement
       image: menuItem.imageUrl || menuItem.image,
       restaurantId: restaurant.id,
-      restaurantName: restaurant.name,
       quantity: 1,
     });
 
@@ -233,7 +233,7 @@ export default function RestaurantDetailsPage() {
           <div className="relative bg-white dark:bg-gray-900 rounded-[32px] p-6 w-full max-w-sm shadow-2xl animate-in zoom-in-95 duration-300">
             <div className="flex justify-center mb-4"><div className="w-14 h-14 bg-orange-50 rounded-full flex items-center justify-center"><Trash2 className="text-[#F26A1C]" size={28} /></div></div>
             <h3 className="text-[17px] font-black text-gray-900 dark:text-white mb-2 text-center leading-tight">Start a New Basket?</h3>
-            <p className="text-[13px] font-medium text-gray-500 dark:text-gray-400 text-center mb-8 px-2">Your cart already contains items from <span className="font-bold text-gray-900 dark:text-white">{cartRestaurant?.name}</span>. Adding this will clear your current cart.</p>
+            <p className="text-[13px] font-medium text-gray-500 dark:text-gray-400 text-center mb-8 px-2">Your cart already contains items from another restaurant. Adding this will clear your current cart.</p>
             <div className="flex gap-3">
               <button onClick={() => setShowSwitchModal(false)} className="flex-1 py-3.5 border-2 border-orange-100 text-[#F26A1C] font-bold rounded-full text-[14px] active:scale-95 transition-transform">Cancel</button>
               <button onClick={handleConfirmSwitch} className="flex-1 py-3.5 bg-[#F26A1C] text-white font-bold rounded-full text-[14px] shadow-md active:scale-95 transition-transform">Clear & Add</button>

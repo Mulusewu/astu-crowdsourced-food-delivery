@@ -12,8 +12,9 @@ import { useTelegram } from "@/contexts/TelegramContext";
 import { useCartStore } from "@/store/cart/cartStore";
 import { useAuthStore } from "@/store/auth/authStore";
 import type { CartItem } from "@/store/cart/cartStore";
+import { getDormCoordinates } from "@/utils/location.utils";
+import { toast } from "sonner"; // For error handling during checkout
 
-// ─── Main Cart Page Component ────────────────────────────────────────────────
 export default function CartPage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
@@ -23,13 +24,14 @@ export default function CartPage() {
   const [selectedItemForMod, setSelectedItemForMod] = useState<CartItem | null>(null);
   const [isClearConfirmOpen, setIsClearConfirmOpen] = useState(false);
 
+  // Zustand Store Hooks
   const cartItems = useCartStore((state) => state.items);
+  const quote = useCartStore((state) => state.quote);
+  const isLoading = useCartStore((state) => state.isLoading);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
-  const updateSpecialInstructions = useCartStore((state) => state.updateSpecialInstructions);
   const clearCart = useCartStore((state) => state.clearCart);
-  const subtotal = useCartStore((state) => state.getSubtotal());
-  const total = useCartStore((state) => state.getTotal());
-  const discount = useCartStore((state) => state.getDiscountAmount());
+  const setDeliveryLocation = useCartStore((state) => state.setDeliveryLocation);
+  const executeCheckout = useCartStore((state) => state.checkout);
 
   const handleBack = useCallback(() => {
     hapticFeedback.impact("light");
@@ -42,17 +44,25 @@ export default function CartPage() {
     return () => hideBackButton();
   }, [showBackButton, hideBackButton, handleBack]);
 
-  // Authorization check (redundant but safe)
+  // Authorization check
   useEffect(() => {
     if (user?.activeMode !== "CUSTOMER") {
       navigate("/", { replace: true });
     }
   }, [user, navigate]);
 
+  // Automatic Backend Pricing Sync
+  useEffect(() => {
+    if (cartItems.length > 0 && user?.customerProfile?.defaultLocation) {
+      const coords = getDormCoordinates(user.customerProfile.defaultLocation);
+      setDeliveryLocation(coords.lat, coords.lng);
+    }
+  }, [user?.customerProfile?.defaultLocation, cartItems.length]);
+
   // Sync modal state if cart changes
   useEffect(() => {
     if (!selectedItemForMod) return;
-    const refreshedItem = cartItems.find((item) => item.id === selectedItemForMod.id);
+    const refreshedItem = cartItems.find((item) => item.menuId === selectedItemForMod.menuId);
     if (!refreshedItem) {
       setSelectedItemForMod(null);
       setIsDetailModalOpen(false);
@@ -65,11 +75,22 @@ export default function CartPage() {
 
   if (user?.activeMode !== "CUSTOMER") return null;
 
-  const handleOpenDetailModal = (itemId: string) => {
-    const item = cartItems.find((i) => i.id === itemId);
+  const handleOpenDetailModal = (menuId: string) => {
+    const item = cartItems.find((i) => i.menuId === menuId);
     if (item) {
       setSelectedItemForMod(item);
       setIsDetailModalOpen(true);
+    }
+  };
+
+  const handlePlaceOrder = async () => {
+    hapticFeedback.impact("medium");
+    const orderId = await executeCheckout();
+    if (orderId) {
+      toast.success("Order Placed Successfully!");
+      navigate(ROUTES.CUSTOMER.ORDERS.DETAILS.replace(":orderId", orderId));
+    } else {
+      toast.error("Checkout Failed. Please check if the restaurant is open.");
     }
   };
 
@@ -87,6 +108,11 @@ export default function CartPage() {
         <h1 className="text-[18px] font-black text-gray-900 dark:text-white">Your Cart</h1>
         <div className="w-11" />
       </header>
+      <>
+                  {console.log("item is here", cartItems)}
+
+      </>
+
 
       {/* ── Cart Content ── */}
       {cartItems.length === 0 ? (
@@ -96,11 +122,11 @@ export default function CartPage() {
           <main className="flex-1 space-y-4 px-5 pt-2">
             {cartItems.map((item) => (
               <CartItemCard
-                key={item.id}
+                key={item.menuId}
                 item={item}
-                onIncrement={() => { hapticFeedback.impact("light"); updateQuantity(item.id, item.quantity + 1); }}
-                onDecrement={() => { hapticFeedback.impact("light"); updateQuantity(item.id, item.quantity - 1); }}
-                onCardClick={() => handleOpenDetailModal(item.id)}
+                onIncrement={() => { hapticFeedback.impact("light"); updateQuantity(item.menuId, item.quantity + 1); }}
+                onDecrement={() => { hapticFeedback.impact("light"); updateQuantity(item.menuId, item.quantity - 1); }}
+                onCardClick={() => handleOpenDetailModal(item.menuId)}
               />
             ))}
           </main>
@@ -120,11 +146,12 @@ export default function CartPage() {
 
       {/* ── Footer ── */}
       <CartFooter
-        subtotal={subtotal}
-        total={total}
-        discount={discount}
-        isCartEmpty={cartItems.length === 0}
-        onPlaceOrder={() => { hapticFeedback.impact("medium"); navigate(ROUTES.CUSTOMER.CHECKOUT); }}
+        foodPrice={quote?.foodPrice || 0}
+        deliveryFee={quote?.deliveryFee || 0}
+        serviceFee={quote?.serviceFee || 0}
+        total={quote?.totalAmount || 0}
+        isCartEmpty={cartItems.length === 0 || isLoading || !quote}
+        onPlaceOrder={handlePlaceOrder}
       />
 
       {/* ── Modals ── */}
@@ -132,7 +159,10 @@ export default function CartPage() {
         item={selectedItemForMod}
         isOpen={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
-        onSave={(id: string, instr: string) => updateSpecialInstructions(id, instr)}
+        onSave={(menuId: string, _instr: string) => { 
+          // Note: Instructions are dropped per backend DTO rules. Just closing modal.
+          setIsDetailModalOpen(false); 
+        }}
       />
 
       <ClearCartConfirmModal
@@ -153,7 +183,7 @@ function CartItemCard({ item, onIncrement, onDecrement, onCardClick }: any) {
       className="bg-white dark:bg-gray-900 rounded-[28px] p-4 shadow-[0_8px_24px_rgba(0,0,0,0.04)] dark:shadow-none dark:border dark:border-gray-800 flex items-center justify-between gap-4 cursor-pointer active:scale-[0.98] transition-transform"
     >
       <div className="flex items-center gap-4 w-full">
-        <img src={item.image} alt={item.name} className="w-[60px] h-[60px] rounded-full object-cover shadow-sm shrink-0 bg-gray-100" />
+        <img src={item.image || "https://images.unsplash.com/photo-1541544741938-0af808871cc0"} alt={item.name} className="w-[60px] h-[60px] rounded-full object-cover shadow-sm shrink-0 bg-gray-100" />
 
         <div className="flex flex-col flex-1 min-w-0">
           <h3 className="font-bold text-[15px] text-gray-900 dark:text-white leading-tight mb-2 truncate pr-2">
@@ -171,7 +201,7 @@ function CartItemCard({ item, onIncrement, onDecrement, onCardClick }: any) {
               </button>
             </div>
             <div className="font-black text-[#F26A1C] text-[15px] shrink-0 whitespace-nowrap">
-              {item.price.toFixed(0)} Birr
+              {item.expectedUnitPrice} Birr
             </div>
           </div>
         </div>
@@ -190,26 +220,30 @@ function EmptyCartView() {
   );
 }
 
-function CartFooter({ subtotal, total, discount, isCartEmpty, onPlaceOrder }: any) {
+function CartFooter({ foodPrice, deliveryFee, serviceFee, total, isCartEmpty, onPlaceOrder }: any) {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 bg-gray-100/90 dark:bg-gray-900/95 backdrop-blur-md rounded-t-[40px] px-6 pt-8 pb-[max(2rem,env(safe-area-inset-bottom))] w-full max-w-md mx-auto">
-      <div className="flex justify-between items-center text-[15px] font-bold text-gray-700 dark:text-gray-300 mb-3 px-2">
-        <span>Subtotal</span>
-        <span>{subtotal.toFixed(0)} Birr</span>
+      <div className="flex justify-between items-center text-[13px] font-bold text-gray-500 dark:text-gray-400 mb-2 px-2">
+        <span>Food Subtotal</span>
+        <span>{foodPrice} Birr</span>
       </div>
-      <div className="flex justify-between items-center text-[15px] font-bold text-gray-700 dark:text-gray-300 mb-5 px-2">
-        <span>Discount</span>
-        <span>{discount.toFixed(0)} Birr</span>
+      <div className="flex justify-between items-center text-[13px] font-bold text-gray-500 dark:text-gray-400 mb-2 px-2">
+        <span>Delivery Fee (Distance Based)</span>
+        <span>{deliveryFee} Birr</span>
       </div>
-      <div className="flex justify-between items-center text-[18px] font-black text-gray-900 dark:text-white mb-8 px-2">
+      <div className="flex justify-between items-center text-[13px] font-bold text-gray-500 dark:text-gray-400 mb-4 px-2">
+        <span>Service Fee</span>
+        <span>{serviceFee} Birr</span>
+      </div>
+      <div className="flex justify-between items-center text-[18px] font-black text-gray-900 dark:text-white mb-6 px-2 border-t border-gray-200 dark:border-gray-800 pt-3">
         <span>Total</span>
-        <span>{total.toFixed(0)} Birr</span>
+        <span>{total} Birr</span>
       </div>
 
       <button
         disabled={isCartEmpty}
         onClick={onPlaceOrder}
-        className="w-full py-4 bg-[#F26A1C] text-white font-black rounded-full text-[17px] tracking-wide shadow-[0_8px_24px_rgba(242,106,28,0.3)] active:scale-[0.98] transition-transform disabled:bg-gray-500 dark:disabled:bg-gray-700 disabled:shadow-none"
+        className="w-full py-4 bg-[#F26A1C] text-white font-black rounded-full text-[17px] tracking-wide shadow-[0_8px_24px_rgba(242,106,28,0.3)] active:scale-[0.98] transition-transform disabled:bg-gray-400 dark:disabled:bg-gray-700 disabled:shadow-none"
       >
         Place Order
       </button>
@@ -221,7 +255,7 @@ function CartItemDetailModal({ item, isOpen, onClose, onSave }: any) {
   const [instructions, setInstructions] = useState("");
 
   useEffect(() => {
-    if (item) setInstructions(item.specialInstructions || "");
+    if (item) setInstructions("");
   }, [item]);
 
   if (!isOpen || !item) return null;
@@ -232,7 +266,7 @@ function CartItemDetailModal({ item, isOpen, onClose, onSave }: any) {
       <div className="bg-white dark:bg-gray-900 rounded-[40px] p-8 w-full max-w-sm relative z-10 animate-in zoom-in-95 duration-200 shadow-2xl">
         <h3 className="text-[19px] font-black text-gray-900 dark:text-white mb-6 text-center">Cart Item Detail</h3>
         <div className="flex items-center gap-4 mb-8">
-          <img src={item.image} alt={item.name} className="w-[52px] h-[52px] rounded-full object-cover shadow-sm bg-gray-100" />
+          <img src={item.image || "https://images.unsplash.com/photo-1541544741938-0af808871cc0"} alt={item.name} className="w-[52px] h-[52px] rounded-full object-cover shadow-sm bg-gray-100" />
           <div className="flex flex-col">
             <h4 className="font-bold text-[15px] text-gray-900 dark:text-white leading-tight mb-1">{item.name}</h4>
             <p className="font-black text-[15px] text-[#F26A1C] uppercase">{item.quantity}X</p>
@@ -248,7 +282,7 @@ function CartItemDetailModal({ item, isOpen, onClose, onSave }: any) {
         </div>
         <div className="flex gap-4">
           <button onClick={onClose} className="flex-1 py-3.5 border-[2px] border-[#F26A1C] bg-white dark:bg-gray-900 text-[#F26A1C] font-black tracking-wide rounded-full text-[14px] active:scale-95 transition-transform">Cancel</button>
-          <button onClick={() => { onSave(item.id, instructions); onClose(); }} className="flex-1 py-3.5 bg-[#F26A1C] text-white font-black tracking-wide rounded-full text-[14px] shadow-[0_6px_20px_rgba(242,106,28,0.25)] active:scale-95 transition-transform">Edit Order</button>
+          <button onClick={() => { onSave(item.menuId, instructions); onClose(); }} className="flex-1 py-3.5 bg-[#F26A1C] text-white font-black tracking-wide rounded-full text-[14px] shadow-[0_6px_20px_rgba(242,106,28,0.25)] active:scale-95 transition-transform">Done</button>
         </div>
       </div>
     </div>

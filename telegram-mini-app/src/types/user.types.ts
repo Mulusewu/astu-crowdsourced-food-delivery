@@ -2,7 +2,7 @@
 // Fully aligned with Prisma schema
 
 export type UserRole = "CUSTOMER" | "DELIVERER" | "VENDOR_STAFF" | "ADMIN";
-export type ActiveMode = "CUSTOMER" | "DELIVERER";
+export type ActiveMode = "CUSTOMER" | "DELIVERER" | null;
 export type UserStatus = "ACTIVE" | "BANNED" | "PENDING";
 export type VerificationStatus = "PENDING" | "APPROVED" | "REJECTED";
 

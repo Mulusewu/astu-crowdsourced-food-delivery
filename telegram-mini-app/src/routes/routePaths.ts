@@ -53,6 +53,8 @@ export const ROUTES = {
     // Payment & Wallet
     PAYMENT: {
       METHODS: "/payment/methods",
+      PROCESS: "/payment/process/:orderId",
+      HISTORY: "/payment/history",
       ADD_METHOD: "/payment/methods/add",
       WALLET: "/wallet",
       TRANSACTIONS: "/wallet/transactions",
