@@ -7,7 +7,8 @@ import {
   User,
   LayoutList,
   ClipboardList,
-  Bell
+  Bell,
+  BarChart2
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth/authStore";
 import { useCartStore } from "@/store/cart/cartStore";
@@ -41,7 +42,7 @@ function BottomNav() {
         return {
           items: [
             { id: "home", icon: Home, path: ROUTES.VENDOR.DASHBOARD, label: "Home" },
-            { id: "saved", icon: Bookmark, path: ROUTES.VENDOR.SAVED, label: "Saved" },
+            { id: "analytics", icon: BarChart2, path: ROUTES.VENDOR.ANALYTICS, label: "Analytics" },
             { id: "menu", icon: FileText, path: ROUTES.VENDOR.MENU.LIST, label: "Menu" },
             { id: "profile", icon: User, path: ROUTES.VENDOR.SETTINGS.PROFILE, label: "Profile" },
           ],
@@ -74,7 +75,7 @@ function BottomNav() {
 
     // Vendor Routes
     ROUTES.VENDOR.DASHBOARD,
-    ROUTES.VENDOR.SAVED,
+    ROUTES.VENDOR.ANALYTICS,
     ROUTES.VENDOR.MENU.LIST,
     ROUTES.VENDOR.ORDERS.LIST,
     ROUTES.VENDOR.ORDERS.HISTORY,

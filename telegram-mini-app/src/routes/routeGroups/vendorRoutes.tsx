@@ -7,9 +7,9 @@ import { UserRoles } from "@/types/user.types";
 const VendorDashboard = lazy(
   () => import("@/features/vendor/pages/VendorDashboard"),
 );
-// const VendorAnalyticsPage = lazy(
-//   () => import("@/features/vendor/pages/AnalyticsPage"),
-// );
+const VendorAnalyticsPage = lazy(
+  () => import("@/features/vendor/pages/VendorAnalyticsPage"),
+);
 const VendorEarningsPage = lazy(
   () => import("@/features/vendor/pages/EarningsPage"),
 );
@@ -42,8 +42,10 @@ const PendingApprovalPage = lazy(
 
 // Menu Management (CRUD)
 const VendorMenuPage = lazy(() => import("@/features/vendor/pages/MenuPage"));
-const VendorMenuFormPage = lazy(() => import("@/features/vendor/pages/MenuFormPage"));
-const VendorSavedItemsPage = lazy(() => import("@/features/vendor/pages/VendorSavedItemsPage"));
+const VendorMenuFormPage = lazy(
+  () => import("@/features/vendor/pages/MenuFormPage"),
+);
+// const VendorSavedItemsPage = lazy(() => import("@/features/vendor/pages/VendorSavedItemsPage"));
 // const VendorAddFoodPage = lazy(
 //   () => import("@/features/vendor/pages/AddFoodPage"),
 // );
@@ -89,6 +91,9 @@ const VendorSavedItemsPage = lazy(() => import("@/features/vendor/pages/VendorSa
 // Order Management
 const VendorOrderDetailsPage = lazy(
   () => import("@/features/vendor/pages/OrderDetailsPage"),
+);
+const VendorOrderListsPage = lazy(
+  () => import("@/features/vendor/pages/OrdersPage"),
 );
 const VendorOrderStatusPage = lazy(
   () => import("@/features/vendor/pages/OrderStatusPage"),
@@ -170,6 +175,15 @@ const VendorOrderStatusPage = lazy(
 const VendorProfilePage = lazy(
   () => import("@/features/vendor/pages/VendorProfilePage"),
 );
+const VendorEditProfilePage = lazy(
+  () => import("@/features/vendor/pages/VendorEditProfilePage"),
+);
+const VendorChangePasswordPage = lazy(
+  () => import("@/features/vendor/pages/VendorChangePasswordPage"),
+);
+const VendorReportIssuePage = lazy(
+  () => import("@/features/vendor/pages/VendorReportIssuePage"),
+);
 // const VendorPaymentSettingsPage = lazy(
 //   () => import("@/features/vendor/pages/PaymentSettingsPage"),
 // );
@@ -203,11 +217,11 @@ export const vendorRoutes: RouteGroup[] = [
     path: ROUTES.VENDOR.PENDING,
     element: <PendingApprovalPage />,
   },
-  //   {
-  //     path: ROUTES.VENDOR.ANALYTICS,
-  //     element: <VendorAnalyticsPage />,
-  //     roles: [UserRoles.VENDOR],
-  //   },
+  {
+    path: ROUTES.VENDOR.ANALYTICS,
+    element: <VendorAnalyticsPage />,
+    roles: [UserRoles.VENDOR],
+  },
   {
     path: ROUTES.VENDOR.EARNINGS,
     element: <VendorEarningsPage />,
@@ -247,11 +261,11 @@ export const vendorRoutes: RouteGroup[] = [
   //   },
 
   // ==================== MENU MANAGEMENT (CRUD) ====================
-  {
-    path: ROUTES.VENDOR.SAVED,
-    element: <VendorSavedItemsPage />,
-    roles: [UserRoles.VENDOR],
-  },
+  // {
+  //   path: ROUTES.VENDOR.SAVED,
+  //   element: <VendorSavedItemsPage />,
+  //   roles: [UserRoles.VENDOR],
+  // },
   {
     path: ROUTES.VENDOR.MENU.LIST,
     element: <VendorMenuPage />,
@@ -328,7 +342,7 @@ export const vendorRoutes: RouteGroup[] = [
   // ==================== ORDER MANAGEMENT ====================
   {
     path: ROUTES.VENDOR.ORDERS.LIST,
-    element: <VendorOrderStatusPage />,
+    element: <VendorOrderListsPage />,
     roles: [UserRoles.VENDOR],
   },
   {
@@ -465,6 +479,21 @@ export const vendorRoutes: RouteGroup[] = [
   {
     path: ROUTES.VENDOR.SETTINGS.PROFILE,
     element: <VendorProfilePage />,
+    roles: [UserRoles.VENDOR],
+  },
+  {
+    path: ROUTES.VENDOR.SETTINGS.EDIT_PROFILE,
+    element: <VendorEditProfilePage />,
+    roles: [UserRoles.VENDOR],
+  },
+  {
+    path: ROUTES.VENDOR.SETTINGS.CHANGE_PASSWORD,
+    element: <VendorChangePasswordPage />,
+    roles: [UserRoles.VENDOR],
+  },
+  {
+    path: ROUTES.VENDOR.SETTINGS.REPORT_ISSUE,
+    element: <VendorReportIssuePage />,
     roles: [UserRoles.VENDOR],
   },
   //   {

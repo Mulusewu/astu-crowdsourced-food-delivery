@@ -165,6 +165,9 @@ export const ROUTES = {
     // Settings
     SETTINGS: {
       PROFILE: "/vendor/profile",
+      EDIT_PROFILE: "/vendor/profile/edit",
+      CHANGE_PASSWORD: "/vendor/profile/password",
+      REPORT_ISSUE: "/vendor/report-issue",
       PAYMENT: "/vendor/settings/payment",
       TAX: "/vendor/settings/tax",
       SHIPPING: "/vendor/settings/shipping",
