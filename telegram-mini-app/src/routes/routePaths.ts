@@ -165,12 +165,14 @@ export const ROUTES = {
     // Settings
     SETTINGS: {
       PROFILE: "/vendor/profile",
+      EDIT_PROFILE: "/vendor/profile/edit",
+      CHANGE_PASSWORD: "/vendor/profile/password",
+      REPORT_ISSUE: "/vendor/report-issue",
       PAYMENT: "/vendor/settings/payment",
       TAX: "/vendor/settings/tax",
       SHIPPING: "/vendor/settings/shipping",
       NOTIFICATIONS: "/vendor/settings/notifications",
       INTEGRATIONS: "/vendor/settings/integrations",
-      REPORT_ISSUE: "/vendor/report-issue",
     },
   },
 
@@ -334,10 +336,3 @@ export function buildRoute(route: string, params: RouteParams): string {
 
   return builtRoute;
 }
-
-// Usage examples:
-// buildRoute(ROUTES.CUSTOMER.RESTAURANT.DETAILS, { restaurantId: "123" })
-// Returns: "/restaurant/123"
-//
-// buildRoute(ROUTES.VENDOR.FOOD.EDIT, { foodId: "456" })
-// Returns: "/vendor/food/456/edit"

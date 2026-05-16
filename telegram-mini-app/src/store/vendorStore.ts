@@ -56,6 +56,8 @@ interface VendorState {
   isActive: boolean;
   activeOrders: VendorOrder[];
   menuItems: MenuItem[];
+  analytics: any | null;
+  earnings: any | null;
   isLoading: boolean;
   error: string | null;
 
@@ -79,6 +81,8 @@ export const useVendorStore = create<VendorState>()(
       isActive: true as boolean,
       activeOrders: [] as VendorOrder[],
       menuItems: [] as MenuItem[],
+      analytics: null as any | null,
+      earnings: null as any | null,
       isLoading: false as boolean,
       error: null as string | null,
 
@@ -111,10 +115,71 @@ export const useVendorStore = create<VendorState>()(
             inStock: true
           })) : ((db as any).vendorDashboard?.menuItems || []);
 
+          const baseStats = vendorData.stats || {};
+          const mockAnalytics = {
+            today: {
+              revenue: (baseStats.totalRevenue * 0.05).toLocaleString(undefined, { minimumFractionDigits: 2 }),
+              orders: Math.floor(baseStats.totalOrders * 0.05),
+              customers: Math.floor(baseStats.totalOrders * 0.04),
+              revenueChange: "+12.5%",
+              ordersChange: "+8.2%",
+              revenueGrowing: true,
+            },
+            month: {
+              revenue: (baseStats.totalRevenue * 0.4).toLocaleString(undefined, { minimumFractionDigits: 2 }),
+              orders: Math.floor(baseStats.totalOrders * 0.4),
+              customers: Math.floor(baseStats.totalOrders * 0.35),
+              revenueChange: "+24.3%",
+              ordersChange: "+18.7%",
+              revenueGrowing: true,
+            },
+            year: {
+              revenue: baseStats.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 }),
+              orders: baseStats.totalOrders,
+              customers: Math.floor(baseStats.totalOrders * 0.8),
+              revenueChange: "-2.1%",
+              ordersChange: "+5.4%",
+              revenueGrowing: false,
+            }
+          };
+
+          const mockEarnings = {
+            today: {
+              earnings: (baseStats.totalRevenue * 0.05).toLocaleString(undefined, { minimumFractionDigits: 2 }),
+              orders: Math.floor(baseStats.totalOrders * 0.05),
+              transactions: [
+                { id: 1, type: "Order Revenue", time: "2:30 PM", amount: `+${(baseStats.totalRevenue * 0.03).toLocaleString(undefined, { minimumFractionDigits: 2 })}` },
+                { id: 2, type: "Order Revenue", time: "11:15 AM", amount: `+${(baseStats.totalRevenue * 0.02).toLocaleString(undefined, { minimumFractionDigits: 2 })}` },
+              ]
+            },
+            month: {
+              earnings: (baseStats.totalRevenue * 0.4).toLocaleString(undefined, { minimumFractionDigits: 2 }),
+              orders: Math.floor(baseStats.totalOrders * 0.4),
+              transactions: [
+                { id: 1, type: "Order Revenue", time: "Today, 2:30 PM", amount: `+${(baseStats.totalRevenue * 0.1).toLocaleString(undefined, { minimumFractionDigits: 2 })}` },
+                { id: 2, type: "Order Revenue", time: "Today, 11:15 AM", amount: `+${(baseStats.totalRevenue * 0.05).toLocaleString(undefined, { minimumFractionDigits: 2 })}` },
+                { id: 3, type: "Order Revenue", time: "Yesterday", amount: `+${(baseStats.totalRevenue * 0.15).toLocaleString(undefined, { minimumFractionDigits: 2 })}` },
+                { id: 4, type: "Order Revenue", time: "2 days ago", amount: `+${(baseStats.totalRevenue * 0.1).toLocaleString(undefined, { minimumFractionDigits: 2 })}` },
+              ]
+            },
+            year: {
+              earnings: baseStats.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 }),
+              orders: baseStats.totalOrders,
+              transactions: [
+                { id: 1, type: "Order Revenue", time: "May 15", amount: `+${(baseStats.totalRevenue * 0.2).toLocaleString(undefined, { minimumFractionDigits: 2 })}` },
+                { id: 2, type: "Order Revenue", time: "May 14", amount: `+${(baseStats.totalRevenue * 0.3).toLocaleString(undefined, { minimumFractionDigits: 2 })}` },
+                { id: 3, type: "Order Revenue", time: "April", amount: `+${(baseStats.totalRevenue * 0.25).toLocaleString(undefined, { minimumFractionDigits: 2 })}` },
+                { id: 4, type: "Order Revenue", time: "March", amount: `+${(baseStats.totalRevenue * 0.25).toLocaleString(undefined, { minimumFractionDigits: 2 })}` },
+              ]
+            }
+          };
+
           set({
             vendor: vendorData as VendorUser,
             activeOrders: (db as any).vendorDashboard?.activeOrders || [],
             menuItems,
+            analytics: mockAnalytics,
+            earnings: mockEarnings,
             isLoading: false
           });
         } catch (error) {
@@ -185,6 +250,8 @@ export const useVendorStore = create<VendorState>()(
           vendor: null,
           activeOrders: [],
           menuItems: [],
+          analytics: null,
+          earnings: null,
           error: null,
           isActive: false
         });
@@ -197,6 +264,8 @@ export const useVendorStore = create<VendorState>()(
         isActive: state.isActive,
         menuItems: state.menuItems,
         activeOrders: state.activeOrders,
+        analytics: state.analytics,
+        earnings: state.earnings,
       })
     }
   )

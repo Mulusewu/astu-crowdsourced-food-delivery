@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   User,
@@ -49,7 +49,6 @@ export default function VendorProfilePage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Check if it's an image
       if (!file.type.startsWith('image/')) {
         alert("Please select an image file (JPG or PNG)");
         return;
@@ -58,8 +57,6 @@ export default function VendorProfilePage() {
       const reader = new FileReader();
       reader.onloadend = async () => {
         const base64String = reader.result as string;
-
-        // Update both local vendor store and global auth store for consistency
         updateAvatar(base64String);
         await updateVendor({ avatar: base64String });
       };

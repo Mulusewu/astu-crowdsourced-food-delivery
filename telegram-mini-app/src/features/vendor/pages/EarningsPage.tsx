@@ -14,41 +14,10 @@ const TIME_FILTERS = [
   { id: "year", label: "This Year" },
 ];
 
-const MOCK_PERIOD_DATA = {
-  today: {
-    earnings: "1,240.00",
-    orders: 8,
-    transactions: [
-      { id: 1, type: "Order Revenue", time: "2:30 PM", amount: "+450.00" },
-      { id: 2, type: "Order Revenue", time: "11:15 AM", amount: "+790.00" },
-    ]
-  },
-  month: {
-    earnings: "42,850.00",
-    orders: 342,
-    transactions: [
-      { id: 1, type: "Order Revenue", time: "Today, 2:30 PM", amount: "+450.00" },
-      { id: 2, type: "Order Revenue", time: "Today, 11:15 AM", amount: "+790.00" },
-      { id: 3, type: "Order Revenue", time: "Yesterday", amount: "+1,200.00" },
-      { id: 4, type: "Order Revenue", time: "2 days ago", amount: "+950.00" },
-    ]
-  },
-  year: {
-    earnings: "452,100.00",
-    orders: 4820,
-    transactions: [
-      { id: 1, type: "Order Revenue", time: "May 15", amount: "+450.00" },
-      { id: 2, type: "Order Revenue", time: "May 14", amount: "+2,400.00" },
-      { id: 3, type: "Order Revenue", time: "April", amount: "+38,200.00" },
-      { id: 4, type: "Order Revenue", time: "March", amount: "+41,500.00" },
-    ]
-  }
-};
-
 export default function EarningsPage() {
     const navigate = useNavigate();
     const { user } = useAuthStore();
-    const { vendor, fetchVendorData, isLoading } = useVendorStore();
+    const { vendor, earnings, fetchVendorData, isLoading } = useVendorStore();
     const [activeFilter, setActiveFilter] = useState("month");
 
     useEffect(() => {
@@ -57,15 +26,15 @@ export default function EarningsPage() {
         }
     }, [fetchVendorData, user?.id]);
 
-    if (isLoading || !vendor) {
+    const currentData = earnings ? earnings[activeFilter as keyof typeof earnings] : null;
+
+    if (isLoading || !vendor || !currentData) {
         return (
-            <div className="flex h-screen items-center justify-center bg-white">
+            <div className="flex h-screen items-center justify-center bg-[#FDFDFD]">
                 <div className="h-10 w-10 animate-spin rounded-full border-4 border-orange-500 border-t-transparent" />
             </div>
         );
     }
-
-    const currentData = MOCK_PERIOD_DATA[activeFilter as keyof typeof MOCK_PERIOD_DATA];
 
     return (
         <div className="min-h-screen bg-[#FDFDFD] font-outfit pb-32">
@@ -127,7 +96,7 @@ export default function EarningsPage() {
                 <div className="mt-2">
                     <h3 className="text-xl font-black text-black mb-6 tracking-tight">Recent Transactions</h3>
                     <div className="flex flex-col gap-4">
-                        {currentData.transactions.map((tx) => (
+                        {currentData.transactions.map((tx: any) => (
                             <div key={tx.id} className="flex items-center gap-4 p-4 rounded-[24px] bg-white border border-gray-100 hover:border-orange-100 hover:shadow-md transition-all group">
                                 <div className="rounded-2xl bg-orange-100 p-3 text-orange-600 group-hover:scale-110 transition-transform">
                                     <TrendingUp className="h-5 w-5" />

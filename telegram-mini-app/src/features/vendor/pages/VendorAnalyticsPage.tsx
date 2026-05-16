@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { 
   ArrowLeft, 
-  BarChart3, 
+  BarChart2, 
   TrendingUp, 
   TrendingDown, 
   Download, 
@@ -11,6 +11,9 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import BottomNav from "@/components/common/BottomNav";
+import { useVendorStore } from "@/store/vendorStore";
+import { useAuthStore } from "@/store/auth/authStore";
 
 const TIME_FILTERS = [
   { id: "today", label: "Today" },
@@ -18,37 +21,19 @@ const TIME_FILTERS = [
   { id: "year", label: "This Year" },
 ];
 
-const ANALYTICS_DATA = {
-  today: {
-    revenue: "2,450.00",
-    orders: 42,
-    customers: 38,
-    revenueChange: "+12.5%",
-    ordersChange: "+8.2%",
-    revenueGrowing: true,
-  },
-  month: {
-    revenue: "84,200.00",
-    orders: 1250,
-    customers: 840,
-    revenueChange: "+24.3%",
-    ordersChange: "+18.7%",
-    revenueGrowing: true,
-  },
-  year: {
-    revenue: "912,450.00",
-    orders: 14200,
-    customers: 5600,
-    revenueChange: "-2.1%",
-    ordersChange: "+5.4%",
-    revenueGrowing: false,
-  }
-};
-
 export default function VendorAnalyticsPage() {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
+  const { vendor, analytics, isLoading, fetchVendorData } = useVendorStore();
   const [activeFilter, setActiveFilter] = useState("month");
-  const data = ANALYTICS_DATA[activeFilter as keyof typeof ANALYTICS_DATA];
+
+  useEffect(() => {
+    if (user?.id && !vendor) {
+      fetchVendorData(user.id);
+    }
+  }, [fetchVendorData, user?.id, vendor]);
+
+  const data = analytics ? analytics[activeFilter as keyof typeof analytics] : null;
 
   const handleExport = () => {
     toast.success("Preparing your report...", {
@@ -60,8 +45,16 @@ export default function VendorAnalyticsPage() {
     }, 2000);
   };
 
+  if (isLoading || !vendor || !data) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-[#FDFDFD]">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-orange-500 border-t-transparent" />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-[#FDFDFD] pb-32">
+    <div className="min-h-screen bg-[#FDFDFD] pb-32 font-outfit">
       {/* Header */}
       <div className="flex items-center px-4 py-6">
         <button
@@ -140,7 +133,7 @@ export default function VendorAnalyticsPage() {
         <div className="bg-white rounded-[32px] p-6 shadow-[0_8px_40px_rgba(0,0,0,0.06)] border border-gray-150 relative overflow-hidden">
           <div className="flex justify-between items-center mb-8">
             <h3 className="font-black text-black text-lg">Performance</h3>
-            <BarChart3 className="w-5 h-5 text-gray-400" />
+            <BarChart2 className="w-5 h-5 text-gray-400" />
           </div>
           
           {/* Mock Graph Bars */}
@@ -173,6 +166,8 @@ export default function VendorAnalyticsPage() {
           Export Data
         </button>
       </div>
+
+      <BottomNav />
     </div>
   );
 }
