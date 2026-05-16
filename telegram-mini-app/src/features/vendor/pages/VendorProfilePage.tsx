@@ -1,19 +1,28 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   User,
   Phone,
-  Sun,
   MapPin,
   Fingerprint,
   ArrowLeft,
   Camera,
   LogOut,
-  Loader2
+  Loader2,
+  Bookmark,
+  Wallet,
+  AlertCircle,
+  ArrowUpRight
 } from "lucide-react";
 import { useVendorStore } from "@/store/vendorStore";
 import { useAuthStore } from "@/store/auth/authStore";
 import { ROUTES } from "@/routes/routePaths";
+
+const MENU_ITEMS = [
+  { icon: Bookmark, label: "Saved for Later", path: ROUTES.VENDOR.SAVED, color: "text-blue-500", bg: "bg-blue-50" },
+  { icon: Wallet, label: "Earnings & Transactions", path: ROUTES.VENDOR.EARNINGS, color: "text-green-500", bg: "bg-green-50" },
+  { icon: AlertCircle, label: "Report an Issue", path: ROUTES.VENDOR.SETTINGS.REPORT_ISSUE, color: "text-purple-500", bg: "bg-purple-50" },
+];
 
 export default function VendorProfilePage() {
   const navigate = useNavigate();
@@ -69,13 +78,12 @@ export default function VendorProfilePage() {
   const profileItems = [
     { icon: User, label: vendor.businessName, path: "#" },
     { icon: Phone, label: vendor.phone, path: "#" },
-
-    { icon: MapPin, label: "Bole Gate", path: "#" }, // Mocked area for now
+    { icon: MapPin, label: "Bole Gate", path: "#" }, 
     { icon: Fingerprint, label: `#${vendor.restaurantId || "V1234"}`, path: "#" },
   ];
 
   return (
-    <div className="min-h-screen bg-white flex flex-col font-outfit max-w-md mx-auto relative overflow-hidden">
+    <div className="min-h-screen bg-white flex flex-col font-outfit max-w-md mx-auto relative overflow-hidden pb-10">
       {/* Hidden File Input */}
       <input
         type="file"
@@ -121,13 +129,14 @@ export default function VendorProfilePage() {
             <Camera className="w-5 h-5 text-orange-500" />
           </button>
         </div>
-        <h2 className="mt-6 text-2xl font-black text-black tracking-tight">
+        <h2 className="mt-6 text-2xl font-black text-black tracking-tight text-center px-4">
           {vendor.businessName}
         </h2>
       </div>
 
-      {/* Profile Card */}
-      <div className="px-6 mt-10 mb-20">
+      {/* Profile Details Card */}
+      <div className="px-6 mt-10">
+        <h3 className="mb-4 px-2 text-[11px] font-black text-gray-400 uppercase tracking-[2px]">Account Details</h3>
         <div className="bg-white rounded-[32px] p-6 shadow-[0_8px_40px_rgba(0,0,0,0.06)] border border-gray-150">
           <div className="flex flex-col space-y-2">
             {profileItems.map((item, index) => (
@@ -136,12 +145,40 @@ export default function VendorProfilePage() {
                   <div className="flex items-center justify-center w-8 h-8 mr-4">
                     <item.icon className="w-6 h-6 text-gray-700 stroke-[1.5]" />
                   </div>
-                  <span className="flex-1 text-left text-gray-600 font-bold text-base tracking-tight">
+                  <span className="flex-1 text-left text-gray-600 font-bold text-base tracking-tight truncate">
                     {item.label}
                   </span>
                 </div>
                 {index < profileItems.length - 1 && (
-                  <div className="mx-2 h-[1.5px] bg-orange-100/50 rounded-full" />
+                  <div className="mx-2 h-[1px] bg-orange-100/30 rounded-full" />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Management Section */}
+        <h3 className="mt-8 mb-4 px-2 text-[11px] font-black text-gray-400 uppercase tracking-[2px]">Management</h3>
+        <div className="bg-white rounded-[32px] p-6 shadow-[0_8px_40px_rgba(0,0,0,0.06)] border border-gray-150">
+          <div className="flex flex-col space-y-2">
+            {MENU_ITEMS.map((item, index) => (
+              <div key={index} className="group">
+                <button 
+                  onClick={() => navigate(item.path)}
+                  className="w-full flex items-center py-4 px-2 hover:bg-gray-50 rounded-2xl transition-all"
+                >
+                  <div className={`flex items-center justify-center w-10 h-10 mr-4 rounded-xl ${item.bg}`}>
+                    <item.icon className={`w-5 h-5 ${item.color} stroke-[2.5]`} />
+                  </div>
+                  <span className="flex-1 text-left text-gray-900 font-black text-base tracking-tight">
+                    {item.label}
+                  </span>
+                  <div className="h-8 w-8 flex items-center justify-center rounded-lg bg-gray-50 text-gray-400 group-hover:bg-orange-50 group-hover:text-orange-500 transition-colors">
+                    <ArrowUpRight className="w-5 h-5" />
+                  </div>
+                </button>
+                {index < MENU_ITEMS.length - 1 && (
+                  <div className="mx-2 h-[1px] bg-gray-100 rounded-full my-1" />
                 )}
               </div>
             ))}
@@ -151,7 +188,7 @@ export default function VendorProfilePage() {
         {/* Logout Button */}
         <button
           onClick={handleLogout}
-          className="mt-8 w-full flex items-center justify-center gap-2 py-4 text-red-500 font-black text-sm uppercase tracking-widest hover:bg-red-50 rounded-2xl transition-all"
+          className="mt-8 w-full flex items-center justify-center gap-2 py-5 text-red-500 font-black text-sm uppercase tracking-widest hover:bg-red-50 rounded-[28px] transition-all border-2 border-red-50"
         >
           <LogOut className="w-5 h-5" />
           Sign Out

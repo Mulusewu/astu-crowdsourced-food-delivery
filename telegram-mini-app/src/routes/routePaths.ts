@@ -170,6 +170,7 @@ export const ROUTES = {
       SHIPPING: "/vendor/settings/shipping",
       NOTIFICATIONS: "/vendor/settings/notifications",
       INTEGRATIONS: "/vendor/settings/integrations",
+      REPORT_ISSUE: "/vendor/report-issue",
     },
   },
 
