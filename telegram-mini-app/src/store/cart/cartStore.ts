@@ -161,17 +161,18 @@ export const useCartStore = create<CartState>()(
       },
 
       checkout: async () => {
-        const { items, restaurantId, deliveryLat, deliveryLng, tip } = get();
-        console.log({ items, restaurantId, deliveryLat, deliveryLng, tip });
-        
+        const { items, restaurantId, tip } = get();
+        const deliveryLat=8.562387
+        const deliveryLng=38.753949
         if (items.length === 0 || !restaurantId || !deliveryLat || !deliveryLng) return null;
+        console.log("Heeeeeeeeeeeerrrrrrrrrrrrrrr");
 
         set({ isLoading: true, error: null });
         try {
           const payload = {
             restaurantId,
-            deliveryLat: 8.562387,
-            deliveryLng: 38.753949,
+            deliveryLat,
+            deliveryLng,
             tip,
             items: items.map(i => ({
               menuId: i.menuId,
@@ -179,7 +180,8 @@ export const useCartStore = create<CartState>()(
               expectedUnitPrice: i.expectedUnitPrice
             }))
           };
-
+          console.log("Payloaddddddddddddddd",payload);
+          
           const res = await apiClient.post('/orders/checkout', payload);
           get().clearCart();
           return res.data.data.id; // Return the created Order ID for routing
