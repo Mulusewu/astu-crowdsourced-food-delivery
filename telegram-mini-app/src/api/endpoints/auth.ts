@@ -32,5 +32,18 @@ export const authApi = {
   toggleMode: async (mode: string) => {
     const response = await apiClient.patch("/users/me/toggle-mode", { mode });
     return response.data;
-  }
+  },
+
+  updateMe: async (data: Record<string, unknown>) => {
+    const response = await apiClient.patch("/users/me", data);
+    return response.data; // { success: true, data: { id, fullName, email, ... } }
+  },
+
+  changePassword: async (currentPassword: string, newPassword: string) => {
+    const response = await apiClient.patch("/users/me/password", {
+      currentPassword,
+      newPassword,
+    });
+    return response.data; // { success: true, message: "Password updated successfully" }
+  },
 };

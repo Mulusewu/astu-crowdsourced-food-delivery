@@ -46,7 +46,7 @@ interface CustomerState {
   error: string | null;
   
   // User preferences
-  // addresses: Address[];
+  addresses: any[];
   // paymentMethods: PaymentMethod[];
 
   favorites: string[]; // restaurant IDs
@@ -61,6 +61,12 @@ interface CustomerState {
 // Recent searches
   addRecentSearch: (searchTerm: string) => void;
   clearRecentSearches: () => void;
+
+  // Address Actions
+  addAddress: (address: any) => void;
+  updateAddress: (addressId: string, updates: any) => void;
+  deleteAddress: (addressId: string) => void;
+  setDefaultAddress: (addressId: string) => void;
 
   clearError: () => void;
   resetCustomerState: () => void;
@@ -108,7 +114,7 @@ export const useCustomerStore = create<CustomerState>()(
       // user: null,
       isLoading: false,
       error: null,
-      // addresses: [],
+      addresses: [],
       // paymentMethods: [],
       favorites: [],
       favoriteFoods: [],
@@ -163,40 +169,39 @@ export const useCustomerStore = create<CustomerState>()(
       //   }
       // },
 
-      // // Address Management
-      // addAddress: (address) => {
-      //   set((state) => ({
-      //     addresses: [...state.addresses, address],
-      //   }));
-      // },
+      // Address Management
+      addAddress: (address) => {
+        set((state) => ({
+          addresses: [...state.addresses, address],
+        }));
+      },
       
-      // updateAddress: (addressId, updates) => {
-      //   set((state) => ({
-      //     addresses: state.addresses.map((addr) =>
-      //       addr.id === addressId ? { ...addr, ...updates } : addr
-      //     ),
-      //   }));
-      // },
+      updateAddress: (addressId, updates) => {
+        set((state) => ({
+          addresses: state.addresses.map((addr) =>
+            addr.id === addressId ? { ...addr, ...updates } : addr
+          ),
+        }));
+      },
       
-      // deleteAddress: (addressId) => {
-      //   set((state) => ({
-      //     addresses: state.addresses.filter((addr) => addr.id !== addressId),
-      //   }));
-      // },
+      deleteAddress: (addressId) => {
+        set((state) => ({
+          addresses: state.addresses.filter((addr) => addr.id !== addressId),
+        }));
+      },
       
-      // setDefaultAddress: (addressId) => {
-      //   set((state) => ({
-      //     addresses: state.addresses.map((addr) => ({
-      //       ...addr,
-      //       isDefault: addr.id === addressId,
-      //     })),
-      //     user: state.user ? { ...state.user, defaultAddressId: addressId } : null,
-      //   }));
-      // },
+      setDefaultAddress: (addressId) => {
+        set((state) => ({
+          addresses: state.addresses.map((addr) => ({
+            ...addr,
+            isDefault: addr.id === addressId,
+          })),
+        }));
+      },
       
-      // getDefaultAddress: () => {
-      //   return get().addresses.find((addr) => addr.isDefault);
-      // },
+      getDefaultAddress: () => {
+        return get().addresses.find((addr) => addr.isDefault);
+      },
 
       // // Payment Management
       // addPaymentMethod: (method) => {
@@ -384,12 +389,13 @@ export const useCustomerStore = create<CustomerState>()(
       
       clearError: () => set({ error: null }),
       
-      resetCustomerState: () => set({ favorites: [], favoriteFoods: [], recentSearches: [], error: null })
+      resetCustomerState: () => set({ favorites: [], favoriteFoods: [], recentSearches: [], addresses: [], error: null })
     }),
     {
       name: "customer-storage",
       partialize: (state) => ({
         recentSearches: state.recentSearches,
+        addresses: state.addresses,
         // We persist bookmarks so the UI is fast on reload, but fetchBookmarks overrides it in background
         favorites: state.favorites,
         favoriteFoods: state.favoriteFoods,

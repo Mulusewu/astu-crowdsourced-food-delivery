@@ -77,6 +77,7 @@ export const useCartStore = create<CartState>()(
 
       addToCart: (newItem) => {
         const state = get();
+        console.log("!!!!!!!!!!!!!!!!!!!!!!!!!");
         
         // Prevent cross-restaurant ordering
         if (state.restaurantId && state.restaurantId !== newItem.restaurantId) {
@@ -140,12 +141,12 @@ export const useCartStore = create<CartState>()(
             restaurantId,
             deliveryLat,
             deliveryLng,
-            tip,
             items: items.map(i => ({
               menuId: i.menuId,
               quantity: i.quantity,
               expectedUnitPrice: i.expectedUnitPrice
-            }))
+            })),
+            tip
           };
 
           const res = await apiClient.post('/orders/quote', payload);
@@ -161,14 +162,16 @@ export const useCartStore = create<CartState>()(
 
       checkout: async () => {
         const { items, restaurantId, deliveryLat, deliveryLng, tip } = get();
+        console.log({ items, restaurantId, deliveryLat, deliveryLng, tip });
+        
         if (items.length === 0 || !restaurantId || !deliveryLat || !deliveryLng) return null;
 
         set({ isLoading: true, error: null });
         try {
           const payload = {
             restaurantId,
-            deliveryLat,
-            deliveryLng,
+            deliveryLat: 8.562387,
+            deliveryLng: 38.753949,
             tip,
             items: items.map(i => ({
               menuId: i.menuId,

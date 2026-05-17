@@ -51,10 +51,6 @@ interface AuthState {
   clearError: () => void;
 }
 
-const delay = (ms = 700) => new Promise((r) => setTimeout(r, ms));
-
-
-
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
@@ -101,29 +97,38 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      updatePassword: async (_old, _new) => {
+      updatePassword: async (oldPw, newPw) => {
         set({ isLoading: true, error: null });
         try {
-          await delay(800);
+          await authApi.changePassword(oldPw, newPw);
           set({ isLoading: false });
-        } catch (e) {
-          set({ isLoading: false, error: "Failed to update password." });
-          throw e;
+        } catch (e: any) {
+          set({ isLoading: false, error: e.message ?? "Failed to update password." });
+          throw e; // re-throw so ChangePasswordPage catch block fires
         }
       },
 
       updateProfile: async (data) => {
         set({ isLoading: true, error: null });
         try {
-          await delay(600);
           const { customerProfile: cpPatch, delivererProfile: dpPatch, ...userFields } = data;
+
+          // Build the payload: top-level fields + nested profile patches
+          const payload: Record<string, unknown> = { ...userFields };
+          if (cpPatch) payload.customerProfile = cpPatch;
+          if (dpPatch) payload.delivererProfile = dpPatch;
+
+          const response = await authApi.updateMe(payload);
+          // response.data contains only top-level User fields (no customerProfile)
+          const serverUser = response.data;
+
           set((s) => {
             if (!s.user) return { isLoading: false };
             return {
               user: {
-                ...s.user,
-                ...userFields,
-                updatedAt: new Date().toISOString(),
+                ...s.user,               // keeps customerProfile, delivererProfile, etc.
+                ...serverUser,           // overwrites top-level fields from server truth
+                // Apply nested patches locally since server doesn't echo them back
                 ...(cpPatch && s.user.customerProfile
                   ? { customerProfile: { ...s.user.customerProfile, ...cpPatch } }
                   : {}),
@@ -134,8 +139,8 @@ export const useAuthStore = create<AuthState>()(
               isLoading: false,
             };
           });
-        } catch (e) {
-          set({ isLoading: false, error: "Failed to update profile." });
+        } catch (e: any) {
+          set({ isLoading: false, error: e.message ?? "Failed to update profile." });
           throw e;
         }
       },
