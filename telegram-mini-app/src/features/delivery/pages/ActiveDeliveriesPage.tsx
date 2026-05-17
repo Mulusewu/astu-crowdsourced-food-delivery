@@ -36,10 +36,25 @@ const statusMap: Record<string, string> = {
 export default function ActiveDeliveriesPage() {
   const navigate = useNavigate();
   // CRITICAL FIX: Fetch the single active delivery enforced by backend constraint
-  const { activeOrders, fetchActiveOrders } = useOrderStore();
+  // const { activeOrders, fetchActiveOrders,isLoading,is } = useOrderStore();
+  const {
+    filteredOrders,
+    isLoading,
+    isLoadingMore,
+    hasMore,
+    fetchAvailableOrders,
+    loadMoreOrders,
+    setSelectedCafe,
+    secondaryFilter,
+    setSecondaryFilter,
+    connectDispatchSocket,
+    activeOrders, fetchActiveOrders // Import
+  } = useOrderStore();
 
   useEffect(() => {
     fetchActiveOrders();
+    fetchAvailableOrders();
+    connectDispatchSocket();
   }, [fetchActiveOrders]);
 
   return (

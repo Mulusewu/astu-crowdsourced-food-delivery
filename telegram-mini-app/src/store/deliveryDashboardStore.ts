@@ -72,7 +72,6 @@ export const useDeliveryDashboardStore = create<DeliveryDashboardState>()(
           const bookmarkedIds = bookmarksRes.data.data.map((b: any) => b.targetId);
           const availableOrders = ordersRes.data.orders;
 
-          console.log("here is teh dashboard orders", availableOrders);
 
           // 2. Map Dashboard Orders (Cheap/Quick orders logic)
           const mappedOrders: DashboardOrder[] = availableOrders
@@ -119,12 +118,12 @@ export const useDeliveryDashboardStore = create<DeliveryDashboardState>()(
             return b.activeOrders - a.activeOrders;
           });
 
-          set({ 
+          set(state => ({ 
             delivererProfile: profile, 
             restaurants: mappedRestaurants, 
-            dashboardOrders: mappedOrders, 
+             dashboardOrders: state.dashboardOrders.length > 0 ? state.dashboardOrders : mappedOrders, 
             isLoading: false 
-          });
+          }));
 
         } catch (error: any) {
           console.error("Failed to fetch dashboard data:", error);
