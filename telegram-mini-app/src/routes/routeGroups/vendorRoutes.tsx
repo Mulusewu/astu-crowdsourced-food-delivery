@@ -36,9 +36,6 @@ const VendorOrderDetailsPage = lazy(
 const VendorOrderListsPage = lazy(
   () => import("@/features/vendor/pages/OrdersPage"),
 );
-const VendorOrderStatusPage = lazy(
-  () => import("@/features/vendor/pages/OrderStatusPage"),
-);
 
 // Settings
 const VendorProfilePage = lazy(
@@ -102,7 +99,6 @@ export const vendorRoutes: RouteGroup[] = [
     roles: [UserRoles.VENDOR],
   },
 
-  // ==================== ORDER MANAGEMENT ====================
   {
     path: ROUTES.VENDOR.ORDERS.LIST,
     element: <VendorOrderListsPage />,
@@ -111,11 +107,6 @@ export const vendorRoutes: RouteGroup[] = [
   {
     path: ROUTES.VENDOR.ORDERS.DETAILS,
     element: <VendorOrderDetailsPage />,
-    roles: [UserRoles.VENDOR],
-  },
-  {
-    path: ROUTES.VENDOR.ORDERS.STATUS,
-    element: <VendorOrderStatusPage />,
     roles: [UserRoles.VENDOR],
   },
 

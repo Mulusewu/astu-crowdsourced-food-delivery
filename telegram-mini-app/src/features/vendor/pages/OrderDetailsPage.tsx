@@ -151,20 +151,14 @@ export default function OrderDetailsPage() {
               try {
                 if (!orderId) throw new Error("Order ID is missing");
                 
-                const finalItems = (items || []).filter((item: any) => item && !item.outOfStock);
-                const finalCount = finalItems.reduce((sum: number, item: any) => sum + (Number(item.quantity) || 0), 0);
+                // Update status to preparing and move to the integrated tracking list
+                const { updateOrderStatus } = useVendorStore.getState();
+                updateOrderStatus(orderId, "preparing");
                 
-                console.log("Navigating to status with:", { subTotal, finalCount });
-                navigate(`/vendor/order/${orderId}/status`, { 
-                  state: { 
-                    subTotal: Number(subTotal) || 0, 
-                    itemsCount: Number(finalCount) || 0 
-                  } 
-                });
+                navigate("/vendor/orders");
               } catch (err) {
                 console.error("Accept button click error:", err);
-                // Fallback navigation even if calculation fails
-                navigate(`/vendor/order/${orderId}/status`);
+                navigate("/vendor/orders");
               }
             }}
             className="flex-1 bg-orange-500 text-white font-bold py-3.5 rounded-full shadow-lg shadow-orange-200 hover:bg-orange-600 active:scale-95 transition-all text-base"

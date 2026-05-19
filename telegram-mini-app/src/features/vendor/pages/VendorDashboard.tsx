@@ -1,11 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useVendorStore, type VendorOrder } from "@/store/vendorStore";
 import { useAuthStore } from "@/store/auth/authStore";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  ShoppingBag,
-  DollarSign,
   Star,
   Clock,
   Package,
@@ -124,58 +122,74 @@ export default function VendorDashboard() {
       <div className="flex flex-col gap-4">
         <h2 className="text-lg font-bold text-gray-800">Available Orders</h2>
 
-        {/* Orders Grid */}
-        <div className="grid grid-cols-2 gap-x-4 gap-y-16 mt-8">
-          {newOrders.map((order: VendorOrder) => (
-            <div key={order.id} className="relative flex flex-col items-center bg-white rounded-[32px] pt-14 pb-5 px-3 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 group hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-500">
-              {/* Circular Food Image - Popping out of the card */}
-              <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-28 h-28 rounded-full border-[6px] border-white shadow-xl overflow-hidden z-10 transition-transform group-hover:scale-110 duration-500">
-                <img
-                  src={order.image}
-                  alt={`Order ${order.orderNo}`}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-
-              {/* Status Indicator Badge */}
-              <div className="absolute right-4 top-4 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 z-20">
-                <span className="text-[8px] font-black text-primary uppercase tracking-tighter">{order.status}</span>
-              </div>
-
-              {/* Order Info */}
-              <div className="flex flex-col items-center text-center gap-0.5 mt-2">
-                <h3 className="font-black text-gray-900 text-lg tracking-tight">Order #{order.orderNo}</h3>
-                <div className="flex flex-col items-center leading-tight">
-                  <div className="flex items-center gap-1.5 text-gray-400">
-                    <Clock className="w-3 h-3" />
-                    <span className="text-[10px] font-bold uppercase tracking-wide">{order.timeElapsed} Min Ago</span>
+        {isActive ? (
+          <>
+            {/* Orders Grid */}
+            <div className="grid grid-cols-2 gap-x-4 gap-y-16 mt-8">
+              {newOrders.map((order: VendorOrder) => (
+                <div key={order.id} className="relative flex flex-col items-center bg-white rounded-[32px] pt-14 pb-5 px-3 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 group hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-500">
+                  {/* Circular Food Image - Popping out of the card */}
+                  <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-28 h-28 rounded-full border-[6px] border-white shadow-xl overflow-hidden z-10 transition-transform group-hover:scale-110 duration-500">
+                    <img
+                      src={order.image}
+                      alt={`Order ${order.orderNo}`}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                  <div className="mt-2 bg-gray-50 px-3 py-1 rounded-full border border-gray-100 flex items-center gap-2">
-                    <span className="text-primary text-[11px] font-black">{order.items} Items</span>
-                    <div className="w-1 h-1 rounded-full bg-gray-300"></div>
-                    <span className="text-primary/90 text-[11px] font-black">{order.totalAmount} ETB</span>
+
+                  {/* Status Indicator Badge */}
+                  <div className="absolute right-4 top-4 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 z-20">
+                    <span className="text-[8px] font-black text-primary uppercase tracking-tighter">{order.status}</span>
                   </div>
+
+                  {/* Order Info */}
+                  <div className="flex flex-col items-center text-center gap-0.5 mt-2">
+                    <h3 className="font-black text-gray-900 text-lg tracking-tight">Order #{order.orderNo}</h3>
+                    <div className="flex flex-col items-center leading-tight">
+                      <div className="flex items-center gap-1.5 text-gray-400">
+                        <Clock className="w-3 h-3" />
+                        <span className="text-[10px] font-bold uppercase tracking-wide">{order.timeElapsed} Min Ago</span>
+                      </div>
+                      <div className="mt-2 bg-gray-50 px-3 py-1 rounded-full border border-gray-100 flex items-center gap-2">
+                        <span className="text-primary text-[11px] font-black">{order.items} Items</span>
+                        <div className="w-1 h-1 rounded-full bg-gray-300"></div>
+                        <span className="text-primary/90 text-[11px] font-black">{order.totalAmount} ETB</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* View Detail Button */}
+                  <Link
+                    to={`/vendor/order/${order.id}`}
+                    className="mt-5 w-full bg-primary text-white text-xs font-black py-3 rounded-2xl shadow-[0_10px_20px_rgba(242,106,28,0.2)] hover:bg-primary/90 active:scale-95 transition-all flex items-center justify-center uppercase tracking-widest"
+                  >
+                    View Detail
+                  </Link>
                 </div>
-              </div>
-
-              {/* View Detail Button */}
-              <Link
-                to={`/vendor/order/${order.id}`}
-                className="mt-5 w-full bg-primary text-white text-xs font-black py-3 rounded-2xl shadow-[0_10px_20px_rgba(242,106,28,0.2)] hover:bg-primary/90 active:scale-95 transition-all flex items-center justify-center uppercase tracking-widest"
-              >
-                View Detail
-              </Link>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
 
-      {newOrders.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-20 text-center opacity-40">
-          <Package className="w-16 h-16 text-gray-300 mb-4" />
-          <p className="text-gray-500 font-medium">No new orders available.</p>
-        </div>
-      )}
+            {newOrders.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-20 text-center opacity-40">
+                <Package className="w-16 h-16 text-gray-300 mb-4" />
+                <p className="text-gray-500 font-medium">No new orders available.</p>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-24 px-10 text-center bg-gray-50/50 rounded-[40px] border border-dashed border-gray-200 mt-4 animate-in fade-in zoom-in-95 duration-500">
+            <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-sm mb-6">
+              <div className="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center">
+                <TrendingUp className="w-6 h-6 text-gray-300 transform rotate-180" />
+              </div>
+            </div>
+            <h3 className="text-lg font-black text-gray-800 mb-2">Store is Currently Closed</h3>
+            <p className="text-sm font-medium text-gray-400 leading-relaxed">
+              Available orders are hidden while you're offline. Switch your status to <span className="text-green-600 font-bold uppercase">OPEN</span> to start receiving orders.
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
