@@ -4,7 +4,7 @@ import { apiClient } from "@/api/client/axiosInstance";
 import { io, Socket } from 'socket.io-client';
 
 export type OrderStatus =
-  | "CREATED" | "AWAITING_ACCEPT" | "ASSIGNED" | "AWAITING_PAYMENT"
+  | "CREATED" | "AWAITING_VENDOR" | "AWAITING_ACCEPT" | "ASSIGNED" | "AWAITING_PAYMENT"
   | "PAYMENT_RECEIVED" | "VENDOR_BEING_PREPARED" | "VENDOR_FINISHED"
   | "VENDOR_READY_FOR_PICKUP" | "PICKED_UP" | "EN_ROUTE" | "ARRIVED"
   | "RECEIVED" | "DELIVERED" | "COMPLETED" | "DISPUTED" | "CANCELLED"

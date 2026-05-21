@@ -4,8 +4,11 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { authApi } from "@/api/endpoints/auth";
-import type { User, CustomerProfile, DelivererProfile, ActiveMode } from "@/types/user.types";
+import { apiClient } from "@/api/client/axiosInstance"; // For direct profile fetching
+import type { User, CustomerProfile, DelivererProfile, ActiveMode, UserRole } from "@/types/user.types";
 import { getRoleRedirectPath } from "@/types/user.types";
+import { email, type int } from "zod";
+import { ROUTES } from "@/routes";
 
 export interface UpdateProfileData {
   // User-level fields
@@ -25,31 +28,61 @@ interface SignupData {
   astuEmail?: string;
   phoneNumber?: string;
   password: string;
+  intendedMode: "student" | "vendor"; // New field to indicate which login mode the user is trying to access
+}
+
+interface SignupVendorData {
+  vendorName: string;
+  email: string;
+  contactNumber: string;
+  password: string;
+  businessDocumentUrl: string;
+   intendedMode: "student" | "vendor";
 }
 
 interface SigninData {
-  email: string; // accepts email or astuEmail
+  identifier: string; // Can be email or phone, backend will handle
   password: string;
+  intendedMode: "student" | "vendor"; // New field to indicate which login mode the user is trying to access
 }
 
 interface AuthState {
   user: User | null;
   token: string | null;
   activeMode: ActiveMode | null;
+  roles: UserRole[];
   isLoading: boolean;
   error: string | null;
 
   signup: (data: SignupData, navigate?: (path: string) => void) => Promise<void>;
   signin: (data: SigninData, navigate?: (path: string) => void) => Promise<void>;
+  signupVendor: (data: SignupVendorData, navigate?: (path: string) => void) => Promise<void>;
   logout: () => Promise<void>;
   updatePassword: (oldPw: string, newPw: string) => Promise<void>;
+   toggleActiveMode: (targetMode: ActiveMode, navigate?: (path: string) => void) => Promise<void>;
+  refreshProfile: () => Promise<void>;
 
   setToken: (token: string) => void;
   setUser: (user: User) => void;
   updateProfile: (data: UpdateProfileData) => Promise<void>;
-  toggleActiveMode: (targetMode?: ActiveMode) => Promise<void>;
+
   clearError: () => void;
 }
+
+
+
+
+const delay = (ms = 700) => new Promise((r) => setTimeout(r, ms));
+const mapBackendRoleToFrontendArray = (backendRole: string): UserRole[] => {
+  switch (backendRole) {
+    case 'DELIVERER': return ["CUSTOMER", "DELIVERER"];
+    case 'VENDOR_STAFF': return ["CUSTOMER", "VENDOR_STAFF"];
+    case 'ADMIN': return ["CUSTOMER", "VENDOR_STAFF", "DELIVERER", "ADMIN"];
+    default: return ["CUSTOMER"];
+  }
+};
+
+
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -57,13 +90,30 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       token: null,
       activeMode: null,
+      roles: ["CUSTOMER"],
       isLoading: false,
       error: null,
 
       setToken: (token: string) => set({ token }),
 
       setUser: (user: User) => set({ user }),
-
+      clearError: () => set({ error: null }),
+      refreshProfile: async () => {
+        try {
+          // Hits the GET /users/me endpoint we built in the backend
+          const res = await apiClient.get('/users/me');
+          const freshUser = res.data.data;
+          const freshRoles = mapBackendRoleToFrontendArray(freshUser.role);
+          
+          set({ 
+            user: freshUser,
+            activeMode: freshUser.activeMode as ActiveMode,
+            roles: freshRoles
+          });
+        } catch (error) {
+          console.error("Failed to refresh profile", error);
+        }
+      },
       signup: async (data, navigate) => {
         set({ isLoading: true, error: null });
 
@@ -71,64 +121,94 @@ export const useAuthStore = create<AuthState>()(
           await authApi.register(data);
           set({ isLoading: false });
           // Navigate to OTP verification page
-          if (navigate) navigate(`/verify-email`);
+          if (navigate) navigate(`/verify-email/${data.astuEmail}`);
+          // if (navigate) navigate(`${ROUTES.VERIFY_EMAIL}/${data.astuEmail}`);
         } catch (error: any) {
           set({ isLoading: false, error: error.message });
           throw error;
         }
       },
 
-      signin: async (data, navigate) => {
-        try {
-          const response = await authApi.login(data);
-          const { accessToken, user } = response.data;
+       signupVendor: async (data, navigate) => {
+        set({ isLoading: true, error: null });
 
-          set({ 
-            user, 
+        //mapping frontend field names to backend expected names
+        const backendData = {
+          ...data,
+          fullName: data.vendorName, // Map vendorName to fullName for backend
+          phoneNumber: data.contactNumber, // Map contactNumber to phoneNumber for backend
+          email: data.email,
+          password: data.password,
+          businessDocumentUrl: data.businessDocumentUrl || "https://example.com/license-placeholder.pdf"
+        };
+        try {
+          // Call the newly created API endpoint
+          await authApi.registerVendor(backendData);
+          set({ isLoading: false });
+          // Route vendors to phone verification or pending screen
+          if (navigate) navigate(`verify-phone/${data.contactNumber}`);
+        } catch (error: any) {
+          set({ isLoading: false, error: error.response?.data?.message || "Vendor registration failed" });
+          throw error;
+        }
+      },
+
+    
+      signin: async (data, navigate) => {
+        set({ isLoading: true, error: null });
+        try {
+          const { intendedMode, ...apiPayload } = data;
+          const response = await authApi.login(apiPayload);
+
+          const { accessToken, user } = response.data;
+          if (intendedMode === "student" && user.role === "VENDOR_STAFF") {
+            throw new Error("You selected Student login, but this is a Vendor account.");
+          }
+          console.log("User:", user); // Debug log
+          if (intendedMode === "vendor" && user.role !== "VENDOR_STAFF") {
+            throw new Error("You selected Vendor login, but this is a Student account.");
+          }
+          const frontendRoles = mapBackendRoleToFrontendArray(user.role);
+          const activeMode = frontendRoles.includes("DELIVERER") ? "DELIVERER" : "CUSTOMER";
+
+          set({  
             token: accessToken, 
             activeMode: user.activeMode as ActiveMode,
-            isLoading: false 
+            roles: frontendRoles,
+            user: { ...user, avatarUrl: user.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.fullName}` },  
+            isLoading: false
           });
 
           if (navigate) navigate(getRoleRedirectPath(user.role, user.activeMode));
         } catch (error: any) {
-          set({ isLoading: false, error: error.message });
+          set({ isLoading: false, error: error.response?.data?.message || "Failed to sign in" });
           throw error;
         }
       },
 
-      updatePassword: async (oldPw, newPw) => {
+      updatePassword: async (_old, _new) => {
         set({ isLoading: true, error: null });
         try {
-          await authApi.changePassword(oldPw, newPw);
+          await delay(800);
           set({ isLoading: false });
-        } catch (e: any) {
-          set({ isLoading: false, error: e.message ?? "Failed to update password." });
-          throw e; // re-throw so ChangePasswordPage catch block fires
+        } catch (e) {
+          set({ isLoading: false, error: "Failed to update password." });
+          throw e;
         }
       },
 
       updateProfile: async (data) => {
         set({ isLoading: true, error: null });
         try {
+          await delay(600);
           const { customerProfile: cpPatch, delivererProfile: dpPatch, ...userFields } = data;
-
-          // Build the payload: top-level fields + nested profile patches
-          const payload: Record<string, unknown> = { ...userFields };
-          if (cpPatch) payload.customerProfile = cpPatch;
-          if (dpPatch) payload.delivererProfile = dpPatch;
-
-          const response = await authApi.updateMe(payload);
-          // response.data contains only top-level User fields (no customerProfile)
-          const serverUser = response.data;
-
           set((s) => {
             if (!s.user) return { isLoading: false };
             return {
               user: {
-                ...s.user,               // keeps customerProfile, delivererProfile, etc.
-                ...serverUser,           // overwrites top-level fields from server truth
-                // Apply nested patches locally since server doesn't echo them back
+                ...s.user,
+                ...userFields,
+                updatedAt: new Date().toISOString(),
                 ...(cpPatch && s.user.customerProfile
                   ? { customerProfile: { ...s.user.customerProfile, ...cpPatch } }
                   : {}),
@@ -139,13 +219,13 @@ export const useAuthStore = create<AuthState>()(
               isLoading: false,
             };
           });
-        } catch (e: any) {
-          set({ isLoading: false, error: e.message ?? "Failed to update profile." });
+        } catch (e) {
+          set({ isLoading: false, error: "Failed to update profile." });
           throw e;
         }
       },
 
-      toggleActiveMode: async (targetMode: ActiveMode = "CUSTOMER") => {
+      toggleActiveMode: async (targetMode: ActiveMode = "CUSTOMER", navigate?: (path: string) => void) => {
         const { user } = get();
         if (!user) return;
 
@@ -161,11 +241,13 @@ export const useAuthStore = create<AuthState>()(
           });
 
           // Handle Redirects
-          if (targetMode === "DELIVERER") window.location.href = "/delivery/dashboard";
-          else window.location.href = "/";
+           if (navigate) {
+            if (targetMode === "DELIVERER") navigate("/delivery/dashboard");
+            else navigate("/customer/dashboard");
+          }
           
         } catch (error: any) {
-          set({ isLoading: false, error: error.message });
+          set({ isLoading: false, error: error.response?.data?.message || "Failed to switch mode" });
           throw error;
         }
       },
@@ -180,15 +262,14 @@ export const useAuthStore = create<AuthState>()(
           window.location.href = "/signin";
         }
       },
-
-     clearError: () => set({ error: null }),
     }),
     {
       name: "auth-storage",
       partialize: (state) => ({ 
         user: state.user, 
         token: state.token, 
-        activeMode: state.activeMode 
+        activeMode: state.activeMode ,
+        roles: state.roles
       }),
     }
   )

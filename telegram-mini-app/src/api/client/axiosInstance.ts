@@ -7,6 +7,7 @@ import type { ApiError } from "../types/common.types";
 import { useAuthStore } from "../../store/auth/authStore";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1";
+// const API_URL = import.meta.env.VITE_API_URL || "http://10.49.76.126:3000/api/v1";
 
 // Create axios instance
 export const apiClient: AxiosInstance = axios.create({
