@@ -35,6 +35,8 @@ export default defineConfig({
 
   // Optional: Faster dev server feedback
   server: {
-    hmr: true,
+    // hmr: true,
+    host: '0.0.0.0',
+    allowedHosts: true
   },
 });
