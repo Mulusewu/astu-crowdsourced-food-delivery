@@ -162,8 +162,11 @@ export const useCartStore = create<CartState>()(
       },
 
       checkout: async () => {
-        const { items, restaurantId, deliveryLat, deliveryLng, tip } = get();
+        const { items, restaurantId, tip } = get();
+        const deliveryLat=8.562387
+        const deliveryLng=38.753949
         if (items.length === 0 || !restaurantId || !deliveryLat || !deliveryLng) return null;
+        console.log("Heeeeeeeeeeeerrrrrrrrrrrrrrr");
 
         set({ isLoading: true, error: null });
         try {
@@ -178,7 +181,8 @@ export const useCartStore = create<CartState>()(
               expectedUnitPrice: i.expectedUnitPrice
             }))
           };
-
+          console.log("Payloaddddddddddddddd",payload);
+          
           const res = await apiClient.post('/orders/checkout', payload);
           get().clearCart();
           return res.data.data.id; // Return the created Order ID for routing
