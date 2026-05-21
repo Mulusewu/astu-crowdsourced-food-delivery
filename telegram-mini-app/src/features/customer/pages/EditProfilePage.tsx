@@ -231,7 +231,7 @@ export default function CustomerEditProfilePage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <ReadOnlyField label="Total Orders" value={String(cp.totalOrders)} />
-              <ReadOnlyField label="Rating" value={cp.rating.toFixed(1) + " ★"} />
+              <ReadOnlyField label="Rating" value={cp.rating + " ★"} />
               <ReadOnlyField
                 label="Saved Restaurants"
                 value={String(cp.bookmarkRestaurants?.length ?? 0)}

@@ -115,7 +115,7 @@ export default function SignupForm() {
   const vendorErrors = errors as any;
 
   return (
-    <div className="min-h-screen bg-white font-sans flex flex-col items-center pt-16">
+    <div className="min-h-screen bg-white dark:bg-gray-900 font-sans flex flex-col items-center pt-16">
       <style>{`
         @keyframes ride { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.5px); } }
         @keyframes dash { 0% { stroke-dashoffset: 20; opacity: 0.4; } 50% { opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 0.4; } }
@@ -128,7 +128,7 @@ export default function SignupForm() {
         {/* LOGO SECTION */}
         <div className="relative flex items-center justify-center w-full mb-12 mt-2 pr-6">
           <div className="flex flex-col items-start mr-2">
-            <span className="text-[44px] font-black text-black leading-[0.8] tracking-tight drop-shadow-md">ASTU</span>
+            <span className="text-[44px] font-black text-black dark:text-white leading-[0.8] tracking-tight drop-shadow-md">ASTU</span>
             <span className="text-[52px] font-black text-[#F26A1C] leading-[0.8] tracking-tight drop-shadow-md">EATS</span>
           </div>
           <div className="flex flex-col items-center -mt-10 -mb-2">
@@ -155,12 +155,12 @@ export default function SignupForm() {
         </div>
 
         {/* MODE TOGGLE */}
-        <div className="w-full bg-gray-50 border border-gray-100 p-1 rounded-[14px] flex mb-6">
+        <div className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 p-1 rounded-[14px] flex mb-6">
           <button
             type="button"
             onClick={() => setSignupMode('student')}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-[14px] font-bold rounded-[10px] transition-all ${
-              signupMode === 'student' ? 'bg-white text-[#F26A1C] shadow-sm ring-1 ring-gray-200/50' : 'text-gray-400 hover:text-gray-600'
+              signupMode === 'student' ? 'bg-white dark:bg-gray-800 text-[#F26A1C] dark:text-[#ff650b] shadow-sm ring-1 ring-gray-200/50' : 'text-gray-400 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
             }`}>
             <User size={16} strokeWidth={signupMode === 'student' ? 2.5 : 2} /> Student
           </button>
@@ -168,7 +168,7 @@ export default function SignupForm() {
             type="button"
             onClick={() => setSignupMode('vendor')}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-[14px] font-bold rounded-[10px] transition-all ${
-              signupMode === 'vendor' ? 'bg-white text-[#F26A1C] shadow-sm ring-1 ring-gray-200/50' : 'text-gray-400 hover:text-gray-600'
+              signupMode === 'vendor' ? 'bg-white dark:bg-gray-800 text-[#F26A1C] dark:text-[#ff650b] shadow-sm ring-1 ring-gray-200/50' : 'text-gray-400 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
             }`}>
             <Store size={16} strokeWidth={signupMode === 'vendor' ? 2.5 : 2} /> Vendor
           </button>
@@ -179,14 +179,14 @@ export default function SignupForm() {
 
           {/* Dynamic Name */}
           <div className="space-y-1">
-            <label className="text-[17px] font-bold text-gray-900 ml-1">
+            <label className="text-[17px] font-bold text-gray-900 dark:text-gray-300 ml-1">
               {signupMode === 'student' ? 'Full Name' : 'Vendor Name'}
             </label>
             <input
               {...register(signupMode === 'student' ? "fullName" : "vendorName")}
               placeholder={signupMode === 'student' ? 'John Doe' : 'Restaurant Name'}
-              className={cn("w-full h-13 border rounded-[10px] px-5 text-[15px] font-medium text-gray-900 focus:border-[#F26A1C] focus:outline-none transition-all", 
-                (studentErrors.fullName || vendorErrors.vendorName) ? "border-red-500" : "border-gray-200"
+              className={cn("w-full h-13 border rounded-[10px] px-5 text-[15px] font-medium text-gray-900 dark:text-gray-300 focus:border-[#F26A1C] focus:outline-none transition-all", 
+                (studentErrors.fullName || vendorErrors.vendorName) ? "border-red-500" : "border-gray-200 dark:border-gray-600"
               )}
             />
             {signupMode === 'student' && studentErrors.fullName && <p className="text-xs text-red-500 font-semibold ml-1">{studentErrors.fullName.message}</p>}
@@ -195,15 +195,15 @@ export default function SignupForm() {
 
           {/* Dynamic Email */}
           <div className="space-y-1">
-            <label className="text-[17px] font-bold text-gray-900 ml-1">
+            <label className="text-[17px] font-bold text-gray-900 dark:text-gray-300 ml-1">
               {signupMode === 'student' ? 'ASTU Email' : 'Contact Email'}
             </label>
             <input
               type="email"
               {...register(signupMode === 'student' ? 'astuEmail' : 'email')}
               placeholder={signupMode === 'student' ? 'name.surname@astu.edu.et' : 'contact@business.com'}
-              className={cn("w-full h-13 border rounded-[10px] px-5 text-[15px] font-medium text-gray-900 focus:border-[#F26A1C] focus:outline-none transition-all", 
-                (studentErrors.astuEmail || vendorErrors.email) ? "border-red-500" : "border-gray-200"
+              className={cn("w-full h-13 border rounded-[10px] px-5 text-[15px] font-medium text-gray-900 dark:text-gray-300 focus:border-[#F26A1C] focus:outline-none transition-all", 
+                (studentErrors.astuEmail || vendorErrors.email) ? "border-red-500" : "border-gray-200 dark:border-gray-600"
               )}
             />
             {signupMode === 'student' && studentErrors.astuEmail && <p className="text-xs text-red-500 font-semibold ml-1">{studentErrors.astuEmail.message}</p>}
@@ -213,11 +213,11 @@ export default function SignupForm() {
           {/* Phone (Vendor Only) */}
           {signupMode === 'vendor' && (
             <div className="space-y-1">
-              <label className="text-[17px] font-bold text-gray-900 ml-1">Contact Number</label>
+              <label className="text-[17px] font-bold text-gray-900 dark:text-gray-300 ml-1">Contact Number</label>
               <input
                 {...register('contactNumber')}
                 placeholder="0911223344"
-                className={cn("w-full h-13 border rounded-[10px] px-5 text-[15px] font-medium text-gray-900 focus:border-[#F26A1C] focus:outline-none transition-all", vendorErrors.contactNumber ? "border-red-500" : "border-gray-200")}
+                className={cn("w-full h-13 border rounded-[10px] px-5 text-[15px] font-medium text-gray-900 dark:text-gray-300 focus:border-[#F26A1C] focus:outline-none transition-all", vendorErrors.contactNumber ? "border-red-500" : "border-gray-200 dark:border-gray-600")}
               />
               {vendorErrors.contactNumber && <p className="text-xs text-red-500 font-semibold ml-1">{vendorErrors.contactNumber.message}</p>}
             </div>
@@ -225,13 +225,13 @@ export default function SignupForm() {
 
           {/* Password */}
           <div className="space-y-1">
-            <label className="text-[17px] font-bold text-gray-900 ml-1">Password</label>
+            <label className="text-[17px] font-bold text-gray-900 dark:text-gray-300 ml-1">Password</label>
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
                 {...register('password')}
                 placeholder="***********"
-                className={cn("w-full h-13 border rounded-[10px] px-5 text-[15px] font-medium text-gray-900 focus:border-[#F26A1C] focus:outline-none transition-all", errors.password ? "border-red-500" : "border-gray-200")}
+                className={cn("w-full h-13 border rounded-[10px] px-5 text-[15px] font-medium text-gray-900 dark:text-gray-300 focus:border-[#F26A1C] focus:outline-none transition-all", errors.password ? "border-red-500" : "border-gray-200 dark:border-gray-600")}
               />
               <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300">
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -242,13 +242,13 @@ export default function SignupForm() {
 
           {/* Confirm Password */}
           <div className="space-y-1">
-            <label className="text-[17px] font-bold text-gray-900 ml-1">Confirm Password</label>
+            <label className="text-[17px] font-bold text-gray-900 dark:text-gray-300 ml-1">Confirm Password</label>
             <div className="relative">
               <input
                 type={showConfirmPassword ? 'text' : 'password'}
                 {...register('confirmPassword')}
                 placeholder="***********"
-                className={cn("w-full h-13 border rounded-[10px] px-5 text-[15px] font-medium text-gray-900 focus:border-[#F26A1C] focus:outline-none transition-all", errors.confirmPassword ? "border-red-500" : "border-gray-200")}
+                className={cn("w-full h-13 border rounded-[10px] px-5 text-[15px] font-medium text-gray-900 dark:text-gray-300 focus:border-[#F26A1C] focus:outline-none transition-all", errors.confirmPassword ? "border-red-500" : "border-gray-200 dark:border-gray-600")}
               />
               <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300">
                 {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -260,12 +260,12 @@ export default function SignupForm() {
           {/* License Upload (Vendor Only) */}
           {signupMode === 'vendor' && (
             <div className="space-y-2 pt-2">
-              <label className="text-[17px] font-bold text-gray-900 ml-1">Business License</label>
+              <label className="text-[17px] font-bold text-gray-900 dark:text-gray-300 ml-1">Business License</label>
               <div
                 onClick={() => fileInputRef.current?.click()}
                 className={cn(
                   'w-full border-2 border-dashed rounded-[15px] p-6 flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-orange-50/30',
-                  licenseUploaded ? 'border-green-400 bg-green-50/30' : 'border-gray-200'
+                  licenseUploaded ? 'border-green-400 bg-green-50/30' : 'border-gray-200 dark:border-gray-600'
                 )}>
                 <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
                 {licenseUploaded ? (
@@ -274,7 +274,7 @@ export default function SignupForm() {
                     <span className="text-[14px] font-bold text-green-600">License Uploaded Successfully</span>
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center text-gray-400">
+                  <div className="flex flex-col items-center text-gray-400 dark:text-gray-500">
                     <Upload size={32} className="mb-2" />
                     <span className="text-[14px] font-medium">Click to upload license</span>
                   </div>
