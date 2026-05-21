@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-lint:
+    runs-on: ubuntu-latest
+    strategy:
+      # This runs all 3 projects at the same time!
+      matrix:
+        project: [backend, telegram-mini-app, admin-portal]
+      fail-fast: false # Don't cancel other jobs if one fails
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+          # Dynamically sets the cache path based on the matrix project
+          cache-dependency-path: ${{ matrix.project }}/pnpm-lock.yaml
+
+      - name: Install dependencies
+        working-directory: ${{ matrix.project }}
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        working-directory: ${{ matrix.project }}
+        # Only run lint if it exists in that project's package.json
+        run: pnpm run lint --if-present
+
+      - name: Build
+        working-directory: ${{ matrix.project }}
+        run: pnpm run build
