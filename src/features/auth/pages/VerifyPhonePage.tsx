@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { ROUTES } from "@/routes/routePaths";
-import { ArrowLeft, Loader2, Store } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { authApi } from "@/api/endpoints/auth"; 
 
