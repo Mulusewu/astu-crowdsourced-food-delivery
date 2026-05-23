@@ -2,6 +2,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { apiClient } from "@/api/client/axiosInstance";
+import { useAuthStore } from "../auth/authStore";
 
 
 
@@ -46,7 +47,7 @@ interface CustomerState {
   error: string | null;
   
   // User preferences
-  addresses: any[];
+  // addresses: Address[];
   // paymentMethods: PaymentMethod[];
 
   favorites: string[]; // restaurant IDs
@@ -57,16 +58,11 @@ interface CustomerState {
    fetchBookmarks: () => Promise<void>;
   toggleFavorite: (restaurantId: string) => Promise<void>;
   toggleFavoriteFood: (foodId: string) => Promise<void>;
+  applyForDeliverer: (data: { idCardUrl: string, payoutProvider: string, payoutAccount: string }) => Promise<void>;
   
 // Recent searches
   addRecentSearch: (searchTerm: string) => void;
   clearRecentSearches: () => void;
-
-  // Address Actions
-  addAddress: (address: any) => void;
-  updateAddress: (addressId: string, updates: any) => void;
-  deleteAddress: (addressId: string) => void;
-  setDefaultAddress: (addressId: string) => void;
 
   clearError: () => void;
   resetCustomerState: () => void;
@@ -114,202 +110,12 @@ export const useCustomerStore = create<CustomerState>()(
       // user: null,
       isLoading: false,
       error: null,
-      addresses: [],
+      // addresses: [],
       // paymentMethods: [],
       favorites: [],
       favoriteFoods: [],
       recentSearches: [],
 
-      // fetchUserData: async (userId = "") => {
-      //   set({ isLoading: true, error: null });
-      //   try {
-      //     await delay(600);
-
-      //     // Flat db.users array (Prisma-aligned) — customers have role "CUSTOMER"
-      //     const customer = db.users.find((u: any) =>
-      //       userId ? u.id === userId : u.role === "CUSTOMER"
-      //     );
-
-      //     if (!customer) {
-      //       throw new Error("Customer not found");
-      //     }
-
-      //     const user: CustomerUser = {
-      //       id: customer.id,
-      //       name: (customer as any).fullName ?? (customer as any).name ?? "",
-      //       email: (customer as any).email ?? "",
-      //       phone: (customer as any).phoneNumber ?? (customer as any).phone ?? "",
-      //       avatar: (customer as any).avatarUrl ?? (customer as any).avatar,
-      //       role: "customer",
-      //       createdAt: customer.createdAt,
-      //       isVerified: (customer as any).isEmailVerified ?? false,
-      //     };
-
-      //     set({
-      //       user,
-      //       isLoading: false,
-      //     });
-      //   } catch (error) {
-      //     set({ error: error instanceof Error ? error.message : "Failed to load user data", isLoading: false });
-      //   }
-      // },
-
-      // setUser: (user) => set({ user }),
-      
-      // updateUser: async (updates) => {
-      //   set({ isLoading: true, error: null });
-      //   try {
-      //     await delay(500);
-      //     const currentUser = get().user;
-      //     if (currentUser) {
-      //       set({ user: { ...currentUser, ...updates }, isLoading: false });
-      //     }
-      //   } catch (error) {
-      //     set({ error: "Failed to update user", isLoading: false });
-      //   }
-      // },
-
-      // Address Management
-      addAddress: (address) => {
-        set((state) => ({
-          addresses: [...state.addresses, address],
-        }));
-      },
-      
-      updateAddress: (addressId, updates) => {
-        set((state) => ({
-          addresses: state.addresses.map((addr) =>
-            addr.id === addressId ? { ...addr, ...updates } : addr
-          ),
-        }));
-      },
-      
-      deleteAddress: (addressId) => {
-        set((state) => ({
-          addresses: state.addresses.filter((addr) => addr.id !== addressId),
-        }));
-      },
-      
-      setDefaultAddress: (addressId) => {
-        set((state) => ({
-          addresses: state.addresses.map((addr) => ({
-            ...addr,
-            isDefault: addr.id === addressId,
-          })),
-        }));
-      },
-      
-      getDefaultAddress: () => {
-        return get().addresses.find((addr) => addr.isDefault);
-      },
-
-      // // Payment Management
-      // addPaymentMethod: (method) => {
-      //   set((state) => ({
-      //     paymentMethods: [...state.paymentMethods, method],
-      //   }));
-      // },
-      
-      // removePaymentMethod: (methodId) => {
-      //   set((state) => ({
-      //     paymentMethods: state.paymentMethods.filter((m) => m.id !== methodId),
-      //   }));
-      // },
-      
-      // setDefaultPaymentMethod: (methodId) => {
-      //   set((state) => ({
-      //     paymentMethods: state.paymentMethods.map((method) => ({
-      //       ...method,
-      //       isDefault: method.id === methodId,
-      //     })),
-      //   }));
-      // },
-
-      // Favorites Management
-  //     toggleFavorite: (restaurantId) => {
-  //       set((state) => ({
-  //         favorites: state.favorites.includes(restaurantId)
-  //           ? state.favorites.filter((id) => id !== restaurantId)
-  //           : [...state.favorites, restaurantId],
-  //       }));
-  //     },
-      
-  //     toggleFavoriteFood: (foodId) => {
-  //       set((state) => ({
-  //         favoriteFoods: state.favoriteFoods.includes(foodId)
-  //           ? state.favoriteFoods.filter((id) => id !== foodId)
-  //           : [...state.favoriteFoods, foodId],
-  //       }));
-  //     },
-      
-  //     isFavorite: (restaurantId) => {
-  //       return get().favorites.includes(restaurantId);
-  //     },
-      
-  //     isFavoriteFood: (foodId) => {
-  //       return get().favoriteFoods.includes(foodId);
-  //     },
-      
-  //     getFavorites: () => {
-  //       return get().favorites;
-  //     },
-      
-  //     getFavoriteFoods: () => {
-  //       return get().favoriteFoods;
-  //     },
-
-  //     // Recent Searches
-  //     addRecentSearch: (searchTerm) => {
-  //       if (!searchTerm.trim()) return;
-  //       set((state) => {
-  //         const filtered = state.recentSearches.filter((s) => s !== searchTerm);
-  //         return {
-  //           recentSearches: [searchTerm, ...filtered].slice(0, 10),
-  //         };
-  //       });
-  //     },
-      
-  //     clearRecentSearches: () => {
-  //       set({ recentSearches: [] });
-  //     },
-
-  //     // Preferences
-  //     updatePreferences: (preferences) => {
-  //       set((state) => ({
-  //         user: state.user ? {
-  //           ...state.user,
-  //           preferences: { ...state.user.preferences, ...preferences } as CustomerPreferences,
-  //         } : null,
-  //       }));
-  //     },
-
-  //     // Helpers
-  //     clearError: () => set({ error: null }),
-      
-  //     logout: () => {
-  //       set({
-  //         user: null,
-  //         addresses: [],
-  //         paymentMethods: [],
-  //         favorites: [],
-  //         favoriteFoods: [],
-  //         recentSearches: [],
-  //         error: null,
-  //       });
-  //     },
-  //   }),
-  //   {
-  //     name: "customer-storage",
-  //     partialize: (state) => ({
-  //       user: state.user,
-  //       addresses: state.addresses,
-  //       paymentMethods: state.paymentMethods,
-  //       favorites: state.favorites,
-  //       favoriteFoods: state.favoriteFoods,
-  //       recentSearches: state.recentSearches,
-  //     }),
-  //   }
-  // )
   // ==========================================
       // BACKEND SYNCED ACTIONS
       // ==========================================
@@ -374,6 +180,21 @@ export const useCustomerStore = create<CustomerState>()(
         }
       },
 
+      applyForDeliverer: async (data: { idCardUrl: string, payoutProvider: string, payoutAccount: string }) => {
+    set({ isLoading: true, error: null });
+    try {
+      await apiClient.post('/users/me/deliverer-application', data);
+      
+      // We must refresh the authStore so the UI immediately sees the new PENDING status
+      await useAuthStore.getState().refreshProfile();
+      
+      set({ isLoading: false });
+    } catch (error: any) {
+      set({ error: error.response?.data?.message || "Failed to submit application", isLoading: false });
+      throw error;
+    }
+  },
+
       // ==========================================
       // LOCAL UI ACTIONS
       // ==========================================
@@ -389,13 +210,12 @@ export const useCustomerStore = create<CustomerState>()(
       
       clearError: () => set({ error: null }),
       
-      resetCustomerState: () => set({ favorites: [], favoriteFoods: [], recentSearches: [], addresses: [], error: null })
+      resetCustomerState: () => set({ favorites: [], favoriteFoods: [], recentSearches: [], error: null })
     }),
     {
       name: "customer-storage",
       partialize: (state) => ({
         recentSearches: state.recentSearches,
-        addresses: state.addresses,
         // We persist bookmarks so the UI is fast on reload, but fetchBookmarks overrides it in background
         favorites: state.favorites,
         favoriteFoods: state.favoriteFoods,

@@ -6,16 +6,20 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 import { ROUTES } from "@/routes/routePaths";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { authApi } from "@/api/endpoints/auth"; // Import the real API
 
+// CRITICAL FIX: Backend OTP is 6 digits long.
 const verifyEmailSchema = z.object({
-  otp: z.string().length(4, "Please enter a valid 4-digit code"),
+  otp: z.string().length(6, "Please enter a valid 6-digit code"),
 });
 
 type VerifyEmailData = z.infer<typeof verifyEmailSchema>;
 
 export default function VerifyEmailPage() {
   const navigate = useNavigate();
-  const { token } = useParams(); // token might be the email encoded
+  // Extract the email from the URL parameter (e.g. /verify-email/john@astu.edu.et)
+  const { token } = useParams<{ token: string }>(); 
+  
   const [timer, setTimer] = useState(60);
   const [isResendActive, setIsResendActive] = useState(false);
   const [isResending, setIsResending] = useState(false);
@@ -33,6 +37,7 @@ export default function VerifyEmailPage() {
   });
 
   const otpValue = watch("otp") || "";
+  const displayEmail = token ? decodeURIComponent(token) : "your email";
 
   // Timer for resend OTP
   useEffect(() => {
@@ -49,18 +54,18 @@ export default function VerifyEmailPage() {
     };
   }, [timer, isResendActive]);
 
-  // Handle individual input changes to update the hidden react-hook-form field
   const handleOtpChange = (index: number, value: string) => {
     if (value && !/^\d+$/.test(value)) return;
 
-    const newOtpArr = otpValue.padEnd(4, " ").split("");
+    // CRITICAL FIX: Pad to 6
+    const newOtpArr = otpValue.padEnd(6, " ").split("");
     newOtpArr[index] = value.slice(-1) || " ";
     
     const newOtpStr = newOtpArr.join("").trim();
     setValue("otp", newOtpStr, { shouldValidate: true });
 
-    // Auto-focus next input
-    if (value && index < 3) {
+    // Auto-focus next input (up to index 5)
+    if (value && index < 5) {
       const nextInput = document.getElementById(`otp-${index + 1}`);
       nextInput?.focus();
     }
@@ -76,45 +81,51 @@ export default function VerifyEmailPage() {
   const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
     e.preventDefault();
     const pastedData = e.clipboardData.getData("text");
-    const pastedNumbers = pastedData.replace(/\D/g, "").slice(0, 4);
+    // CRITICAL FIX: Extract 6 digits
+    const pastedNumbers = pastedData.replace(/\D/g, "").slice(0, 6);
     setValue("otp", pastedNumbers, { shouldValidate: true });
     
     // Auto-focus last filled input
-    const focusIndex = Math.min(3, pastedNumbers.length - 1);
+    const focusIndex = Math.min(5, pastedNumbers.length - 1);
     const input = document.getElementById(`otp-${Math.max(0, focusIndex)}`);
     input?.focus();
   };
 
   const onSubmit = async (data: VerifyEmailData) => {
     setApiError(null);
+    if (!token) {
+      setApiError("Email identifier missing from URL.");
+      return;
+    }
+
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Connect directly to backend authentication endpoint
+      await authApi.verifyEmail({ astuEmail: decodeURIComponent(token), otp: data.otp });
       
-      // Mock verification
-      if (data.otp === "1234" || token) {
-        toast.success("Email verified successfully! Please log in.");
-        navigate(ROUTES.AUTH);
-      } else {
-        throw new Error("Invalid verification code");
-      }
+      toast.success("Email verified successfully! Please log in.");
+      navigate(ROUTES.AUTH); // Route back to the Sign-in page
     } catch (err: any) {
-      setApiError(err.message || "Verification failed");
+      // Extract specific backend error (e.g. "OTP expired or invalid")
+      setApiError(err.response?.data?.message || err.message || "Verification failed");
     }
   };
 
   const handleResend = async () => {
+    if (!token) return;
     setIsResending(true);
     setApiError(null);
+
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Connect directly to backend resend endpoint
+      await authApi.resendVerification(decodeURIComponent(token));
+      
       setTimer(60);
       setIsResendActive(false);
       setValue("otp", "");
       document.getElementById("otp-0")?.focus();
-      toast.success("Code resent successfully!");
-    } catch (err) {
-      setApiError("Failed to resend code. Please try again.");
+      toast.success("A new 6-digit code was sent successfully!");
+    } catch (err: any) {
+      setApiError(err.response?.data?.message || "Failed to resend code. Please try again.");
     } finally {
       setIsResending(false);
     }
@@ -126,25 +137,13 @@ export default function VerifyEmailPage() {
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const displayEmail = token ? decodeURIComponent(token) : "your email";
-
   return (
     <div className="min-h-screen bg-white font-sans flex flex-col items-center pt-8 px-4">
       <style>{`
-        @keyframes ride {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-1.5px); }
-        }
-        @keyframes dash {
-          0% { stroke-dashoffset: 20; opacity: 0.4; }
-          50% { opacity: 1; }
-          100% { stroke-dashoffset: 0; opacity: 0.4; }
-        }
+        @keyframes ride { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.5px); } }
+        @keyframes dash { 0% { stroke-dashoffset: 20; opacity: 0.4; } 50% { opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 0.4; } }
         .scooter-ride { animation: ride 0.25s ease-in-out infinite; }
-        .motion-line { 
-          stroke-dasharray: 10 5; 
-          animation: dash 0.4s linear infinite; 
-        }
+        .motion-line { stroke-dasharray: 10 5; animation: dash 0.4s linear infinite; }
       `}</style>
 
       {/* Back Button */}
@@ -155,15 +154,11 @@ export default function VerifyEmailPage() {
       </div>
 
       <div className="w-full max-w-[340px] flex flex-col items-center">
-        {/* LOGO SECTION */}
+        {/* LOGO SECTION - Identical to Original */}
         <div className="relative flex items-center justify-center w-full mb-8 mt-2 pr-6">
           <div className="flex flex-col items-start mr-2">
-            <span className="text-[44px] font-black text-black leading-[0.8] tracking-tight drop-shadow-md">
-              ASTU
-            </span>
-            <span className="text-[52px] font-black text-[#F26A1C] leading-[0.8] tracking-tight drop-shadow-md">
-              EATS
-            </span>
+            <span className="text-[44px] font-black text-black leading-[0.8] tracking-tight drop-shadow-md">ASTU</span>
+            <span className="text-[52px] font-black text-[#F26A1C] leading-[0.8] tracking-tight drop-shadow-md">EATS</span>
           </div>
           <div className="flex flex-col items-center -mt-12 -mb-2">
             <div className="flex flex-col items-center">
@@ -178,15 +173,12 @@ export default function VerifyEmailPage() {
                 <path d="M58 29H72L75 45L68 60H55L52 45L58 29Z" fill="currentColor" />
                 <path d="M72 40L88 43" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" />
                 <rect x="28" y="35" width="22" height="22" rx="2" fill="currentColor" />
-                <path d="M28 42H50" stroke="white" strokeWidth="1" opacity="0.4" />
                 <circle cx="42" cy="80" r="10" stroke="currentColor" strokeWidth="6" />
                 <circle cx="95" cy="80" r="10" stroke="currentColor" strokeWidth="6" />
                 <circle cx="42" cy="80" r="2" fill="white" />
                 <circle cx="95" cy="80" r="2" fill="white" />
               </svg>
-              <span className="text-[#F26A1C] text-[26px] font-black italic tracking-tight -mt-2">
-                Delivery
-              </span>
+              <span className="text-[#F26A1C] text-[26px] font-black italic tracking-tight -mt-2">Delivery</span>
             </div>
           </div>
         </div>
@@ -194,7 +186,7 @@ export default function VerifyEmailPage() {
         <div className="text-center mb-8">
           <h1 className="text-2xl font-black text-gray-900 mb-2">Email Verification</h1>
           <p className="text-[15px] font-medium text-gray-500">
-            We've sent a code to <br/>
+            We've sent a 6-digit code to <br/>
             <span className="font-bold text-gray-800">{displayEmail}</span>
           </p>
         </div>
@@ -203,13 +195,14 @@ export default function VerifyEmailPage() {
         <form onSubmit={handleSubmit(onSubmit)} className="w-full space-y-6">
           <div className="space-y-4">
             <label className="text-[17px] font-bold text-gray-900 ml-1 block text-center">
-              Enter 4-digit code
+              Enter 6-digit code
             </label>
             
             <input type="hidden" {...register("otp")} />
             
-            <div className="flex justify-center gap-3" onPaste={handlePaste}>
-              {[0, 1, 2, 3].map((index) => (
+            {/* CRITICAL FIX: Expanded to 6 inputs */}
+            <div className="flex justify-center gap-1.5" onPaste={handlePaste}>
+              {[0, 1, 2, 3, 4, 5].map((index) => (
                 <input
                   key={index}
                   id={`otp-${index}`}
@@ -221,8 +214,8 @@ export default function VerifyEmailPage() {
                   onChange={(e) => handleOtpChange(index, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(index, e)}
                   className={`
-                    w-14 h-14 text-center text-2xl font-black bg-white
-                    border rounded-[10px] transition-all
+                    w-11 h-12 text-center text-xl font-black bg-white
+                    border rounded-[8px] transition-all
                     focus:outline-none focus:border-[#F26A1C] text-gray-900
                     ${errors.otp || apiError ? "border-red-500" : "border-gray-200"}
                   `}
@@ -262,7 +255,7 @@ export default function VerifyEmailPage() {
           <div className="pt-4 flex justify-center">
             <button
               type="submit"
-              disabled={isSubmitting || otpValue.length !== 4}
+              disabled={isSubmitting || otpValue.length !== 6}
               className="bg-[#F26A1C] hover:bg-[#e05d15] text-white font-black text-[22px] px-8 py-3.5 rounded-full shadow-lg shadow-orange-500/20 active:scale-95 transition-all disabled:opacity-70 w-full flex items-center justify-center gap-2"
             >
               {isSubmitting ? (

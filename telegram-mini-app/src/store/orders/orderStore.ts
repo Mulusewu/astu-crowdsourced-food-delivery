@@ -7,7 +7,7 @@ import { useDeliveryDashboardStore } from "../deliveryDashboardStore";
 // ─── Backend Aligned Types ─────────────────────────────────────────────────────
 
 export type OrderStatus =
-  | "CREATED" | "AWAITING_ACCEPT" | "ASSIGNED" | "AWAITING_PAYMENT"
+  | "CREATED" | "AWAITING_ACCEPT" | "AWAITING_VENDOR" | "ASSIGNED" | "AWAITING_PAYMENT"
   | "PAYMENT_RECEIVED" | "VENDOR_BEING_PREPARED" | "VENDOR_FINISHED"
   | "VENDOR_READY_FOR_PICKUP" | "PICKED_UP" | "EN_ROUTE" | "ARRIVED"
   | "RECEIVED" | "DELIVERED" | "COMPLETED" | "DISPUTED" | "CANCELLED"
@@ -161,8 +161,9 @@ export const useOrderStore = create<OrderStoreState>()(
           if (selectedCafe !== "all") params.restaurantId = selectedCafe;
 
           const res = await apiClient.get('/orders', { params });
+          const newOrders = res.data.orders;
           
-          const mappedOrders: AvailableOrder[] = res.data.orders.map((o: any) => ({
+          const mappedOrders: AvailableOrder[] = newOrders.map((o: any) => ({
             id: o.id,
             shortId: o.shortId,
             totalAmount: Number(o.totalAmount),
@@ -174,9 +175,10 @@ export const useOrderStore = create<OrderStoreState>()(
           }));
 
           const combined = [...rawOrders, ...mappedOrders];
-          set({ rawOrders: combined, filteredOrders: get()._applyLocalSort(combined, secondaryFilter), page: nextPage, isLoadingMore: false, hasMore: res.data.orders.length === 20 });
+          set({ rawOrders: combined, filteredOrders: get()._applyLocalSort(combined, secondaryFilter), page: nextPage, isLoadingMore: false, 
+             hasMore: newOrders.length === 20  });
         } catch (e) {
-          set({ isLoadingMore: false });
+          set({ isLoadingMore: false, hasMore: false });
         }
       },
 
@@ -353,7 +355,7 @@ export const useOrderStore = create<OrderStoreState>()(
 
         const newSocket = io(BASE_URL, { auth: { token }, query:{mode:'DELIVERER'}, withCredentials: true });
 
-        newSocket.on('connect', () => console.log('[WS] Connected to Dispatch Engine'));
+        newSocket.on('connect', () => console.log('[WS] Connected to Dispatch Engine globally'));
 
         // Listen for new orders popping up!
         newSocket.on('ORDER_BROADCAST', (payload) => {
@@ -377,6 +379,9 @@ export const useOrderStore = create<OrderStoreState>()(
             const updatedRaw = [newAvailable, ...s.rawOrders];
 
              const { dashboardOrders } = useDeliveryDashboardStore.getState();
+
+            //  useDeliveryDashboardStore.getState().injectDashboardOrder(newAvailable);
+
             useDeliveryDashboardStore.setState({
               dashboardOrders: [
                 {
@@ -406,6 +411,7 @@ export const useOrderStore = create<OrderStoreState>()(
           if (payload.status !== 'AWAITING_ACCEPT') {
             set(s => {
               const updatedRaw = s.rawOrders.filter(o => o.id !== payload.orderId);
+              // useDeliveryDashboardStore.getState().removeDashboardOrder(payload.orderId);
                const { dashboardOrders } = useDeliveryDashboardStore.getState();
               useDeliveryDashboardStore.setState({
                 dashboardOrders: dashboardOrders.filter(o => o.id !== payload.orderId)
