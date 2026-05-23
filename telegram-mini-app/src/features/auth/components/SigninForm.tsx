@@ -2,308 +2,226 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useState } from "react";
-import { BrandCard } from "@/components/brand/BrandCard";
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-  FieldSet,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Eye, EyeOff } from "lucide-react";
+import { useAuthStore } from "@/store/auth/authStore";
+import { Link } from "react-router-dom";
 
-// Signin validation schema
 const signinSchema = z.object({
   email: z
     .string()
-    .email("Please enter a valid email address")
-    .min(5, "Email must be at least 5 characters")
-    .max(100, "Email must be less than 100 characters"),
-
-  password: z
-    .string()
-    .min(1, "Password is required")
-    .min(8, "Password must be at least 8 characters"),
+    .trim()
+    .email("Please Enter A Valid Email Address!")
+    .regex(/^[a-zA-Z0-9._%+-]+@astu\.edu\.et$/, "Please use your university provided email (@astu.edu.et)"),
+  password: z.string().min(1, "Password Is Required!"),
 });
 
 type SigninFormData = z.infer<typeof signinSchema>;
 
-// API response types
-interface ApiResponse {
-  success: boolean;
-  message: string;
-  errors?: Record<string, string>;
-  token?: string;
-  user?: {
-    id: string;
-    name: string;
-    email: string;
-  };
-}
-
 export default function SigninForm() {
-  const [apiError, setApiError] = useState<string | null>(null);
+  const { signin, isLoading, error: _error, clearError } = useAuthStore();
+
   const [showPassword, setShowPassword] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
-    setError,
+    formState: { errors, isValid, isSubmitting },
   } = useForm<SigninFormData>({
     resolver: zodResolver(signinSchema),
-    mode: "onBlur", // Validate on blur for better UX
+    mode: "onChange",
   });
 
   const onSubmit = async (data: SigninFormData) => {
+    setApiError(null);
+    clearError();
+
     try {
-      setApiError(null);
-
-      // Make API call to your Express backend
-      const response = await fetch("http://localhost:3000/api/auth/signin", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-        credentials: "include", // Important for cookies/sessions
-      });
-
-      const result: ApiResponse = await response.json();
-
-      if (!response.ok) {
-        // Handle field-specific errors from backend
-        if (result.errors) {
-          Object.entries(result.errors).forEach(([field, message]) => {
-            setError(field as keyof SigninFormData, {
-              type: "manual",
-              message,
-            });
-          });
-        }
-
-        // Handle general error
-        if (result.message) {
-          setApiError(result.message);
-        }
-
-        throw new Error(result.message || "Signin failed");
-      }
-
-      // Handle successful signin
-      console.log("Signin successful:", result);
-
-      // Store token if returned (adjust based on your auth strategy)
-      if (result.token) {
-        localStorage.setItem("authToken", result.token);
-      }
-
-      // Store user data if needed
-      if (result.user) {
-        localStorage.setItem("user", JSON.stringify(result.user));
-      }
-
-      // Show success message
-      setApiError(null);
-
-      // Redirect to dashboard or home page
-      setTimeout(() => {
-        window.location.href = "/dashboard"; // or your desired redirect path
-      }, 1000);
-    } catch (error) {
-      console.error("Signin error:", error);
-      if (error instanceof Error) {
-        setApiError(error.message);
+      await signin(data);
+    } catch (err: any) {
+      const errorMsg = err.message || "";
+      if (errorMsg.toLowerCase().includes("password")) {
+        setApiError("Incorrect Password!");
       } else {
-        setApiError("An unexpected error occurred. Please try again.");
+        setApiError("Email Doesn't Exist!");
       }
     }
   };
 
-  const handleSignUpClick = () => {
-    window.location.href = "/signup";
-  };
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
   return (
-    <div className="min-h-screen bg-white px-4 py-6 flex flex-col">
-      {/* Brand Header */}
-      <div className="mb-8">
-        <BrandCard />
-      </div>
+    <div className="min-h-screen bg-white font-sans flex flex-col items-center pt-16">
+      {/* Dynamic Keyframes for the moving effect */}
+      <style>{`
+        @keyframes ride {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-1.5px); }
+        }
+        @keyframes dash {
+          0% { stroke-dashoffset: 20; opacity: 0.4; }
+          50% { opacity: 1; }
+          100% { stroke-dashoffset: 0; opacity: 0.4; }
+        }
+        .scooter-ride { animation: ride 0.25s ease-in-out infinite; }
+        .motion-line { 
+          stroke-dasharray: 10 5; 
+          animation: dash 0.4s linear infinite; 
+        }
+      `}</style>
 
-      {/* Signin Form */}
-      <form onSubmit={handleSubmit(onSubmit)} className="flex-1">
-        <FieldSet className="w-full">
-          <FieldGroup className="space-y-4">
-            {/* API Error Message */}
-            {apiError && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                {apiError}
-              </div>
-            )}
-
-            {/* Email Field */}
-            <Field>
-              <FieldLabel htmlFor="email">Email Address</FieldLabel>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                {...register("email")}
-                className={`${errors.email ? "border-red-500" : "border-gray-300"} w-full focus:border-[#F26A1C] focus:ring-1 focus:ring-[#F26A1C] transition-colors`}
-                autoComplete="email"
-              />
-              {errors.email && (
-                <p className="text-sm text-red-500 mt-1">
-                  {errors.email.message}
-                </p>
-              )}
-            </Field>
-
-            {/* Password Field */}
-            <Field>
-              <FieldLabel htmlFor="password">Password</FieldLabel>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
-                  {...register("password")}
-                  className={`${errors.password ? "border-red-500" : "border-gray-300"} w-full pr-10 focus:border-[#F26A1C] focus:ring-1 focus:ring-[#F26A1C] transition-colors`}
-                  autoComplete="current-password"
-                />
-                <button
-                  type="button"
-                  onClick={togglePasswordVisibility}
-                  className=" flex absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500  hover:text-gray-700 focus:outline-none"
-                >
-                  {showPassword ? (
-                    // Eye slash icon (password hidden)
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="w-5 h-5"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"
-                      />
-                    </svg>
-                  ) : (
-                    // Eye icon (password visible)
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="w-5 h-5"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
-                    </svg>
-                  )}
-                </button>
-              </div>
-
-              {/* Forgot password link */}
-              <div className="flex justify-end mt-1">
-                <button
-                  type="button"
-                  onClick={() => (window.location.href = "/forgot-password")}
-                  className="text-xs text-gray-500 hover:text-[#F26A1C] transition-colors"
-                >
-                  Forgot password?
-                </button>
-              </div>
-
-              {errors.password && (
-                <p className="text-sm text-red-500 mt-1">
-                  {errors.password.message}
-                </p>
-              )}
-            </Field>
-
-            {/* Remember me checkbox (optional) */}
-            <div className="flex items-center mt-2">
-              <input
-                type="checkbox"
-                id="remember"
-                className="w-4 h-4 text-[#F26A1C] border-gray-300 rounded focus:ring-[#F26A1C]"
-              />
-              <label htmlFor="remember" className="ml-2 text-sm text-gray-600">
-                Remember me
-              </label>
-            </div>
-          </FieldGroup>
-        </FieldSet>
-
-        {/* Signin Button */}
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="rounded-full w-full mt-6 py-3 px-4 text-white font-medium transition-all disabled:opacity-50 hover:opacity-90 active:scale-[0.98]"
-          style={{ backgroundColor: "#F26A1C" }}
-        >
-          {isSubmitting ? (
-            <span className="flex items-center justify-center gap-2">
+      <div className="w-full max-w-[340px] px-4 flex flex-col items-center">
+        {/* LOGO SECTION */}
+        <div className="relative flex items-center justify-center w-full mb-16 mt-4 pr-6">
+          <div className="flex flex-col items-start mr-2">
+            <span className="text-[44px] font-black text-black leading-[0.8] tracking-tight drop-shadow-md">
+              ASTU
+            </span>
+            <span className="text-[52px] font-black text-[#F26A1C] leading-[0.8] tracking-tight drop-shadow-md">
+              EATS
+            </span>
+          </div>
+          <div className="flex flex-col items-center -mt-12 -mb-2">
+            {/* High-fidelity Scooter SVG matching provided image */}
+            <div className="flex flex-col items-center">
               <svg
-                className="animate-spin h-5 w-5 text-white"
-                xmlns="http://www.w3.org/2000/svg"
+                width="120"
+                height="100"
+                viewBox="0 0 120 100"
                 fill="none"
-                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+                className="text-[#F26A1C] scooter-ride"
               >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
+                {/* Motion Lines (Behind) */}
+                <path d="M5 45H22" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="motion-line" style={{ animationDelay: '0s' }} />
+                <path d="M2 55H25" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="motion-line" style={{ animationDelay: '0.1s' }} />
+                <path d="M8 65H18" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="motion-line" style={{ animationDelay: '0.25s' }} />
+
+                {/* Scooter Main Frame */}
+                <path
+                  d="M95 75V45L88 40H75L68 55H35V65C35 70 40 75 45 75H95Z"
+                  fill="currentColor"
+                />
+                <path
+                  d="M95 45L105 45L108 40"
                   stroke="currentColor"
                   strokeWidth="4"
-                ></circle>
+                  strokeLinecap="round"
+                /> {/* Control Column */}
                 <path
-                  className="opacity-75"
+                  d="M102 40H112"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  strokeLinecap="round"
+                /> {/* Handlebars */}
+                
+                {/* Rider */}
+                <circle cx="65" cy="22" r="7" fill="currentColor" /> {/* Head */}
+                <path
+                  d="M58 29H72L75 45L68 60H55L52 45L58 29Z"
                   fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              Signing in...
-            </span>
-          ) : (
-            "Sign In"
-          )}
-        </button>
+                /> {/* Torso */}
+                <path
+                  d="M72 40L88 43"
+                  stroke="currentColor"
+                  strokeWidth="3.5"
+                  strokeLinecap="round"
+                /> {/* Arm */}
 
-        {/* Back to Sign Up Link/Button */}
-        <div className="mt-4 text-center">
-          <button
-            type="button"
-            onClick={handleSignUpClick}
-            className=" text-sm text-gray-600 hover:text-[#F26A1C] transition-colors bg-transparent border-none cursor-pointer"
-          >
-            Don't have an account?{" "}
-            <span style={{ color: "#F26A1C" }} className="font-medium">
-              Sign up
-            </span>
-          </button>
+                {/* Delivery Box (Rear) */}
+                <rect x="28" y="35" width="22" height="22" rx="2" fill="currentColor" />
+                <path d="M28 42H50" stroke="white" strokeWidth="1" opacity="0.4" />
+
+                {/* Wheels */}
+                <circle cx="42" cy="80" r="10" stroke="currentColor" strokeWidth="6" />
+                <circle cx="95" cy="80" r="10" stroke="currentColor" strokeWidth="6" />
+                {/* Wheel Detail (spokes/axis) */}
+                <circle cx="42" cy="80" r="2" fill="white" />
+                <circle cx="95" cy="80" r="2" fill="white" />
+              </svg>
+              {/* "Delivery" text styled exactly as in image */}
+              <span className="text-[#F26A1C] text-[26px] font-black italic tracking-tight -mt-2">
+                Delivery
+              </span>
+            </div>
+          </div>
         </div>
-      </form>
+
+        {/* AUTH FORM */}
+        <form onSubmit={handleSubmit(onSubmit)} className="w-full space-y-5">
+          {/* Email Address */}
+          <div className="space-y-2">
+            <label className="text-[17px] font-bold text-gray-900 ml-1">
+              Email Address
+            </label>
+            <input
+              type="email"
+              {...register("email")}
+              placeholder="name.surname@astu.edu.et"
+              className={`w-full h-14 bg-white border ${
+                errors.email ? "border-red-500" : "border-gray-200"
+              } rounded-[10px] px-5 text-[15px] font-medium text-gray-900 placeholder:text-gray-300 focus:border-[#F26A1C] focus:outline-none transition-all`}
+            />
+            {errors.email && (
+              <p className="text-xs text-red-500 font-semibold ml-1">
+                {errors.email.message}
+              </p>
+            )}
+          </div>
+
+          {/* Password */}
+          <div className="space-y-2">
+            <label className="text-[17px] font-bold text-gray-900 ml-1">
+              Password
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                {...register("password")}
+                placeholder="***********"
+                className={`w-full h-14 bg-white border ${
+                  errors.password ? "border-red-500" : "border-gray-200"
+                } rounded-[10px] px-5 text-[15px] font-medium text-gray-900 placeholder:text-gray-300 focus:border-[#F26A1C] focus:outline-none transition-all`}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-400"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+            {errors.password && (
+              <p className="text-xs text-red-500 font-semibold ml-1">
+                {errors.password.message}
+              </p>
+            )}
+            {apiError && (
+              <p className="text-xs text-red-500 font-semibold ml-1">
+                {apiError}
+              </p>
+            )}
+            <div className="flex justify-end mt-2">
+              <Link
+                to="/forgot-password"
+                className="text-sm font-semibold text-[#F26A1C] hover:underline"
+              >
+                Forgot Password?
+              </Link>
+            </div>
+          </div>
+
+          {/* Action Button */}
+          <div className="pt-10 flex justify-center">
+            <button
+              type="submit"
+              disabled={isLoading || isSubmitting || !isValid}
+              className="bg-[#F26A1C] hover:bg-[#e05d15] text-white font-black text-[22px] px-16 py-3.5 rounded-full shadow-lg shadow-orange-500/20 active:scale-95 transition-all disabled:opacity-70 min-w-[190px]"
+            >
+              {isLoading || isSubmitting ? "Wait..." : "Login"}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
+

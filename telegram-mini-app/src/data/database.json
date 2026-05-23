@@ -1,0 +1,1196 @@
+{
+  "version": "6.3.0",
+  "timestamp": "2026-04-28T20:00:00Z",
+  "prismaCompatible": true,
+  "metadata": {
+    "totalUsers": 8,
+    "totalRestaurants": 3,
+    "totalOrders": 6,
+    "totalMenuItems": 5,
+    "totalCategories": 5,
+    "totalRatings": 4,
+    "totalLedgerEntries": 8,
+    "totalDisputes": 2,
+    "totalNotifications": 6,
+    "totalDispatchLogs": 6,
+    "lastUpdated": "2026-04-28T20:00:00Z"
+  },
+  "users": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "telegramId": 1234567890,
+      "astuEmail": null,
+      "email": "abebe.k@example.com",
+      "fullName": "Abebe Kebede",
+      "phoneNumber": "+251911123456",
+      "password": "$2b$10$hashed_abebe_password",
+      "avatarUrl": "https://api.dicebear.com/7.x/avataaars/svg?seed=Abebe",
+      "status": "ACTIVE",
+      "isEmailVerified": true,
+      "isPhoneVerified": true,
+      "role": "CUSTOMER",
+      "activeMode": "CUSTOMER",
+      "lastActiveAt": "2026-04-28T14:30:00Z",
+      "deviceToken": "device_token_abebe_001",
+      "failedLoginAttempts": 0,
+      "lockedUntil": null,
+      "createdAt": "2025-01-15T08:30:00Z",
+      "updatedAt": "2026-04-28T14:30:00Z"
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440001",
+      "telegramId": 1234567891,
+      "astuEmail": null,
+      "email": "sara.h@example.com",
+      "fullName": "Sara Hailu",
+      "phoneNumber": "+251912987654",
+      "password": "$2b$10$hashed_sara_password",
+      "avatarUrl": "https://api.dicebear.com/7.x/avataaars/svg?seed=Sara",
+      "status": "ACTIVE",
+      "isEmailVerified": true,
+      "isPhoneVerified": true,
+      "role": "CUSTOMER",
+      "activeMode": "CUSTOMER",
+      "lastActiveAt": "2026-04-28T13:15:00Z",
+      "deviceToken": "device_token_sara_002",
+      "failedLoginAttempts": 0,
+      "lockedUntil": null,
+      "createdAt": "2025-02-10T14:20:00Z",
+      "updatedAt": "2026-04-28T13:15:00Z"
+    },
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440002",
+      "telegramId": 1234567892,
+      "astuEmail": "meron@astu.edu.et",
+      "email": "meron.t@example.com",
+      "fullName": "Meron Tadesse",
+      "phoneNumber": "+251913456789",
+      "password": "$2b$10$hashed_meron_password",
+      "avatarUrl": "https://api.dicebear.com/7.x/avataaars/svg?seed=Meron",
+      "status": "ACTIVE",
+      "isEmailVerified": true,
+      "isPhoneVerified": true,
+      "role": "CUSTOMER",
+      "activeMode": "CUSTOMER",
+      "lastActiveAt": "2026-04-27T20:00:00Z",
+      "deviceToken": "device_token_meron_003",
+      "failedLoginAttempts": 0,
+      "lockedUntil": null,
+      "createdAt": "2025-01-20T11:00:00Z",
+      "updatedAt": "2026-04-27T20:00:00Z"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440009",
+      "telegramId": 1234567890,
+      "astuEmail": "natnael.negash@astu.edu.et",
+      "email": "natnael.negash@example.com",
+      "fullName": "Natnael Negash",
+      "phoneNumber": "+251911123456",
+      "password": "$2b$10$X7Qj8mM2YxG1vN5kLp0f7eYhR2tW9uC4aB6dE8fH1iJ3kL5mN7pQ2",
+      "avatarUrl": "https://api.dicebear.com/7.x/avataaars/svg?seed=Natnael",
+      "status": "ACTIVE",
+      "isEmailVerified": true,
+      "isPhoneVerified": true,
+      "role": "VENDOR_STAFF",
+      "activeMode": "VENDOR_STAFF",
+      "lastActiveAt": "2026-04-28T14:30:00Z",
+      "deviceToken": "device_token_natnael_001",
+      "failedLoginAttempts": 0,
+      "lockedUntil": null,
+      "createdAt": "2025-01-15T08:30:00Z",
+      "updatedAt": "2026-04-28T14:30:00Z"
+    },
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440003",
+      "telegramId": 1234567893,
+      "astuEmail": "tigist@astu.edu.et",
+      "email": "tigist@kaldicoffee.com",
+      "fullName": "Tigist Mengistu",
+      "phoneNumber": "+251911789012",
+      "password": "$2b$10$hashed_tigist_password",
+      "avatarUrl": "https://api.dicebear.com/7.x/avataaars/svg?seed=Tigist",
+      "status": "ACTIVE",
+      "isEmailVerified": true,
+      "isPhoneVerified": true,
+      "role": "VENDOR_STAFF",
+      "activeMode": "CUSTOMER",
+      "lastActiveAt": "2026-04-28T10:00:00Z",
+      "deviceToken": "device_token_tigist_004",
+      "failedLoginAttempts": 0,
+      "lockedUntil": null,
+      "createdAt": "2025-01-10T09:00:00Z",
+      "updatedAt": "2026-04-28T10:00:00Z"
+    },
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440008",
+      "telegramId": 1234567893,
+      "astuEmail": "mulualem.adisu@astu.edu.et",
+      "email": "mulualem@kaldicoffee.com",
+      "fullName": "mulualem Adisu",
+      "phoneNumber": "+251911789012",
+      "password": "$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy",
+      "avatarUrl": "https://api.dicebear.com/7.x/avataaars/svg?seed=Tigist",
+      "status": "ACTIVE",
+      "isEmailVerified": true,
+      "isPhoneVerified": true,
+      "role": "CUSTOMER",
+      "activeMode": "CUSTOMER",
+      "lastActiveAt": "2026-04-28T10:00:00Z",
+      "deviceToken": "device_token_tigist_004",
+      "failedLoginAttempts": 0,
+      "lockedUntil": null,
+      "createdAt": "2025-01-10T09:00:00Z",
+      "updatedAt": "2026-04-28T10:00:00Z"
+    },
+    {
+      "id": "990e8400-e29b-41d4-a716-446655440004",
+      "telegramId": 1234567894,
+      "astuEmail": "dawit@astu.edu.et",
+      "email": "dawit@yodabyssinia.com",
+      "fullName": "Dawit Alemu",
+      "phoneNumber": "+251913456788",
+      "password": "$2b$10$hashed_dawit_password",
+      "avatarUrl": "https://api.dicebear.com/7.x/avataaars/svg?seed=Dawit",
+      "status": "ACTIVE",
+      "isEmailVerified": true,
+      "isPhoneVerified": true,
+      "role": "VENDOR_STAFF",
+      "activeMode": "CUSTOMER",
+      "lastActiveAt": "2026-04-27T21:00:00Z",
+      "deviceToken": "device_token_dawit_005",
+      "failedLoginAttempts": 0,
+      "lockedUntil": null,
+      "createdAt": "2025-01-15T10:30:00Z",
+      "updatedAt": "2026-04-27T21:00:00Z"
+    },
+    {
+      "id": "aa0e8400-e29b-41d4-a716-446655440005",
+      "telegramId": 1234567895,
+      "astuEmail": null,
+      "email": "biruk.w@example.com",
+      "fullName": "Biruk Wondimu",
+      "phoneNumber": "+251914567890",
+      "password": "$2b$10$hashed_biruk_password",
+      "avatarUrl": "https://api.dicebear.com/7.x/avataaars/svg?seed=Biruk",
+      "status": "ACTIVE",
+      "isEmailVerified": true,
+      "isPhoneVerified": true,
+      "role": "DELIVERER",
+      "activeMode": "DELIVERER",
+      "lastActiveAt": "2026-04-28T15:30:00Z",
+      "deviceToken": "device_token_biruk_006",
+      "failedLoginAttempts": 0,
+      "lockedUntil": null,
+      "createdAt": "2025-01-20T11:00:00Z",
+      "updatedAt": "2026-04-28T15:30:00Z"
+    },
+    {
+      "id": "aa0e8400-e29b-41d4-a716-446655440010",
+      "telegramId": 1234567895,
+      "astuEmail": "natnael.niguse@astu.edu.et",
+      "email": "Natnael.w@example.com",
+      "fullName": "Natnael niguse",
+      "phoneNumber": "+251914567890",
+      "password": "$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy",
+      "avatarUrl": "https://api.dicebear.com/7.x/avataaars/svg?seed=Biruk",
+      "status": "ACTIVE",
+      "isEmailVerified": true,
+      "isPhoneVerified": true,
+      "role": "DELIVERER",
+      "activeMode": "DELIVERER",
+      "lastActiveAt": "2026-04-28T15:30:00Z",
+      "deviceToken": "device_token_biruk_006",
+      "failedLoginAttempts": 0,
+      "lockedUntil": null,
+      "createdAt": "2025-01-20T11:00:00Z",
+      "updatedAt": "2026-04-28T15:30:00Z"
+    },
+    {
+      "id": "bb0e8400-e29b-41d4-a716-446655440006",
+      "telegramId": 1234567896,
+      "astuEmail": null,
+      "email": "hanna.t@example.com",
+      "fullName": "Hanna Tekle",
+      "phoneNumber": "+251915678901",
+      "password": "$2b$10$hashed_hanna_password",
+      "avatarUrl": "https://api.dicebear.com/7.x/avataaars/svg?seed=Hanna",
+      "status": "ACTIVE",
+      "isEmailVerified": true,
+      "isPhoneVerified": true,
+      "role": "DELIVERER",
+      "activeMode": "DELIVERER",
+      "lastActiveAt": "2026-04-27T19:00:00Z",
+      "deviceToken": "device_token_hanna_007",
+      "failedLoginAttempts": 1,
+      "lockedUntil": null,
+      "createdAt": "2025-02-01T09:00:00Z",
+      "updatedAt": "2026-04-27T19:00:00Z"
+    },
+    {
+      "id": "cc0e8400-e29b-41d4-a716-446655440007",
+      "telegramId": 1234567897,
+      "astuEmail": "admin@astu.edu.et",
+      "email": "admin@astueats.com",
+      "fullName": "Admin User",
+      "phoneNumber": "+251916789012",
+      "password": "$2b$10$hashed_admin_password",
+      "avatarUrl": "https://api.dicebear.com/7.x/avataaars/svg?seed=Admin",
+      "status": "ACTIVE",
+      "isEmailVerified": true,
+      "isPhoneVerified": true,
+      "role": "ADMIN",
+      "activeMode": "CUSTOMER",
+      "lastActiveAt": "2026-04-28T12:00:00Z",
+      "deviceToken": "device_token_admin_008",
+      "failedLoginAttempts": 0,
+      "lockedUntil": null,
+      "createdAt": "2025-01-01T00:00:00Z",
+      "updatedAt": "2026-04-28T12:00:00Z"
+    }
+  ],
+  "customerProfiles": [
+    {
+      "id": "cp_550e8400-e29b-41d4-a716-446655440000",
+      "userId": "550e8400-e29b-41d4-a716-446655440000",
+      "defaultLocation": "Bole Atlas",
+      "rating": 4.70,
+      "totalOrders": 24,
+      "prefferedPaymentMethod": "card",
+      "bookmarkRestaurants": [
+        "rest_001",
+        "rest_003"
+      ],
+      "bookmarkMeals": [
+        "prod_001",
+        "prod_101"
+      ]
+    }
+  ],
+  "delivererProfiles": [
+    {
+      "id": "dp_aa0e8400-e29b-41d4-a716-446655440005",
+      "userId": "aa0e8400-e29b-41d4-a716-446655440005",
+      "isVerified": true,
+      "verificationStatus": "APPROVED",
+      "isOnline": true,
+      "currentLocation": "9.0222,38.7468",
+      "rating": 4.80,
+      "isAvailable": true,
+      "payoutAccount": "1000132456789",
+      "payoutProvider": "telebirr",
+      "totalDeliveries": 567,
+      "totalEarnings": 42500.00,
+      "lat": 9.0222,
+      "lng": 38.7468,
+      "lastPingAt": "2026-04-28T15:30:00Z"
+    },
+    {
+      "id": "dp_bb0e8400-e29b-41d4-a716-446655440006",
+      "userId": "bb0e8400-e29b-41d4-a716-446655440006",
+      "isVerified": true,
+      "verificationStatus": "APPROVED",
+      "isOnline": false,
+      "currentLocation": null,
+      "rating": 4.60,
+      "isAvailable": false,
+      "payoutAccount": "1000987654321",
+      "payoutProvider": "cbe",
+      "totalDeliveries": 312,
+      "totalEarnings": 28750.00,
+      "lat": null,
+      "lng": null,
+      "lastPingAt": "2026-04-27T19:00:00Z"
+    }
+  ],
+  "vendorProfiles": [
+    {
+      "id": "vp_880e8400-e29b-41d4-a716-446655440003",
+      "userId": "880e8400-e29b-41d4-a716-446655440003",
+      "restaurantId": "rest_001",
+      "isOwner": true,
+      "businessDocumentUrl": "https://storage.astueats.com/documents/license_kaldis.pdf",
+      "verificationStatus": "APPROVED"
+    },
+    {
+      "id": "vp_990e8400-e29b-41d4-a716-446655440004",
+      "userId": "990e8400-e29b-41d4-a716-446655440004",
+      "restaurantId": "rest_002",
+      "isOwner": true,
+      "businessDocumentUrl": "https://storage.astueats.com/documents/license_yod.pdf",
+      "verificationStatus": "APPROVED"
+    },
+    {
+      "id": "vp_550e8400-e29b-41d4-a716-446655440009",
+      "userId": "550e8400-e29b-41d4-a716-446655440009",
+      "restaurantId": "rest_003",
+      "isOwner": true,
+      "businessDocumentUrl": "https://storage.astueats.com/documents/license_tomoca.pdf",
+      "verificationStatus": "APPROVED"
+    }
+  ],
+  "restaurants": [
+    {
+      "id": "rest_001",
+      "name": "Kaldi's Coffee",
+      "phone": "+251111234567",
+      "mode": "VENDOR_MANAGED",
+      "location": "Bole Atlas",
+      "lat": 9.0222,
+      "lng": 38.7468,
+      "isOpen": true,
+      "isActive": true,
+      "openingTime": "07:00",
+      "closingTime": "22:00",
+      "imageUrl": "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=500",
+      "minOrderValue": 50.00,
+      "avgRating": 4.50,
+      "totalReviews": 328,
+      "tags": [
+        "Coffee",
+        "Pastries",
+        "Breakfast"
+      ]
+    },
+    {
+      "id": "rest_002",
+      "name": "Yod Abyssinia",
+      "phone": "+251112345678",
+      "mode": "VENDOR_MANAGED",
+      "location": "Bole Medhanialem",
+      "lat": 9.0147,
+      "lng": 38.7543,
+      "isOpen": true,
+      "isActive": true,
+      "openingTime": "11:00",
+      "closingTime": "23:00",
+      "imageUrl": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500",
+      "minOrderValue": 100.00,
+      "avgRating": 4.70,
+      "totalReviews": 245,
+      "tags": [
+        "Ethiopian",
+        "Traditional"
+      ]
+    },
+    {
+      "id": "rest_003",
+      "name": "Tomoca Coffee",
+      "phone": "+251113456789",
+      "mode": "VENDOR_MANAGED",
+      "location": "Wavel Street",
+      "lat": 9.0215,
+      "lng": 38.7512,
+      "isOpen": true,
+      "isActive": true,
+      "openingTime": "06:00",
+      "closingTime": "21:00",
+      "imageUrl": "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=500",
+      "minOrderValue": 30.00,
+      "avgRating": 4.90,
+      "totalReviews": 512,
+      "tags": [
+        "Coffee",
+        "Italian"
+      ]
+    }
+  ],
+  "categories": [
+    {
+      "id": "cat_001",
+      "restaurantId": "rest_001",
+      "name": "Coffee",
+      "sortOrder": 1,
+      "isArchived": false
+    },
+    {
+      "id": "cat_002",
+      "restaurantId": "rest_001",
+      "name": "Pastries",
+      "sortOrder": 2,
+      "isArchived": false
+    },
+    {
+      "id": "cat_004",
+      "restaurantId": "rest_002",
+      "name": "Traditional",
+      "sortOrder": 1,
+      "isArchived": false
+    },
+    {
+      "id": "cat_005",
+      "restaurantId": "rest_002",
+      "name": "Vegetarian",
+      "sortOrder": 2,
+      "isArchived": false
+    },
+    {
+      "id": "cat_007",
+      "restaurantId": "rest_003",
+      "name": "Espresso",
+      "sortOrder": 1,
+      "isArchived": false
+    }
+  ],
+  "menuItems": [
+    {
+      "id": "prod_001",
+      "restaurantId": "rest_001",
+      "categoryId": "cat_001",
+      "name": "Ethiopian Macchiato",
+      "description": "Traditional Ethiopian coffee with milk",
+      "price": 45.00,
+      "imageUrl": "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=200",
+      "isAvailable": true,
+      "isArchived": false,
+      "prepTimeMins": 5,
+      "isFasting": false,
+      "availabilityReason": null
+    },
+    {
+      "id": "prod_002",
+      "restaurantId": "rest_001",
+      "categoryId": "cat_002",
+      "name": "Cheese Sambusa",
+      "description": "Crispy pastry filled with melted cheese",
+      "price": 60.00,
+      "imageUrl": "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=200",
+      "isAvailable": true,
+      "isArchived": false,
+      "prepTimeMins": 10,
+      "isFasting": true,
+      "availabilityReason": null
+    },
+    {
+      "id": "prod_101",
+      "restaurantId": "rest_002",
+      "categoryId": "cat_004",
+      "name": "Doro Wat",
+      "description": "Spicy chicken stew with injera",
+      "price": 280.00,
+      "imageUrl": "https://images.unsplash.com/photo-1604328909899-7e7b3a2d9a5d?w=200",
+      "isAvailable": true,
+      "isArchived": false,
+      "prepTimeMins": 25,
+      "isFasting": false,
+      "availabilityReason": null
+    },
+    {
+      "id": "prod_102",
+      "restaurantId": "rest_002",
+      "categoryId": "cat_005",
+      "name": "Vegetarian Combo",
+      "description": "Assorted vegetarian dishes",
+      "price": 220.00,
+      "imageUrl": "https://images.unsplash.com/photo-1543353071-873f17a7a088?w=200",
+      "isAvailable": true,
+      "isArchived": false,
+      "prepTimeMins": 20,
+      "isFasting": true,
+      "availabilityReason": null
+    },
+    {
+      "id": "prod_201",
+      "restaurantId": "rest_003",
+      "categoryId": "cat_007",
+      "name": "Espresso",
+      "description": "Single shot of pure Ethiopian espresso",
+      "price": 35.00,
+      "imageUrl": "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=200",
+      "isAvailable": true,
+      "isArchived": false,
+      "prepTimeMins": 3,
+      "isFasting": false,
+      "availabilityReason": null
+    }
+  ],
+  "orders": [
+    {
+      "id": "ord_001",
+      "shortId": "AE-1024",
+      "customerId": "550e8400-e29b-41d4-a716-446655440000",
+      "delivererId": "aa0e8400-e29b-41d4-a716-446655440005",
+      "restaurantId": "rest_001",
+      "pickupLat": 9.0222,
+      "pickupLng": 38.7468,
+      "estimatedDeliveryTime": "2026-04-28T10:15:00Z",
+      "estimatedReadyAt": "2026-04-28T09:50:00Z",
+      "foodPrice": 150.00,
+      "deliveryFee": 30.00,
+      "transactionFee": 0.00,
+      "serviceFee": 0.00,
+      "tip": 10.00,
+      "totalAmount": 190.00,
+      "status": "DELIVERED",
+      "paymentStatus": "CAPTURED",
+      "otpCode": "123456",
+      "otpVerifiedAt": "2026-04-28T10:10:00Z",
+      "chapaRef": "chapa_ord_001",
+      "createdAt": "2026-04-28T09:30:00Z",
+      "updatedAt": "2026-04-28T10:15:00Z"
+    },
+    {
+      "id": "ord_002",
+      "shortId": "AE-1025",
+      "customerId": "660e8400-e29b-41d4-a716-446655440001",
+      "delivererId": "bb0e8400-e29b-41d4-a716-446655440006",
+      "restaurantId": "rest_002",
+      "pickupLat": 9.0147,
+      "pickupLng": 38.7543,
+      "estimatedDeliveryTime": "2026-04-28T12:30:00Z",
+      "estimatedReadyAt": "2026-04-28T12:00:00Z",
+      "foodPrice": 500.00,
+      "deliveryFee": 50.00,
+      "transactionFee": 0.00,
+      "serviceFee": 0.00,
+      "tip": 20.00,
+      "totalAmount": 570.00,
+      "status": "DELIVERED",
+      "paymentStatus": "CAPTURED",
+      "otpCode": "654321",
+      "otpVerifiedAt": "2026-04-28T12:25:00Z",
+      "chapaRef": "chapa_ord_002",
+      "createdAt": "2026-04-28T11:45:00Z",
+      "updatedAt": "2026-04-28T12:30:00Z"
+    },
+    {
+      "id": "ord_003",
+      "shortId": "AE-1026",
+      "customerId": "550e8400-e29b-41d4-a716-446655440000",
+      "delivererId": "aa0e8400-e29b-41d4-a716-446655440005",
+      "restaurantId": "rest_003",
+      "pickupLat": 9.0215,
+      "pickupLng": 38.7512,
+      "estimatedDeliveryTime": "2026-04-28T14:20:00Z",
+      "estimatedReadyAt": "2026-04-28T13:50:00Z",
+      "foodPrice": 70.00,
+      "deliveryFee": 25.00,
+      "transactionFee": 0.00,
+      "serviceFee": 0.00,
+      "tip": 5.00,
+      "totalAmount": 100.00,
+      "status": "EN_ROUTE",
+      "paymentStatus": "CAPTURED",
+      "otpCode": "789012",
+      "otpVerifiedAt": null,
+      "chapaRef": "chapa_ord_003",
+      "createdAt": "2026-04-28T13:30:00Z",
+      "updatedAt": "2026-04-28T14:00:00Z"
+    },
+    {
+      "id": "ord_004",
+      "shortId": "AE-1027",
+      "customerId": "770e8400-e29b-41d4-a716-446655440002",
+      "delivererId": null,
+      "restaurantId": "rest_001",
+      "pickupLat": 9.0222,
+      "pickupLng": 38.7468,
+      "estimatedDeliveryTime": null,
+      "estimatedReadyAt": "2026-04-28T21:20:00Z",
+      "foodPrice": 105.00,
+      "deliveryFee": 35.00,
+      "transactionFee": 0.00,
+      "serviceFee": 10.00,
+      "tip": 0.00,
+      "totalAmount": 150.00,
+      "status": "AWAITING_ACCEPT",
+      "paymentStatus": "AWAITING_PAYMENT",
+      "otpCode": "345678",
+      "otpVerifiedAt": null,
+      "chapaRef": null,
+      "createdAt": "2026-04-28T21:00:00Z",
+      "updatedAt": "2026-04-28T21:00:00Z"
+    },
+    {
+      "id": "ord_005",
+      "shortId": "AE-1028",
+      "customerId": "660e8400-e29b-41d4-a716-446655440001",
+      "delivererId": null,
+      "restaurantId": "rest_002",
+      "pickupLat": 9.0147,
+      "pickupLng": 38.7543,
+      "estimatedDeliveryTime": null,
+      "estimatedReadyAt": "2026-04-28T21:45:00Z",
+      "foodPrice": 500.00,
+      "deliveryFee": 50.00,
+      "transactionFee": 0.00,
+      "serviceFee": 20.00,
+      "tip": 0.00,
+      "totalAmount": 570.00,
+      "status": "AWAITING_ACCEPT",
+      "paymentStatus": "AWAITING_PAYMENT",
+      "otpCode": "456789",
+      "otpVerifiedAt": null,
+      "chapaRef": null,
+      "createdAt": "2026-04-28T21:20:00Z",
+      "updatedAt": "2026-04-28T21:20:00Z"
+    },
+    {
+      "id": "ord_006",
+      "shortId": "AE-1029",
+      "customerId": "550e8400-e29b-41d4-a716-446655440000",
+      "delivererId": null,
+      "restaurantId": "rest_003",
+      "pickupLat": 9.0215,
+      "pickupLng": 38.7512,
+      "estimatedDeliveryTime": null,
+      "estimatedReadyAt": "2026-04-28T22:00:00Z",
+      "foodPrice": 70.00,
+      "deliveryFee": 25.00,
+      "transactionFee": 0.00,
+      "serviceFee": 5.00,
+      "tip": 0.00,
+      "totalAmount": 100.00,
+      "status": "AWAITING_ACCEPT",
+      "paymentStatus": "AWAITING_PAYMENT",
+      "otpCode": "567890",
+      "otpVerifiedAt": null,
+      "chapaRef": null,
+      "createdAt": "2026-04-28T21:40:00Z",
+      "updatedAt": "2026-04-28T21:40:00Z"
+    }
+  ],
+  "orderItems": [
+    {
+      "id": "oi_001",
+      "orderId": "ord_001",
+      "menuId": "prod_001",
+      "quantity": 2,
+      "unitPrice": 45.00
+    },
+    {
+      "id": "oi_002",
+      "orderId": "ord_001",
+      "menuId": "prod_002",
+      "quantity": 1,
+      "unitPrice": 60.00
+    },
+    {
+      "id": "oi_003",
+      "orderId": "ord_002",
+      "menuId": "prod_101",
+      "quantity": 1,
+      "unitPrice": 280.00
+    },
+    {
+      "id": "oi_004",
+      "orderId": "ord_002",
+      "menuId": "prod_102",
+      "quantity": 1,
+      "unitPrice": 220.00
+    },
+    {
+      "id": "oi_005",
+      "orderId": "ord_003",
+      "menuId": "prod_201",
+      "quantity": 2,
+      "unitPrice": 35.00
+    },
+    {
+      "id": "oi_006",
+      "orderId": "ord_004",
+      "menuId": "prod_001",
+      "quantity": 1,
+      "unitPrice": 45.00
+    },
+    {
+      "id": "oi_007",
+      "orderId": "ord_004",
+      "menuId": "prod_002",
+      "quantity": 1,
+      "unitPrice": 60.00
+    },
+    {
+      "id": "oi_008",
+      "orderId": "ord_005",
+      "menuId": "prod_101",
+      "quantity": 1,
+      "unitPrice": 280.00
+    },
+    {
+      "id": "oi_009",
+      "orderId": "ord_005",
+      "menuId": "prod_102",
+      "quantity": 1,
+      "unitPrice": 220.00
+    },
+    {
+      "id": "oi_010",
+      "orderId": "ord_006",
+      "menuId": "prod_201",
+      "quantity": 2,
+      "unitPrice": 35.00
+    }
+  ],
+  "orderStatusHistories": [
+    {
+      "id": "osh_001",
+      "orderId": "ord_001",
+      "oldStatus": null,
+      "newStatus": "CREATED",
+      "changedById": "550e8400-e29b-41d4-a716-446655440000",
+      "createdAt": "2026-04-28T09:30:00Z"
+    },
+    {
+      "id": "osh_002",
+      "orderId": "ord_001",
+      "oldStatus": "CREATED",
+      "newStatus": "ASSIGNED",
+      "changedById": "880e8400-e29b-41d4-a716-446655440003",
+      "createdAt": "2026-04-28T09:35:00Z"
+    },
+    {
+      "id": "osh_003",
+      "orderId": "ord_001",
+      "oldStatus": "ASSIGNED",
+      "newStatus": "VENDOR_BEING_PREPARED",
+      "changedById": "880e8400-e29b-41d4-a716-446655440003",
+      "createdAt": "2026-04-28T09:38:00Z"
+    },
+    {
+      "id": "osh_004",
+      "orderId": "ord_001",
+      "oldStatus": "VENDOR_BEING_PREPARED",
+      "newStatus": "VENDOR_FINISHED",
+      "changedById": "880e8400-e29b-41d4-a716-446655440003",
+      "createdAt": "2026-04-28T09:48:00Z"
+    },
+    {
+      "id": "osh_005",
+      "orderId": "ord_001",
+      "oldStatus": "VENDOR_FINISHED",
+      "newStatus": "PICKED_UP",
+      "changedById": "aa0e8400-e29b-41d4-a716-446655440005",
+      "createdAt": "2026-04-28T09:55:00Z"
+    },
+    {
+      "id": "osh_006",
+      "orderId": "ord_001",
+      "oldStatus": "PICKED_UP",
+      "newStatus": "EN_ROUTE",
+      "changedById": "aa0e8400-e29b-41d4-a716-446655440005",
+      "createdAt": "2026-04-28T10:00:00Z"
+    },
+    {
+      "id": "osh_007",
+      "orderId": "ord_001",
+      "oldStatus": "EN_ROUTE",
+      "newStatus": "DELIVERED",
+      "changedById": "aa0e8400-e29b-41d4-a716-446655440005",
+      "createdAt": "2026-04-28T10:15:00Z"
+    },
+    {
+      "id": "osh_008",
+      "orderId": "ord_002",
+      "oldStatus": null,
+      "newStatus": "CREATED",
+      "changedById": "660e8400-e29b-41d4-a716-446655440001",
+      "createdAt": "2026-04-28T11:45:00Z"
+    }
+  ],
+  "payments": [
+    {
+      "id": "pay_001",
+      "orderId": "ord_001",
+      "transactionId": "txn_chapa_001",
+      "provider": "chapa",
+      "status": "CAPTURED",
+      "apiResponse": "{\"status\":\"success\",\"reference\":\"chapa_ord_001\"}",
+      "amount": 190.00,
+      "deliveryFee": 30.00,
+      "serviceFee": 10.00,
+      "tip": 10.00,
+      "refundReason": null,
+      "webhookReceivedAt": "2026-04-28T09:32:00Z",
+      "payoutAmount": 150.00,
+      "attempts": 1,
+      "createdAt": "2026-04-28T09:30:00Z"
+    },
+    {
+      "id": "pay_002",
+      "orderId": "ord_002",
+      "transactionId": "txn_chapa_002",
+      "provider": "chapa",
+      "status": "CAPTURED",
+      "apiResponse": "{\"status\":\"success\",\"reference\":\"chapa_ord_002\"}",
+      "amount": 570.00,
+      "deliveryFee": 50.00,
+      "serviceFee": 20.00,
+      "tip": 20.00,
+      "refundReason": null,
+      "webhookReceivedAt": "2026-04-28T11:47:00Z",
+      "payoutAmount": 450.00,
+      "attempts": 1,
+      "createdAt": "2026-04-28T11:45:00Z"
+    }
+  ],
+  "ratings": [
+    {
+      "id": "rat_001",
+      "raterId": "550e8400-e29b-41d4-a716-446655440000",
+      "rateeId": "aa0e8400-e29b-41d4-a716-446655440005",
+      "orderId": "ord_001",
+      "rating": 5,
+      "comment": "Excellent service! Very fast delivery and friendly driver.",
+      "createdAt": "2026-04-28T10:20:00Z"
+    },
+    {
+      "id": "rat_002",
+      "raterId": "550e8400-e29b-41d4-a716-446655440000",
+      "rateeId": "880e8400-e29b-41d4-a716-446655440003",
+      "orderId": "ord_001",
+      "rating": 5,
+      "comment": "Food was amazing, perfectly prepared!",
+      "createdAt": "2026-04-28T10:22:00Z"
+    },
+    {
+      "id": "rat_003",
+      "raterId": "660e8400-e29b-41d4-a716-446655440001",
+      "rateeId": "bb0e8400-e29b-41d4-a716-446655440006",
+      "orderId": "ord_002",
+      "rating": 4,
+      "comment": "Good service, food was delicious but a bit late.",
+      "createdAt": "2026-04-28T12:35:00Z"
+    },
+    {
+      "id": "rat_004",
+      "raterId": "660e8400-e29b-41d4-a716-446655440001",
+      "rateeId": "990e8400-e29b-41d4-a716-446655440004",
+      "orderId": "ord_002",
+      "rating": 5,
+      "comment": "The vegetarian combo was incredible!",
+      "createdAt": "2026-04-28T12:37:00Z"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "notif_001",
+      "userId": "550e8400-e29b-41d4-a716-446655440000",
+      "title": "Order Confirmed",
+      "message": "Your order #AE-1024 has been confirmed. Estimated delivery: 10:15 AM",
+      "sentAt": "2026-04-28T09:35:00Z",
+      "delivered": true,
+      "createdAt": "2026-04-28T09:35:00Z"
+    },
+    {
+      "id": "notif_002",
+      "userId": "550e8400-e29b-41d4-a716-446655440000",
+      "title": "Order Out for Delivery",
+      "message": "Your order #AE-1024 is out for delivery! Driver: Biruk Wondimu",
+      "sentAt": "2026-04-28T10:00:00Z",
+      "delivered": true,
+      "createdAt": "2026-04-28T10:00:00Z"
+    },
+    {
+      "id": "notif_003",
+      "userId": "550e8400-e29b-41d4-a716-446655440000",
+      "title": "Order Delivered",
+      "message": "Your order #AE-1024 has been delivered. Thank you for using ASTU Eats!",
+      "sentAt": "2026-04-28T10:15:00Z",
+      "delivered": true,
+      "createdAt": "2026-04-28T10:15:00Z"
+    },
+    {
+      "id": "notif_004",
+      "userId": "aa0e8400-e29b-41d4-a716-446655440005",
+      "title": "New Order Available",
+      "message": "New order from Kaldi's Coffee. Payout: ETB 75",
+      "sentAt": "2026-04-28T09:30:00Z",
+      "delivered": true,
+      "createdAt": "2026-04-28T09:30:00Z"
+    },
+    {
+      "id": "notif_005",
+      "userId": "aa0e8400-e29b-41d4-a716-446655440005",
+      "title": "Order Ready for Pickup",
+      "message": "Order #AE-1024 is ready for pickup at Kaldi's Coffee",
+      "sentAt": "2026-04-28T09:48:00Z",
+      "delivered": true,
+      "createdAt": "2026-04-28T09:48:00Z"
+    },
+    {
+      "id": "notif_006",
+      "userId": "880e8400-e29b-41d4-a716-446655440003",
+      "title": "New Order Received",
+      "message": "New order #AE-1024 received. Prepare within 20 minutes.",
+      "sentAt": "2026-04-28T09:30:00Z",
+      "delivered": true,
+      "createdAt": "2026-04-28T09:30:00Z"
+    }
+  ],
+  "ledgerEntries": [
+    {
+      "id": "le_001",
+      "orderId": "ord_001",
+      "userId": "aa0e8400-e29b-41d4-a716-446655440005",
+      "amount": 60.00,
+      "type": "REIMBURSEMENT_PAYMENT",
+      "status": "COMPLETED",
+      "description": "Delivery payment for order #AE-1024",
+      "reference": "ref_del_001",
+      "transferRef": "tr_aa0e_001",
+      "createdAt": "2026-04-28T10:16:00Z"
+    },
+    {
+      "id": "le_002",
+      "orderId": "ord_001",
+      "userId": "880e8400-e29b-41d4-a716-446655440003",
+      "amount": 135.00,
+      "type": "REIMBURSEMENT_PAYMENT",
+      "status": "COMPLETED",
+      "description": "Restaurant payout for order #AE-1024",
+      "reference": "ref_rest_001",
+      "transferRef": "tr_rest_001_001",
+      "createdAt": "2026-04-28T10:16:00Z"
+    },
+    {
+      "id": "le_003",
+      "orderId": "ord_001",
+      "userId": null,
+      "amount": 15.00,
+      "type": "PLATFORM_REVENUE",
+      "status": "COMPLETED",
+      "description": "Platform service fee for order #AE-1024",
+      "reference": "ref_plat_001",
+      "transferRef": null,
+      "createdAt": "2026-04-28T10:16:00Z"
+    },
+    {
+      "id": "le_004",
+      "orderId": "ord_002",
+      "userId": "bb0e8400-e29b-41d4-a716-446655440006",
+      "amount": 70.00,
+      "type": "REIMBURSEMENT_PAYMENT",
+      "status": "COMPLETED",
+      "description": "Delivery payment for order #AE-1025",
+      "reference": "ref_del_002",
+      "transferRef": "tr_bb0e_002",
+      "createdAt": "2026-04-28T12:31:00Z"
+    },
+    {
+      "id": "le_005",
+      "orderId": "ord_002",
+      "userId": "990e8400-e29b-41d4-a716-446655440004",
+      "amount": 450.00,
+      "type": "REIMBURSEMENT_PAYMENT",
+      "status": "COMPLETED",
+      "description": "Restaurant payout for order #AE-1025",
+      "reference": "ref_rest_002",
+      "transferRef": "tr_rest_002_001",
+      "createdAt": "2026-04-28T12:31:00Z"
+    },
+    {
+      "id": "le_006",
+      "orderId": "ord_002",
+      "userId": null,
+      "amount": 50.00,
+      "type": "PLATFORM_REVENUE",
+      "status": "COMPLETED",
+      "description": "Platform service fee for order #AE-1025",
+      "reference": "ref_plat_002",
+      "transferRef": null,
+      "createdAt": "2026-04-28T12:31:00Z"
+    },
+    {
+      "id": "le_007",
+      "orderId": "ord_003",
+      "userId": "aa0e8400-e29b-41d4-a716-446655440005",
+      "amount": 40.00,
+      "type": "REIMBURSEMENT_PAYMENT",
+      "status": "PENDING",
+      "description": "Delivery payment for order #AE-1026",
+      "reference": "ref_del_003",
+      "transferRef": null,
+      "createdAt": "2026-04-28T14:30:00Z"
+    },
+    {
+      "id": "le_008",
+      "orderId": "ord_003",
+      "userId": "880e8400-e29b-41d4-a716-446655440003",
+      "amount": 45.00,
+      "type": "REIMBURSEMENT_PAYMENT",
+      "status": "PENDING",
+      "description": "Restaurant payout for order #AE-1026",
+      "reference": "ref_rest_003",
+      "transferRef": null,
+      "createdAt": "2026-04-28T14:30:00Z"
+    }
+  ],
+  "disputes": [
+    {
+      "id": "disp_001",
+      "orderId": "ord_001",
+      "raisedById": "550e8400-e29b-41d4-a716-446655440000",
+      "assignedAdminId": "cc0e8400-e29b-41d4-a716-446655440007",
+      "reason": "Item missing from order - Cheese Sambusa not delivered",
+      "evidence": "https://storage.astueats.com/evidence/disp_001_photo.jpg",
+      "status": "RESOLVED",
+      "resolution": "Partial refund issued for missing item",
+      "createdAt": "2026-04-28T10:25:00Z",
+      "updatedAt": "2026-04-28T11:00:00Z"
+    },
+    {
+      "id": "disp_002",
+      "orderId": "ord_002",
+      "raisedById": "660e8400-e29b-41d4-a716-446655440001",
+      "assignedAdminId": "cc0e8400-e29b-41d4-a716-446655440007",
+      "reason": "Delivery was 20 minutes late, food was cold",
+      "evidence": null,
+      "status": "UNDER_REVIEW",
+      "resolution": null,
+      "createdAt": "2026-04-28T12:40:00Z",
+      "updatedAt": "2026-04-28T12:40:00Z"
+    }
+  ],
+  "dispatchLogs": [
+    {
+      "id": "dlog_001",
+      "orderId": "ord_001",
+      "delivererId": "aa0e8400-e29b-41d4-a716-446655440005",
+      "action": "BROADCAST",
+      "createdAt": "2026-04-28T09:31:00Z"
+    },
+    {
+      "id": "dlog_002",
+      "orderId": "ord_001",
+      "delivererId": "aa0e8400-e29b-41d4-a716-446655440005",
+      "action": "ACCEPTED",
+      "createdAt": "2026-04-28T09:32:00Z"
+    },
+    {
+      "id": "dlog_003",
+      "orderId": "ord_001",
+      "delivererId": "bb0e8400-e29b-41d4-a716-446655440006",
+      "action": "DECLINED",
+      "createdAt": "2026-04-28T09:32:00Z"
+    },
+    {
+      "id": "dlog_004",
+      "orderId": "ord_002",
+      "delivererId": "bb0e8400-e29b-41d4-a716-446655440006",
+      "action": "BROADCAST",
+      "createdAt": "2026-04-28T11:46:00Z"
+    },
+    {
+      "id": "dlog_005",
+      "orderId": "ord_002",
+      "delivererId": "bb0e8400-e29b-41d4-a716-446655440006",
+      "action": "ACCEPTED",
+      "createdAt": "2026-04-28T11:47:00Z"
+    },
+    {
+      "id": "dlog_006",
+      "orderId": "ord_002",
+      "delivererId": "aa0e8400-e29b-41d4-a716-446655440005",
+      "action": "IGNORED",
+      "createdAt": "2026-04-28T11:46:00Z"
+    }
+  ],
+  "anomalyFlags": [
+    {
+      "id": "anom_001",
+      "orderId": "ord_002",
+      "userId": "660e8400-e29b-41d4-a716-446655440001",
+      "reason": "HIGH_CANCEL_RATE",
+      "severity": "MEDIUM",
+      "isResolved": false,
+      "createdAt": "2026-04-28T12:30:00Z"
+    },
+    {
+      "id": "anom_002",
+      "orderId": null,
+      "userId": "bb0e8400-e29b-41d4-a716-446655440006",
+      "reason": "GPS_MISMATCH",
+      "severity": "LOW",
+      "isResolved": true,
+      "createdAt": "2026-04-27T20:00:00Z"
+    }
+  ],
+  "refreshTokens": [
+    {
+      "id": "rt_001",
+      "token": "refresh_token_abebe_001",
+      "userId": "550e8400-e29b-41d4-a716-446655440000",
+      "expiresAt": "2026-05-28T09:30:00Z",
+      "isRevoked": false,
+      "createdAt": "2026-04-28T09:30:00Z"
+    }
+  ],
+  "verificationTokens": [
+    {
+      "id": "vt_001",
+      "userId": "550e8400-e29b-41d4-a716-446655440000",
+      "tokenHash": "hashed_verification_token_001",
+      "type": "EMAIL_VERIFICATION",
+      "expiresAt": "2026-04-29T09:30:00Z",
+      "createdAt": "2026-04-28T09:30:00Z"
+    },
+    {
+      "id": "vt_002",
+      "userId": "aa0e8400-e29b-41d4-a716-446655440005",
+      "tokenHash": "hashed_verification_token_002",
+      "type": "PHONE_VERIFICATION",
+      "expiresAt": "2026-04-29T08:30:00Z",
+      "createdAt": "2026-04-28T08:30:00Z"
+    }
+  ],
+  "userAuditLogs": [
+    {
+      "id": "ual_001",
+      "targetUserId": "550e8400-e29b-41d4-a716-446655440000",
+      "actorId": "cc0e8400-e29b-41d4-a716-446655440007",
+      "action": "ROLE_CHANGE",
+      "previousValue": "CUSTOMER",
+      "newValue": "CUSTOMER",
+      "reason": "Initial account setup",
+      "createdAt": "2025-01-15T08:30:00Z"
+    }
+  ],
+  "payoutLogs": [
+    {
+      "id": "po_001",
+      "orderId": "ord_001",
+      "status": "SUCCESS",
+      "apiResponse": "{\"status\":\"completed\",\"transferId\":\"tr_aa0e_001\"}",
+      "attempts": 1,
+      "createdAt": "2026-04-28T10:20:00Z"
+    },
+    {
+      "id": "po_002",
+      "orderId": "ord_002",
+      "status": "SUCCESS",
+      "apiResponse": "{\"status\":\"completed\",\"transferId\":\"tr_rest_002_001\"}",
+      "attempts": 1,
+      "createdAt": "2026-04-28T12:35:00Z"
+    }
+  ],
+  "systemConfigs": [
+    {
+      "id": "sys_001",
+      "key": "platform_fee_percentage",
+      "value": "15",
+      "createdAt": "2025-01-01T00:00:00Z",
+      "updatedAt": "2025-01-01T00:00:00Z"
+    },
+    {
+      "id": "sys_002",
+      "key": "max_delivery_distance_km",
+      "value": "10",
+      "createdAt": "2025-01-01T00:00:00Z",
+      "updatedAt": "2025-01-01T00:00:00Z"
+    },
+    {
+      "id": "sys_003",
+      "key": "free_delivery_threshold",
+      "value": "200",
+      "createdAt": "2025-01-01T00:00:00Z",
+      "updatedAt": "2025-01-01T00:00:00Z"
+    },
+    {
+      "id": "sys_004",
+      "key": "max_refund_percentage",
+      "value": "100",
+      "createdAt": "2026-01-15T00:00:00Z",
+      "updatedAt": "2026-01-15T00:00:00Z"
+    }
+  ]
+}

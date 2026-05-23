@@ -9,7 +9,7 @@ import {
   ChevronRight,
   Camera,
 } from "lucide-react";
-import BottomNav from "@/components/common/BottomNav1";
+import DeliveryBottomNav from "@/features/delivery/components/DeliveryBottomNav";
 import { ROUTES } from "@/routes/routePaths";
 import { cn } from "@/lib/utils";
 
@@ -118,17 +118,6 @@ function ProfileMenuRow({
 export default function DelivererProfilePage() {
   const navigate = useNavigate();
 
-  const handleTabChange = (tab: string) => {
-    const map: Record<string, string> = {
-      home: ROUTES.DELIVERY.DASHBOARD,
-      bookmark: ROUTES.DELIVERY.AVAILABLE,
-      wallet: ROUTES.DELIVERY.ORDERS,
-      messages: ROUTES.DELIVERY.EARNINGS,
-      profile: ROUTES.DELIVERY.PROFILE,
-    };
-    const path = map[tab];
-    if (path) navigate(path);
-  };
 
   return (
     <div className="min-h-screen bg-white pb-36">
@@ -209,7 +198,7 @@ export default function DelivererProfilePage() {
         </section>
       </main>
 
-      <BottomNav activeTab="profile" onTabChange={handleTabChange} />
+      <DeliveryBottomNav />
     </div>
   );
 }

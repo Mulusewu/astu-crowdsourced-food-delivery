@@ -1,73 +1,117 @@
-# React + TypeScript + Vite
+# ASTU EATS - Crowdsourced Food Delivery System
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+![Status](https://img.shields.io/badge/Status-Active_Development-orange)
+![Platform](https://img.shields.io/badge/Platform-Telegram_Mini_App%20%7C%20Web-2CA5E0)
+![License](https://img.shields.io/badge/License-MIT-green)
+![Tech](https://img.shields.io/badge/Tech-React%20%7C%20TypeScript%20%7C%20Zustand%20%7C%20Tailwind-blue)
 
-Currently, two official plugins are available:
+**A modern, multi-role food delivery platform** built specifically for university communities in Ethiopia, starting with **ASTU (Adama Science and Technology University)**.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## 🎯 Project Vision
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+ASTU EATS solves real pain points faced by university students and campus communities:
 
-## Expanding the ESLint configuration
+- **Fragmented ordering** via phone calls and social media
+- **No centralized discovery** of restaurants and menus
+- **Inefficient delivery coordination**
+- **Limited digital payment options**
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+The platform connects **Customers**, **Vendors**, and **Delivery Partners** in one seamless ecosystem with a beautiful Telegram Mini-App experience.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## ✨ Key Features
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### 🛒 Customer Experience (Telegram Mini-App)
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+- Smart dashboard with ongoing offers and personalized recommendations
+- Advanced search with price & location filters
+- Rich restaurant and food discovery
+- Persistent cart with real-time pricing
+- Multiple payment options (Telebirr, CBE Birr, Awash Birr, Telegram Stars, Cash)
+- Live order tracking with visual timeline
+- Multi-role support (Customer can also act as Delivery Partner)
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### 🏪 Vendor Experience
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- Complete menu management (CRUD)
+- Real-time order processing
+- Business analytics and earnings dashboard
+- Document verification & approval system
+
+### 🚚 Delivery courier Experience
+
+- Browse available orders with smart filtering
+- One-tap order acceptance
+- Live GPS tracking & ETA updates
+- Real-time earnings and performance metrics
+
+### 👑 Admin Portal (Web)
+
+- Full user, restaurant, and order management
+- Analytics dashboard
+- Verification workflows
+- Dispute resolution system
+
+---
+
+## 🛠️ Technology Stack
+
+**Frontend (Telegram Mini-App)**
+
+- React 18 + Vite + TypeScript
+- Tailwind CSS + shadcn/ui
+- Zustand (State Management)
+- React Hook Form + Zod
+- Lucide React (Icons)
+
+**Backend**
+
+- Node.js + Express.js
+- PostgreSQL + Prisma ORM
+- Socket.io (Real-time)
+- JWT Authentication
+
+**Admin Portal**
+
+- Next.js 14 (App Router)
+
+---
+
+## 📁 Project Structure
+
+```bash
+backend/
+admin-protal/
+telegram-mini-app/
+├── src/
+│   ├── features/
+│   │   ├── auth/           # Authentication flow
+│   │   ├── customer/       # Customer-specific pages & components
+│   │   ├── vendor/         # Vendor dashboard
+│   │   └── delivery/       # Delivery partner dashboard
+│   ├── store/              # Zustand stores (auth, cart, order, etc.)
+│   ├── components/         # Reusable UI components
+│   ├── routes/             # Route configuration + ProtectedRoute
+│   ├── types/              # Global TypeScript definitions
+│   └── lib/                # Utilities and formatters
+├── public/
+└── vite.config.ts
+
+# Clone repository
+git clone https://github.com/Mulusewu/astu-crowdsourced-food-delivery.git
+cd astu-eats
+
+# Install dependencies
+cd telegram-mini-app
+pnpm install
+
+# Backend setup
+cd ../backend
+pnpm install
+cp .env.example .env
+pnpm prisma migrate dev
+pnpm dev
 ```

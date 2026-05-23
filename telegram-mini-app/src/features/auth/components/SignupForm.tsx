@@ -1,383 +1,221 @@
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import { ROUTES } from "@/routes/routePaths";
+import { useAuthStore } from "@/store/auth/authStore";
+import { useNavigate } from "react-router-dom";
 
-// ─── constants ────────────────────────────────────────────────────────────────
-const ORANGE = "#F27420";
-
-// ─── validation schema ────────────────────────────────────────────────────────
 const signupSchema = z
   .object({
-    name: z
-      .string()
-      .min(2, "Name must be at least 2 characters")
-      .max(50, "Name must be less than 50 characters")
-      .regex(/^[a-zA-Z\s'-]+$/, "Name can only contain letters, spaces, hyphens, and apostrophes"),
+    fullName: z.string().trim().min(2, "Name Is Too Short!").max(50, "Name Is Too Long!"),
     email: z
       .string()
-      .email("Please enter a valid email address")
-      .max(100, "Email must be less than 100 characters"),
+      .trim()
+      .email("Please Enter A Valid Email!")
+      .regex(/^[a-zA-Z0-9._%+-]+@astu\.edu\.et$/, "Please use your university provided email (@astu.edu.et)"),
     password: z
       .string()
-      .min(8, "Password must be at least 8 characters")
-      .max(32, "Password must be less than 32 characters"),
+      .min(8, "Password Is Too Short!")
+      .regex(/[A-Z]/, "Must Contain Uppercase!")
+      .regex(/[0-9]/, "Must Contain Number!"),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
+    message: "Password Doesn't Match!",
     path: ["confirmPassword"],
   });
 
 type SignupFormData = z.infer<typeof signupSchema>;
 
-interface ApiResponse {
-  success: boolean;
-  message: string;
-  errors?: Record<string, string>;
-}
-
-// ─── Logo ─────────────────────────────────────────────────────────────────────
-function ASTULogo() {
-  return (
-    <div className="flex flex-col items-center select-none">
-      <style>
-        {`
-          @keyframes drive {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-3px) rotate(1deg); }
-          }
-          @keyframes spin-wheel {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-          }
-          @keyframes speed-line {
-            0% { transform: translateX(0px); opacity: 1; }
-            100% { transform: translateX(-15px); opacity: 0; }
-          }
-        `}
-      </style>
-      <div className="flex items-center gap-1">
-        {/* Text block */}
-        <div className="flex flex-col leading-none" style={{ filter: "drop-shadow(2px 3px 2px rgba(0,0,0,0.25))" }}>
-          <span
-            className="text-[2.8rem] font-black tracking-tight text-gray-900"
-            style={{ fontFamily: "serif", lineHeight: 1 }}
-          >
-            ASTU
-          </span>
-          <span
-            className="text-[2.8rem] font-black italic tracking-tight"
-            style={{ color: ORANGE, fontFamily: "serif", lineHeight: 1 }}
-          >
-            EATS
-          </span>
-        </div>
-        
-        {/* Scooter & Delivery text block */}
-        <div className="flex flex-col items-center">
-          <div className="relative" style={{ animation: "drive 2s ease-in-out infinite" }}>
-            <svg
-              viewBox="0 0 120 90"
-              className="w-24 h-[4.5rem]"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              aria-hidden
-            >
-              {/* Package / box on back */}
-              <rect x="14" y="22" width="22" height="18" rx="3" fill={ORANGE} />
-              <line x1="25" y1="22" x2="25" y2="40" stroke="white" strokeWidth="1.5" />
-              <line x1="14" y1="31" x2="36" y2="31" stroke="white" strokeWidth="1.5" />
-              {/* Rider body */}
-              <ellipse cx="60" cy="44" rx="12" ry="16" fill={ORANGE} />
-              {/* Rider head */}
-              <circle cx="60" cy="24" r="10" fill={ORANGE} />
-              {/* Helmet shine */}
-              <path d="M54 20 Q60 14 66 20" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-              {/* Arm reaching forward */}
-              <path d="M68 40 Q82 36 88 42" stroke={ORANGE} strokeWidth="5" strokeLinecap="round" fill="none" />
-              {/* Scooter body */}
-              <path d="M30 60 Q48 52 72 56 L88 60 Q94 62 96 68" stroke={ORANGE} strokeWidth="6" strokeLinecap="round" fill="none" />
-              {/* Scooter underside */}
-              <path d="M30 60 Q24 66 28 72" stroke={ORANGE} strokeWidth="4" strokeLinecap="round" fill="none" />
-              {/* Front fork */}
-              <path d="M88 60 L90 72" stroke={ORANGE} strokeWidth="4" strokeLinecap="round" />
-              
-              {/* Rear wheel */}
-              <g style={{ transformOrigin: "30px 74px", animation: "spin-wheel 0.8s linear infinite" }}>
-                <circle cx="30" cy="74" r="12" stroke={ORANGE} strokeWidth="4" strokeDasharray="10 6" />
-                <circle cx="30" cy="74" r="4" fill={ORANGE} />
-              </g>
-              
-              {/* Front wheel */}
-              <g style={{ transformOrigin: "90px 74px", animation: "spin-wheel 0.8s linear infinite" }}>
-                <circle cx="90" cy="74" r="12" stroke={ORANGE} strokeWidth="4" strokeDasharray="10 6" />
-                <circle cx="90" cy="74" r="4" fill={ORANGE} />
-              </g>
-              
-              {/* Speed lines */}
-              <line x1="0" y1="56" x2="16" y2="56" stroke={ORANGE} strokeWidth="2.5" strokeLinecap="round" style={{ animation: "speed-line 0.6s linear infinite" }} />
-              <line x1="4" y1="64" x2="18" y2="64" stroke={ORANGE} strokeWidth="2" strokeLinecap="round" style={{ animation: "speed-line 0.6s linear infinite 0.2s" }} />
-              <line x1="8" y1="72" x2="20" y2="72" stroke={ORANGE} strokeWidth="1.5" strokeLinecap="round" style={{ animation: "speed-line 0.6s linear infinite 0.4s" }} />
-            </svg>
-          </div>
-          <span
-            className="text-[1.1rem] font-bold italic tracking-wide"
-            style={{ color: ORANGE, fontFamily: "serif", marginTop: "-6px" }}
-          >
-            Delivery
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── FormInput ────────────────────────────────────────────────────────────────
-function FormInput({
-  id,
-  label,
-  type = "text",
-  placeholder,
-  error,
-  rightElement,
-  registration,
-}: {
-  id: string;
-  label: string;
-  type?: string;
-  placeholder: string;
-  error?: string;
-  rightElement?: React.ReactNode;
-  registration: ReturnType<ReturnType<typeof useForm>["register"]>;
-}) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-sm font-semibold text-gray-800">
-        {label}
-      </label>
-      <div className="relative">
-        <input
-          id={id}
-          type={type}
-          placeholder={placeholder}
-          {...registration}
-          className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3.5 text-sm text-gray-700 placeholder:text-gray-400 outline-none transition focus:border-[#F27420] focus:ring-2 focus:ring-[#F27420]/20 hover:border-gray-300"
-        />
-        {rightElement && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2">
-            {rightElement}
-          </div>
-        )}
-      </div>
-      {error && <p className="text-xs text-red-500">{error}</p>}
-    </div>
-  );
-}
-
-// ─── SignupForm (default export) ──────────────────────────────────────────────
 export default function SignupForm() {
+  const { signup, isLoading, clearError } = useAuthStore();
   const navigate = useNavigate();
+
+  const [apiError, setApiError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [apiError, setApiError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
-    setError,
-    reset,
+    formState: { errors, isValid, isSubmitting },
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
-    mode: "onBlur",
+    mode: "onChange",
   });
 
   const onSubmit = async (data: SignupFormData) => {
+    setApiError(null);
+    clearError();
     try {
-      setApiError(null);
-      setSuccessMessage(null);
-      const { confirmPassword: _, ...apiData } = data;
-      const response = await fetch("http://localhost:3000/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(apiData),
+      await signup({
+        fullName: data.fullName,
+        email: data.email,
+        password: data.password,
       });
-      const result: ApiResponse = await response.json();
-      if (!response.ok) {
-        if (result.errors) {
-          Object.entries(result.errors).forEach(([field, message]) => {
-            setError(field as keyof SignupFormData, { type: "manual", message });
-          });
-        }
-        if (result.message) setApiError(result.message);
-        throw new Error(result.message || "Signup failed");
-      }
-      setSuccessMessage(result.message || "Account created successfully!");
-      reset();
-      setTimeout(() => { window.location.href = "/signin?verified=false"; }, 3000);
-    } catch (error) {
-      if (error instanceof Error) setApiError(error.message);
-      else setApiError("An unexpected error occurred. Please try again.");
+      navigate(`/verify-email/${encodeURIComponent(data.email)}`);
+    } catch (err: any) {
+      setApiError(err.message || "User Already Exists With This Email!");
     }
   };
 
-  const EyeToggle = ({
-    show,
-    onToggle,
-  }: {
-    show: boolean;
-    onToggle: () => void;
-  }) => (
-    <button
-      type="button"
-      onClick={onToggle}
-      className="text-gray-400 hover:text-gray-600 transition-colors focus-visible:outline-none"
-      tabIndex={-1}
-      aria-label={show ? "Hide password" : "Show password"}
-    >
-      {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-    </button>
-  );
-
   return (
-    <div className="min-h-screen bg-white">
-      {/* ── Tab Header ── */}
-      <div className="flex border-b border-gray-200">
-        {/* Sign Up tab — active */}
-        <button
-          type="button"
-          className="flex-1 py-4 text-base font-bold transition-colors relative"
-          style={{ color: ORANGE }}
-          aria-current="page"
-        >
-          Sign Up
-          {/* Active underline */}
-          <span
-            className="absolute bottom-0 left-0 w-full h-[2.5px] rounded-full"
-            style={{ backgroundColor: ORANGE }}
-          />
-        </button>
-        {/* Login tab */}
-        <button
-          type="button"
-          className="flex-1 py-4 text-base font-bold text-gray-500 transition-colors hover:text-gray-700"
-          onClick={() => navigate(ROUTES.SIGNIN)}
-        >
-          Login
-        </button>
-      </div>
+    <div className="min-h-screen bg-white font-sans flex flex-col items-center pt-16">
+      <style>{`
+        @keyframes ride {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-1.5px); }
+        }
+        @keyframes dash {
+          0% { stroke-dashoffset: 20; opacity: 0.4; }
+          50% { opacity: 1; }
+          100% { stroke-dashoffset: 0; opacity: 0.4; }
+        }
+        .scooter-ride { animation: ride 0.25s ease-in-out infinite; }
+        .motion-line { 
+          stroke-dasharray: 10 5; 
+          animation: dash 0.4s linear infinite; 
+        }
+      `}</style>
 
-      {/* ── Scrollable content ── */}
-      <div className="px-5 pt-8 pb-10">
-        {/* Logo */}
-        <div className="flex justify-center mb-8">
-          <ASTULogo />
+      <div className="w-full max-w-[340px] px-4 flex flex-col items-center">
+        {/* LOGO SECTION */}
+        <div className="relative flex items-center justify-center w-full mb-12 mt-2 pr-6">
+          <div className="flex flex-col items-start mr-2">
+            <span className="text-[44px] font-black text-black leading-[0.8] tracking-tight drop-shadow-md">
+              ASTU
+            </span>
+            <span className="text-[52px] font-black text-[#F26A1C] leading-[0.8] tracking-tight drop-shadow-md">
+              EATS
+            </span>
+          </div>
+          <div className="flex flex-col items-center -mt-10 -mb-2">
+            <div className="flex flex-col items-center">
+              <svg
+                width="110"
+                height="80"
+                viewBox="0 0 120 100"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="text-[#F26A1C] scooter-ride"
+              >
+                <path d="M5 45H22" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="motion-line" />
+                <path d="M2 55H25" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="motion-line" style={{ animationDelay: '0.1s' }} />
+                <path d="M8 65H18" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="motion-line" style={{ animationDelay: '0.2s' }} />
+
+                <path d="M95 75V45L88 40H75L68 55H35V65C35 70 40 75 45 75H95Z" fill="currentColor" />
+                <path d="M95 45L105 45L108 40" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+                <path d="M102 40H112" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+                
+                <circle cx="65" cy="22" r="7" fill="currentColor" />
+                <path d="M58 29H72L75 45L68 60H55L52 45L58 29Z" fill="currentColor" />
+                <path d="M72 40L88 43" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" />
+
+                <rect x="28" y="35" width="22" height="22" rx="2" fill="currentColor" />
+                
+                <circle cx="42" cy="80" r="10" stroke="currentColor" strokeWidth="6" />
+                <circle cx="95" cy="80" r="10" stroke="currentColor" strokeWidth="6" />
+                <circle cx="42" cy="80" r="2" fill="white" />
+                <circle cx="95" cy="80" r="2" fill="white" />
+              </svg>
+              <span className="text-[#F26A1C] text-[24px] font-black italic tracking-tight -mt-1">
+                Delivery
+              </span>
+            </div>
+          </div>
         </div>
 
-        {/* Alerts */}
-        {apiError && (
-          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {apiError}
-          </div>
-        )}
-        {successMessage && (
-          <div className="mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-            {successMessage}
-          </div>
-        )}
-
-        {/* Form */}
-        <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
-          <FormInput
-            id="name"
-            label="Name"
-            type="text"
-            placeholder="John Doe"
-            error={errors.name?.message}
-            registration={register("name")}
-          />
-
-          <FormInput
-            id="email"
-            label="Email Address"
-            type="email"
-            placeholder="Johndoe@Gmail.Com"
-            error={errors.email?.message}
-            registration={register("email")}
-          />
-
-          <FormInput
-            id="password"
-            label="Password"
-            type={showPassword ? "text" : "password"}
-            placeholder="············"
-            error={errors.password?.message}
-            registration={register("password")}
-            rightElement={
-              <EyeToggle
-                show={showPassword}
-                onToggle={() => setShowPassword((v) => !v)}
-              />
-            }
-          />
-
-          <FormInput
-            id="confirmPassword"
-            label="Confirm Password"
-            type={showConfirmPassword ? "text" : "password"}
-            placeholder="············"
-            error={errors.confirmPassword?.message}
-            registration={register("confirmPassword")}
-            rightElement={
-              <EyeToggle
-                show={showConfirmPassword}
-                onToggle={() => setShowConfirmPassword((v) => !v)}
-              />
-            }
-          />
-
-          {/* Submit button */}
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="mt-4 w-full rounded-full py-4 text-base font-bold text-white shadow-[0_4px_20px_rgba(242,116,32,0.35)] transition hover:opacity-90 active:scale-[0.98] disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F27420]/40"
-            style={{ backgroundColor: ORANGE }}
-          >
-            {isSubmitting ? (
-              <span className="flex items-center justify-center gap-2">
-                <svg
-                  className="h-5 w-5 animate-spin text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
-                Creating account…
-              </span>
-            ) : (
-              "Sign Up"
+        {/* AUTH FORM */}
+        <form onSubmit={handleSubmit(onSubmit)} className="w-full space-y-4">
+          {/* Name */}
+          <div className="space-y-1">
+            <label className="text-[17px] font-bold text-gray-900 ml-1">Full Name</label>
+            <input
+              {...register("fullName")}
+              placeholder="John Doe"
+              className={`w-full h-13 border ${errors.fullName ? "border-red-500" : "border-gray-200"} rounded-[10px] px-5 text-[15px] font-medium text-gray-900 placeholder:text-gray-300 focus:border-[#F26A1C] focus:outline-none transition-all`}
+            />
+            {errors.fullName && (
+              <p className="text-xs text-red-500 font-semibold ml-1">{errors.fullName.message}</p>
             )}
-          </button>
+          </div>
+
+          {/* Email */}
+          <div className="space-y-1">
+            <label className="text-[17px] font-bold text-gray-900 ml-1">Email Address</label>
+            <input
+              type="email"
+              {...register("email")}
+              placeholder="name.surname@astu.edu.et"
+              className={`w-full h-13 border ${errors.email || apiError ? "border-red-500" : "border-gray-200"} rounded-[10px] px-5 text-[15px] font-medium text-gray-900 placeholder:text-gray-300 focus:border-[#F26A1C] focus:outline-none transition-all`}
+            />
+            {errors.email ? (
+              <p className="text-xs text-red-500 font-semibold ml-1">{errors.email.message}</p>
+            ) : apiError ? (
+              <p className="text-xs text-red-500 font-semibold ml-1">{apiError}</p>
+            ) : null}
+          </div>
+
+          {/* Password */}
+          <div className="space-y-1">
+            <label className="text-[17px] font-bold text-gray-900 ml-1">Password</label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                {...register("password")}
+                placeholder="***********"
+                className={`w-full h-13 border ${errors.password ? "border-red-500" : "border-gray-200"} rounded-[10px] px-5 text-[15px] font-medium text-gray-900 placeholder:text-gray-300 focus:border-[#F26A1C] focus:outline-none transition-all`}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+            {errors.password && (
+              <p className="text-xs text-red-500 font-semibold ml-1">{errors.password.message}</p>
+            )}
+          </div>
+
+          {/* Confirm Password */}
+          <div className="space-y-1">
+            <label className="text-[17px] font-bold text-gray-900 ml-1">Confirm Password</label>
+            <div className="relative">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                {...register("confirmPassword")}
+                placeholder="***********"
+                className={`w-full h-13 border ${errors.confirmPassword ? "border-red-500" : "border-gray-200"} rounded-[10px] px-5 text-[15px] font-medium text-gray-900 placeholder:text-gray-300 focus:border-[#F26A1C] focus:outline-none transition-all`}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300"
+              >
+                {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+            {errors.confirmPassword && (
+              <p className="text-xs text-red-500 font-semibold ml-1">{errors.confirmPassword.message}</p>
+            )}
+          </div>
+
+          {/* Submit Button */}
+          <div className="pt-6 flex justify-center">
+            <button
+              type="submit"
+              disabled={isLoading || isSubmitting || !isValid}
+              className="bg-[#F26A1C] hover:bg-[#e05d15] text-white font-black text-[22px] px-16 py-3.5 rounded-full shadow-lg shadow-orange-500/20 active:scale-95 transition-all disabled:opacity-70 min-w-[200px]"
+            >
+              {isLoading || isSubmitting ? "Wait..." : "Sign Up"}
+            </button>
+          </div>
         </form>
       </div>
     </div>
   );
 }
+

@@ -1,55 +1,47 @@
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import SignupPage from "./SignupForm";
-import SigninPage from "./SigninForm";
+// src/pages/auth/AuthPage.tsx
 import { useState } from "react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
-export function TabsLine() {
-  const [activeTab, setActiveTab] = useState("signup");
+import SigninForm from "./SigninForm";
+import SignupForm from "./SignupForm";
+
+export default function TabsLine() {
+  const [activeTab, setActiveTab] = useState<"signin" | "signup">("signin");
 
   return (
-    <div className="w-full max-w-md mx-auto px-4 py-6">
-      <Tabs
-        defaultValue="signup"
-        value={activeTab}
-        onValueChange={setActiveTab}
-        className="w-full"
-      >
-        <TabsList
-          variant="line"
-          className="w-full bg-transparent border-b border-gray-200 p-0 h-auto"
+    <div className="min-h-screen bg-white px-4 py-8">
+      <div className="max-w-md mx-auto">
+        {/* Brand */}
+        <div className="flex justify-center mb-10">{/* <BrandCard /> */}</div>
+
+        <Tabs
+          value={activeTab}
+          onValueChange={(v) => setActiveTab(v as "signin" | "signup")}
         >
-          <TabsTrigger
-            value="signup"
-            className="flex-1 py-3 px-6 text-base font-semibold 
-              data-[state=active]:text-[#F26A1C] data-[state=inactive]:text-gray-600
-              bg-transparent hover:bg-transparent 
-              shadow-none data-[state=active]:shadow-none
-              border-0 rounded-none
-              focus-visible:ring-0 focus-visible:ring-offset-0"
-          >
-            Sign Up
-          </TabsTrigger>
-          <TabsTrigger
-            value="signin"
-            className="flex-1 py-3 px-6 text-base font-semibold 
-              data-[state=active]:text-[#F26A1C] data-[state=inactive]:text-gray-600
-              bg-transparent hover:bg-transparent 
-              shadow-none data-[state=active]:shadow-none
-              border-0 rounded-none
-              focus-visible:ring-0 focus-visible:ring-offset-0"
-          >
-            Sign In
-          </TabsTrigger>
-        </TabsList>
+          <TabsList className="w-full bg-transparent border-b border-gray-200 p-0 h-auto rounded-none">
+            <TabsTrigger
+              value="signin"
+              className="flex-1 py-4 text-base font-semibold data-[state=active]:text-[#F26A1C] data-[state=inactive]:text-gray-500 border-b-2 border-transparent data-[state=active]:border-[#F26A1C] rounded-sm"
+            >
+              Sign In
+            </TabsTrigger>
+            <TabsTrigger
+              value="signup"
+              className="flex-1 py-4 text-base font-semibold data-[state=active]:text-[#F26A1C] data-[state=inactive]:text-gray-500 border-b-2 border-transparent data-[state=active]:border-[#F26A1C] rounded-sm"
+            >
+              Sign Up
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="signup" className="mt-6">
-          <SignupPage />
-        </TabsContent>
+          <TabsContent value="signin" className="mt-8">
+            <SigninForm />
+          </TabsContent>
 
-        <TabsContent value="signin" className="mt-6">
-          <SigninPage />
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="signup" className="mt-8">
+            <SignupForm />
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 }
