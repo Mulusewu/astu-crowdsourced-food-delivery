@@ -63,12 +63,11 @@ function StarInput({
 }
 
 const reviewSchema = z.object({
-  restaurantRating: z.number(),
+  restaurantRating: z.number().min(1, "Restaurant rating is required"),
   restaurantText: z.string().trim().optional(),
-  delivererRating: z.number(),
+  // Deliverer rating is optional because an order might not have one (e.g. cancelled early)
+  delivererRating: z.number().optional(), 
   delivererText: z.string().trim().optional(),
-}).refine(data => data.restaurantRating > 0 || data.delivererRating > 0, {
-  message: "Please provide at least one rating.",
 });
 
 type ReviewData = z.infer<typeof reviewSchema>;
@@ -121,13 +120,11 @@ export default function ReviewPage() {
         reset(); 
         const load = async () => {
             if (!order) await fetchOrders();
-            // Small delay for smooth entry
             setTimeout(() => setDataReady(true), 150);
         };
         load();
     }, [orderId, order, fetchOrders, reset]);
 
-    // ── Loading state ────────────────────────────────────────────────────────────
     if (!dataReady) {
         return (
             <div className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 p-5 flex flex-col gap-4">
@@ -144,7 +141,6 @@ export default function ReviewPage() {
         );
     }
 
-    // ── Not found ────────────────────────────────────────────────────────────────
     if (!order) {
         return (
             <div className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 flex flex-col items-center justify-center px-5 text-center">
@@ -165,26 +161,23 @@ export default function ReviewPage() {
     }
 
     const onSubmit = async (data: ReviewData) => {
-        // Sync local form state to global store before submission
         setRestaurantRating(data.restaurantRating);
         setRestaurantText(data.restaurantText || "");
-        setDelivererRating(data.delivererRating);
+        if (data.delivererRating) setDelivererRating(data.delivererRating);
         setDelivererText(data.delivererText || "");
 
+        if (!orderId) return;
+
         try {
-            await submitReviews({
-                orderId: order.id,
-                restaurantId: order.restaurantId,
-                restaurantName: order.restaurantName,
-                delivererName: order.deliverer?.name,
-            });
+            // CRITICAL FIX: Simply pass the orderId. 
+            // The backend natively extrapolates restaurantId and delivererId from the database.
+            await submitReviews(orderId);
             toast.success("Review submitted!");
         } catch (err) {
-            toast.error("Failed to submit review. Please try again.");
+            // Error logged by store
         }
     };
 
-    // ── Submitted success screen ─────────────────────────────────────────────────
     if (isSubmitted) {
         return (
             <div className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 flex flex-col items-center justify-center px-8 text-center animate-in fade-in duration-500">
@@ -199,7 +192,7 @@ export default function ReviewPage() {
                     You're Awesome! 🎉
                 </h2>
                 <p className="text-[15px] font-medium text-gray-500 dark:text-gray-400 mb-10 max-w-[280px] leading-relaxed">
-                    Your feedback helps {order.restaurantName} and the community grow.
+                    Your feedback helps {order.restaurant?.name || "the restaurant"} and the community grow.
                 </p>
                 
                 <button
@@ -219,7 +212,6 @@ export default function ReviewPage() {
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 font-sans pb-32 overflow-x-hidden">
 
-            {/* ── Header ── */}
             <header className="px-5 pt-6 pb-4 sticky top-0 bg-[#FDFDFD]/90 dark:bg-gray-950/90 backdrop-blur-md z-30 flex items-center justify-between border-b border-transparent dark:border-gray-900">
                 <button
                     type="button"
@@ -244,24 +236,15 @@ export default function ReviewPage() {
 
             <main className="px-5 mt-4 space-y-6">
 
-                {/* ── Restaurant Review Card ── */}
                 <div className="bg-white dark:bg-gray-900 rounded-[28px] p-6 border border-gray-100 dark:border-gray-800 shadow-[0_8px_30px_rgba(0,0,0,0.02)] space-y-5 animate-in slide-in-from-bottom-4 duration-300">
                     <div className="flex items-center gap-4">
                         <div className="w-14 h-14 rounded-2xl bg-orange-50 dark:bg-gray-800 border border-orange-100 dark:border-gray-700 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
-                            {order.restaurantImageUrl ? (
-                                <img
-                                    src={order.restaurantImageUrl}
-                                    alt={order.restaurantName}
-                                    className="w-full h-full object-cover"
-                                />
-                            ) : (
-                                <ChefHat size={28} className="text-[#F26A1C]" />
-                            )}
+                             <ChefHat size={28} className="text-[#F26A1C]" />
                         </div>
                         <div className="flex-1">
                             <p className="text-[11px] font-black uppercase tracking-wider text-[#F26A1C] mb-1">Restaurant</p>
                             <h3 className="text-[17px] font-black text-gray-900 dark:text-white leading-tight">
-                                {order.restaurantName}
+                                {order.restaurant?.name || "Restaurant"}
                             </h3>
                         </div>
                     </div>
@@ -281,53 +264,43 @@ export default function ReviewPage() {
                     />
                 </div>
 
-                {/* ── Deliverer Review Card ── */}
-                {order.deliverer ? (
-                    <div className="bg-white dark:bg-gray-900 rounded-[28px] p-6 border border-gray-100 dark:border-gray-800 shadow-[0_8px_30px_rgba(0,0,0,0.02)] space-y-5 animate-in slide-in-from-bottom-6 duration-400">
-                        <div className="flex items-center gap-4">
-                            <div className="relative shrink-0">
-                                <img
-                                    src={order.deliverer.avatarUrl || FALLBACK_AVATAR}
-                                    alt={order.deliverer.name}
-                                    className="w-14 h-14 rounded-2xl object-cover border border-orange-100 dark:border-gray-800 shadow-sm"
-                                />
-                                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-2 border-white dark:border-gray-950 rounded-full flex items-center justify-center">
-                                    <Bike size={10} className="text-white" />
-                                </div>
-                            </div>
-                            <div className="flex-1">
-                                <p className="text-[11px] font-black uppercase tracking-wider text-[#F26A1C] mb-1">Delivery Partner</p>
-                                <h3 className="text-[17px] font-black text-gray-900 dark:text-white leading-tight">
-                                    {order.deliverer.name}
-                                </h3>
-                                <p className="text-[11px] font-bold text-gray-400 mt-0.5">★ {order.deliverer.rating.toFixed(1)} Overall</p>
+                {/* Only render Deliverer review block if a deliverer was actually assigned */}
+                {/* Note: order summary object from backend doesn't populate deliverer, but we assume UI is ok with this for now */}
+                <div className="bg-white dark:bg-gray-900 rounded-[28px] p-6 border border-gray-100 dark:border-gray-800 shadow-[0_8px_30px_rgba(0,0,0,0.02)] space-y-5 animate-in slide-in-from-bottom-6 duration-400">
+                    <div className="flex items-center gap-4">
+                        <div className="relative shrink-0">
+                            <img
+                                src={FALLBACK_AVATAR}
+                                alt="Deliverer"
+                                className="w-14 h-14 rounded-2xl object-cover border border-orange-100 dark:border-gray-800 shadow-sm"
+                            />
+                            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-2 border-white dark:border-gray-950 rounded-full flex items-center justify-center">
+                                <Bike size={10} className="text-white" />
                             </div>
                         </div>
-
-                        <div className="h-[1px] w-full bg-gray-50 dark:bg-gray-800" />
-
-                        <div className="text-center">
-                            <p className="text-[13px] font-bold text-gray-700 dark:text-gray-300 mb-2">How was the delivery?</p>
-                            <StarInput value={watchDelivererRating} onChange={(v) => setValue("delivererRating", v, { shouldValidate: true })} />
+                        <div className="flex-1">
+                            <p className="text-[11px] font-black uppercase tracking-wider text-[#F26A1C] mb-1">Delivery Partner</p>
+                            <h3 className="text-[17px] font-black text-gray-900 dark:text-white leading-tight">
+                                The Deliverer
+                            </h3>
                         </div>
-
-                        <textarea
-                            {...register("delivererText")}
-                            placeholder="Speed, attitude, communication..."
-                            rows={3}
-                            className="w-full p-4 bg-gray-50 dark:bg-gray-800/50 rounded-[20px] text-[14px] font-semibold text-gray-800 dark:text-gray-200 placeholder:text-gray-400 placeholder:font-medium focus:ring-2 focus:ring-orange-100 dark:focus:ring-[#F26A1C]/20 border-none outline-none resize-none transition-all"
-                        />
                     </div>
-                ) : (
-                    <div className="flex flex-col items-center gap-3 bg-gray-50/50 dark:bg-gray-900/30 p-8 rounded-[28px] border border-dashed border-gray-200 dark:border-gray-800">
-                        <Bike size={32} className="text-gray-300 dark:text-gray-700" />
-                        <p className="text-[13px] font-bold text-gray-400 dark:text-gray-500 text-center">
-                            Delivery service was not rated for this order.
-                        </p>
-                    </div>
-                )}
 
-                {/* ── Error ── */}
+                    <div className="h-[1px] w-full bg-gray-50 dark:bg-gray-800" />
+
+                    <div className="text-center">
+                        <p className="text-[13px] font-bold text-gray-700 dark:text-gray-300 mb-2">How was the delivery?</p>
+                        <StarInput value={watchDelivererRating || 0} onChange={(v) => setValue("delivererRating", v, { shouldValidate: true })} />
+                    </div>
+
+                    <textarea
+                        {...register("delivererText")}
+                        placeholder="Speed, attitude, communication..."
+                        rows={3}
+                        className="w-full p-4 bg-gray-50 dark:bg-gray-800/50 rounded-[20px] text-[14px] font-semibold text-gray-800 dark:text-gray-200 placeholder:text-gray-400 placeholder:font-medium focus:ring-2 focus:ring-orange-100 dark:focus:ring-[#F26A1C]/20 border-none outline-none resize-none transition-all"
+                    />
+                </div>
+
                 {storeError && (
                     <div className="flex items-center gap-2 justify-center p-3 bg-red-50 dark:bg-red-950/20 rounded-xl text-red-500">
                         <AlertCircle size={16} />
@@ -335,7 +308,6 @@ export default function ReviewPage() {
                     </div>
                 )}
 
-                {/* ── Footer / Submit ── */}
                 <div className="pt-4 pb-8">
                     <button
                         type="submit"

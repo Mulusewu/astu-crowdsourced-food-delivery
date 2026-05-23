@@ -9,6 +9,8 @@ export interface SavedItem {
   location: string;
   image: string;
   type: "RESTAURANT" | "MENU_ITEM"; 
+   price?: number; // NEW
+  restaurantId?: string; // NEW
 }
 
 interface SavedItemsState {
@@ -38,14 +40,18 @@ export const useSavedItemsStore = create<SavedItemsState>()(
         set({ isLoading: true,  error: null  });
         try {
           const response = await apiClient.get('/users/me/bookmarks');
+
+          console.log("Raw backend response:", response.data);
           
           // Map the enriched backend response to the exact shape the UI expects
           const mappedItems: SavedItem[] = response.data.data.map((b: any) => ({
-            id: b.targetId,
+            id: b.id,
             type: b.type,
             name: b.name,
             location: b.location,
-            image: b.imageUrl || "https://images.unsplash.com/photo-1541544741938-0af808871cc0?w=200&fit=crop"
+            image: b.imageUrl || "https://images.unsplash.com/photo-1541544741938-0af808871cc0?w=200&fit=crop",
+            price: b.price,
+            restaurantId: b.restaurantId
           }));
 
           set({ items: mappedItems, isLoading: false });

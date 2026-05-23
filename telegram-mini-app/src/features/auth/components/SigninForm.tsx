@@ -63,7 +63,6 @@ export default function SigninForm() {
 
     try {
       await signin({ ...data, intendedMode: loginMode }, navigate);
-      console.log("signin form");
     } catch (err: any) {
       const errorMsg = err.response?.data?.message || err.message || "An error occurred during sign in.";
       setApiError(errorMsg);

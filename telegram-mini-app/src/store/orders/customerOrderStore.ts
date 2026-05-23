@@ -43,6 +43,8 @@ interface CustomerOrderState {
   isLoading: boolean;
   error: string | null;
   socket: Socket | null;
+    // liveDelivererCoords: { lat: number, lng: number } | null; // NEW
+
 
   fetchCustomerOrders: () => Promise<void>;
   fetchOrderDetails: (orderId: string) => Promise<void>;
@@ -64,6 +66,7 @@ export const useCustomerOrderStore = create<CustomerOrderState>()(
       isLoading: false,
       error: null,
       socket: null,
+      // liveDelivererCoords: null,
 
       fetchCustomerOrders: async () => {
         set({ isLoading: true, error: null });
@@ -81,6 +84,8 @@ export const useCustomerOrderStore = create<CustomerOrderState>()(
           });
         }
       },
+
+
 
       fetchOrderDetails: async (orderId: string) => {
         set({ isLoading: true, error: null });

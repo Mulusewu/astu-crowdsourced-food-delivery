@@ -8,7 +8,7 @@ interface ProtectedRouteProps {
   requiredMode?: ActiveMode;
 }
 
-export default function ProtectedRoute({ allowedRoles, requiredMode }: ProtectedRouteProps) {
+export default  function ProtectedRoute({ allowedRoles, requiredMode }: ProtectedRouteProps) {
   const { user, token } = useAuthStore();
   const location = useLocation();
 

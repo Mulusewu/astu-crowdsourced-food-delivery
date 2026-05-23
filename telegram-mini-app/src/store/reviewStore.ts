@@ -1,5 +1,5 @@
-// src/store/reviewStore.ts
 import { create } from "zustand";
+import { apiClient } from "@/api/client/axiosInstance";
 
 interface ReviewState {
   // Deliverer review
@@ -12,22 +12,15 @@ interface ReviewState {
   isLoading: boolean;
   isSubmitted: boolean;
   error: string | null;
+  
   // Actions
   setDelivererRating: (r: number) => void;
   setDelivererText: (t: string) => void;
   setRestaurantRating: (r: number) => void;
   setRestaurantText: (t: string) => void;
-  submitReviews: (params: {
-    orderId: string;
-    restaurantId: string;
-    restaurantName: string;
-    delivererName?: string;
-  }) => Promise<void>;
+  submitReviews: (orderId: string) => Promise<void>;
   reset: () => void;
 }
-
-// Simulated async submit (replace with real API call later)
-const delay = (ms = 800) => new Promise((r) => setTimeout(r, ms));
 
 export const useReviewStore = create<ReviewState>()((set, get) => ({
   delivererRating: 0,
@@ -43,24 +36,52 @@ export const useReviewStore = create<ReviewState>()((set, get) => ({
   setRestaurantRating: (r) => set({ restaurantRating: r }),
   setRestaurantText: (t) => set({ restaurantText: t }),
 
-  submitReviews: async ({ orderId, restaurantId, restaurantName, delivererName }) => {
-    const { delivererRating, restaurantRating } = get();
+  submitReviews: async (orderId: string) => {
+    const { delivererRating, delivererText, restaurantRating, restaurantText } = get();
+    
+    // Safety check: At least one rating is required
     if (restaurantRating === 0 && delivererRating === 0) {
-      set({ error: "Please rate at least one." });
+      set({ error: "Please provide at least one rating." });
       return;
     }
+
     set({ isLoading: true, error: null });
+
     try {
-      await delay();
-      // TODO: replace with real API calls
-      console.log("Review submitted:", {
-        orderId,
-        restaurant: { id: restaurantId, name: restaurantName, rating: restaurantRating, text: get().restaurantText },
-        deliverer: delivererName ? { name: delivererName, rating: delivererRating, text: get().delivererText } : null,
-      });
+      // 1. Data Sanitization to match Backend DTO
+      // Combine text fields cleanly. If only one exists, just send that one.
+      let combinedComment = "";
+      if (restaurantText && delivererText) {
+        combinedComment = `Food: ${restaurantText} | Delivery: ${delivererText}`;
+      } else if (restaurantText) {
+        combinedComment = restaurantText;
+      } else if (delivererText) {
+        combinedComment = delivererText;
+      }
+
+      // 2. Build the Payload
+      const payload: any = {
+        restaurantRating: restaurantRating > 0 ? restaurantRating : undefined,
+        comment: combinedComment.substring(0, 500) // Max length safety
+      };
+
+      // Only attach deliverer rating if it was explicitly set
+      // (e.g., if the order was cancelled, there might not be a deliverer)
+      if (delivererRating > 0) {
+        payload.delivererRating = delivererRating;
+      }
+
+      // 3. Network Call
+      await apiClient.post(`/orders/${orderId}/review`, payload);
+
       set({ isLoading: false, isSubmitted: true });
-    } catch {
-      set({ isLoading: false, error: "Failed to submit review. Please try again." });
+    } catch (e: any) {
+      console.error("Review submission failed:", e);
+      set({ 
+        isLoading: false, 
+        error: e.response?.data?.message || "Failed to submit review. Please try again." 
+      });
+      throw e; // Throw so UI can toast
     }
   },
 

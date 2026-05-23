@@ -158,18 +158,23 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true, error: null });
         try {
           const { intendedMode, ...apiPayload } = data;
-          const response = await authApi.login(apiPayload);
+          const response = await authApi.login(data);
+
+          // console.log("API Payload:", apiPayload);
+          // console.log("Login response:", response);
 
           const { accessToken, user } = response.data;
           if (intendedMode === "student" && user.role === "VENDOR_STAFF") {
             throw new Error("You selected Student login, but this is a Vendor account.");
           }
-          console.log("User:", user); // Debug log
+      
           if (intendedMode === "vendor" && user.role !== "VENDOR_STAFF") {
             throw new Error("You selected Vendor login, but this is a Student account.");
           }
           const frontendRoles = mapBackendRoleToFrontendArray(user.role);
           const activeMode = frontendRoles.includes("DELIVERER") ? "DELIVERER" : "CUSTOMER";
+
+         
 
           set({  
             token: accessToken, 
@@ -181,9 +186,13 @@ export const useAuthStore = create<AuthState>()(
 
           if (navigate) navigate(getRoleRedirectPath(user.role, user.activeMode));
         } catch (error: any) {
-          set({ isLoading: false, error: error.response?.data?.message || "Failed to sign in" });
-          throw error;
-        }
+  set({
+    isLoading: false,
+    error: error.response?.data?.message || error.message || "Failed to sign in"
+  });
+
+  return false;
+}
       },
 
       updatePassword: async (_old, _new) => {

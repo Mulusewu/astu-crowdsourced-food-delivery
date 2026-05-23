@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { apiClient } from "@/api/client/axiosInstance";
 import { ROUTES } from "@/routes/routePaths";
-import { useAuthStore } from "@/store/auth/authStore";
+import { useOrderStore } from "@/store/orders/orderStore"; 
 import type { DelivererProfile } from "@/types/user.types";
 
 export interface Restaurant {
@@ -40,6 +42,10 @@ interface DeliveryDashboardState {
   dashboardOrders: DashboardOrder[];
   isLoading: boolean;
   error: string | null;
+  // gpsIntervalId: number | null;
+
+  // startLiveTracking: () => void;
+  // stopLiveTracking: () => void;
 
   fetchDashboardData: () => Promise<void>;
   toggleActiveStatus: (navigate?: (path: string) => void) => Promise<void>;
@@ -56,7 +62,54 @@ export const useDeliveryDashboardStore = create<DeliveryDashboardState>()(
       dashboardOrders: [],
       isLoading: true,
       error: null,
+      // gpsIntervalId: null,
 
+      // startLiveTracking: () => {
+      //   // Prevent duplicate intervals
+      //   if (get().gpsIntervalId) return;
+
+      //   if (!navigator.geolocation) {
+      //     console.error("Geolocation is not supported by this browser.");
+      //     return;
+      //   }
+
+      //   console.log("📍 [TELEMETRY] Starting live GPS tracking...");
+
+      //   // Fire every 15 seconds
+      //   const intervalId = window.setInterval(() => {
+      //     navigator.geolocation.getCurrentPosition(
+      //       (position) => {
+      //         const { latitude, longitude } = position.coords;
+      //         const { socket } = useOrderStore.getState();
+              
+      //         if (socket && socket.connected) {
+      //           // 1. Emit directly to socket for instant, low-latency relay to Customer
+      //           socket.emit('UPDATE_LOCATION', { lat: latitude, lng: longitude });
+                
+      //           // 2. We could also hit the POST /dispatch/live-location HTTP endpoint 
+      //           // to update the DB for the broadcast engine's BBox math.
+      //           // However, doing both is redundant. We will update the backend SocketManager 
+      //           // to handle the DB update directly to save HTTP overhead.
+      //         }
+      //       },
+      //       (error) => {
+      //         console.error("📍 [TELEMETRY ERROR]:", error.message);
+      //       },
+      //       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      //     );
+      //   }, 15000) as unknown as number;
+
+      //   set({ gpsIntervalId: intervalId });
+      // },
+
+      // stopLiveTracking: () => {
+      //   const { gpsIntervalId } = get();
+      //   if (gpsIntervalId) {
+      //     window.clearInterval(gpsIntervalId);
+      //     set({ gpsIntervalId: null });
+      //     console.log("📍 [TELEMETRY] Stopped live GPS tracking.");
+      //   }
+      // },
       fetchDashboardData: async () => {
         set({ isLoading: true, error: null });
         try {
@@ -145,6 +198,12 @@ export const useDeliveryDashboardStore = create<DeliveryDashboardState>()(
         try {
           // Backend API Call (Strict DB field: isAvailable)
           await apiClient.patch('/users/me/availability', { isAvailable: willBeOnline });
+
+             if (willBeOnline) {
+            get().startLiveTracking();
+          } else {
+            get().stopLiveTracking();
+          }
           
           if (!willBeOnline && navigate) {
             navigate(ROUTES.DELIVERY.OFFLINE);
