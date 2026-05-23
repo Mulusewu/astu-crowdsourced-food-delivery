@@ -6,6 +6,7 @@ export const ROUTES = {
   FORGOT_PASSWORD: "/forgot-password",
   RESET_PASSWORD: "/reset-password/:token",
   VERIFY_EMAIL: "/verify-email/:token",
+  VERIFY_PHONE: "/verify-phone/:token",
   TEST: "/test",
   //===================shared profiles Route=================
 
@@ -18,6 +19,8 @@ export const ROUTES = {
     SEARCH: "/customer/search",
     NOTIFICATIONS: "/customer/notifications",
     SUPPORT: "/customer/support",
+    APPLICATION: "/customer/apply-deliverer",
+
 
     // Restaurant & Food discovery
     RESTAURANT: {

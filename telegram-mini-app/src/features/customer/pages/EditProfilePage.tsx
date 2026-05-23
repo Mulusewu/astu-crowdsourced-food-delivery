@@ -20,22 +20,16 @@ import { Header, SoftInput, ActionButton } from "../components/profileShared";
 import { ROUTES } from "@/routes/routePaths";
 
 const PAYMENT_METHODS = [
+
   { id: "telebirr", label: "Telebirr" },
   { id: "cbe", label: "CBE Birr" },
+
 ];
 
 const editProfileSchema = z.object({
   fullName: z.string().trim().min(2, "Name is too short"),
   phoneNumber: z.string().trim().optional().or(z.literal("")),
-  astuEmail: z
-    .string()
-    .trim()
-    .email("Invalid ASTU email")
-    .min(1, "ASTU email is mandatory")
-    .regex(
-      /^[a-zA-Z0-9._%+-]+@astu\.edu\.et$/,
-      "Please use your university provided email (@astu.edu.et)",
-    ),
+  astuEmail: z.string().trim().email("Invalid ASTU email").min(1, "ASTU email is mandatory").regex(/^[a-zA-Z0-9._%+-]+@astu\.edu\.et$/, "Please use your university provided email (@astu.edu.et)"),
   email: z.string().trim().email("Invalid email").optional().or(z.literal("")),
   defaultLocation: z.string().trim().optional().or(z.literal("")),
 });
@@ -45,19 +39,15 @@ type EditProfileData = z.infer<typeof editProfileSchema>;
 function ReadOnlyField({ label, value }: { label: string; value: string }) {
   return (
     <div className="w-full bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-[20px] px-4 py-3.5">
-      <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400 mb-0.5">
-        {label}
-      </p>
-      <p className="text-[13px] font-semibold text-gray-500 dark:text-gray-400">
-        {value}
-      </p>
+      <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400 mb-0.5">{label}</p>
+      <p className="text-[13px] font-semibold text-gray-500 dark:text-gray-400">{value}</p>
     </div>
   );
 }
 
 export default function CustomerEditProfilePage() {
   const navigate = useNavigate();
-  const { user, updateProfile, isLoading, error, clearError } = useAuthStore();
+  const { user, updateProfile, isLoading } = useAuthStore();
   const cp = user?.customerProfile;
 
   const {
@@ -76,13 +66,10 @@ export default function CustomerEditProfilePage() {
     },
   });
 
-  const [preferredPayment, setPreferredPayment] = useState(
-    cp?.prefferedPaymentMethod ?? "card",
-  );
+  const [preferredPayment, setPreferredPayment] = useState(cp?.prefferedPaymentMethod ?? "card");
   const [success, setSuccess] = useState(false);
 
   const onSubmit = async (data: EditProfileData) => {
-    clearError();
     try {
       await updateProfile({
         fullName: data.fullName,
@@ -97,7 +84,7 @@ export default function CustomerEditProfilePage() {
       setSuccess(true);
       setTimeout(() => navigate(ROUTES.CUSTOMER.PROFILE), 1200);
     } catch {
-      // error is now set in authStore.error and displayed below
+      // error stored in authStore.error
     }
   };
 
@@ -107,21 +94,14 @@ export default function CustomerEditProfilePage() {
         <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center">
           <CheckCircle size={32} className="text-green-500" />
         </div>
-        <h2 className="text-xl font-black text-gray-900 dark:text-white">
-          Profile Updated!
-        </h2>
-        <p className="text-sm text-gray-500">
-          Redirecting back to your profile…
-        </p>
+        <h2 className="text-xl font-black text-gray-900 dark:text-white">Profile Updated!</h2>
+        <p className="text-sm text-gray-500">Redirecting back to your profile…</p>
       </div>
     );
   }
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="bg-[#FDFDFD] dark:bg-gray-950 font-sans flex flex-col pb-10 min-h-screen"
-    >
+    <form onSubmit={handleSubmit(onSubmit)} className="bg-[#FDFDFD] dark:bg-gray-950 font-sans flex flex-col pb-10 min-h-screen">
       <Header title="Edit Profile" showBack />
 
       {/* Avatar */}
@@ -129,18 +109,12 @@ export default function CustomerEditProfilePage() {
         <div className="relative">
           <div className="absolute inset-0 bg-[#F26A1C] rounded-full scale-105" />
           <Avatar className="relative w-24 h-24 border-[3px] border-white dark:border-gray-900 shadow-md">
-            <AvatarImage
-              src={user?.avatarUrl || undefined}
-              className="object-cover"
-            />
+            <AvatarImage src={user?.avatarUrl || undefined} className="object-cover" />
             <AvatarFallback className="bg-[#F26A1C] text-white text-2xl font-bold">
               {user?.fullName?.[0] ?? "C"}
             </AvatarFallback>
           </Avatar>
-          <button
-            type="button"
-            className="absolute bottom-0 right-0 bg-[#F26A1C] p-2 rounded-full text-white border-2 border-white dark:border-gray-900 shadow-sm active:scale-95 transition-transform"
-          >
+          <button type="button" className="absolute bottom-0 right-0 bg-[#F26A1C] p-2 rounded-full text-white border-2 border-white dark:border-gray-900 shadow-sm active:scale-95 transition-transform">
             <Camera size={14} />
           </button>
         </div>
@@ -160,12 +134,11 @@ export default function CustomerEditProfilePage() {
             <label className="text-[11px] font-bold text-gray-500 uppercase px-1 flex items-center gap-1">
               <User size={10} /> Full Name
             </label>
-            <SoftInput {...register("fullName")} placeholder="Your full name" />
-            {errors.fullName && (
-              <p className="text-xs text-red-500 font-semibold px-2">
-                {errors.fullName.message}
-              </p>
-            )}
+            <SoftInput
+              {...register("fullName")}
+              placeholder="Your full name"
+            />
+            {errors.fullName && <p className="text-xs text-red-500 font-semibold px-2">{errors.fullName.message}</p>}
           </div>
 
           <div className="flex flex-col gap-1">
@@ -177,49 +150,33 @@ export default function CustomerEditProfilePage() {
               type="tel"
               placeholder="+251 9XX XXX XXX"
             />
-            {errors.phoneNumber && (
-              <p className="text-xs text-red-500 font-semibold px-2">
-                {errors.phoneNumber.message}
-              </p>
-            )}
+            {errors.phoneNumber && <p className="text-xs text-red-500 font-semibold px-2">{errors.phoneNumber.message}</p>}
           </div>
 
           <div className="flex flex-col gap-1">
             <label className="text-[11px] font-bold text-gray-500 uppercase px-1 flex items-center gap-1">
               <BookOpen size={10} /> ASTU Email
-              <span className="text-[9px] font-black text-[#F26A1C] normal-case ml-1">
-                (Mandatory)
-              </span>
+              <span className="text-[9px] font-black text-[#F26A1C] normal-case ml-1">(Mandatory)</span>
             </label>
             <SoftInput
               {...register("astuEmail")}
               type="email"
               placeholder="your.name@astu.edu.et"
             />
-            {errors.astuEmail && (
-              <p className="text-xs text-red-500 font-semibold px-2">
-                {errors.astuEmail.message}
-              </p>
-            )}
+            {errors.astuEmail && <p className="text-xs text-red-500 font-semibold px-2">{errors.astuEmail.message}</p>}
           </div>
 
           <div className="flex flex-col gap-1">
             <label className="text-[11px] font-bold text-gray-500 uppercase px-1 flex items-center gap-1">
               <Mail size={10} /> Personal Email
-              <span className="text-[9px] font-normal text-gray-400 normal-case ml-1">
-                (Optional)
-              </span>
+              <span className="text-[9px] font-normal text-gray-400 normal-case ml-1">(Optional)</span>
             </label>
             <SoftInput
               {...register("email")}
               type="email"
               placeholder="your@email.com"
             />
-            {errors.email && (
-              <p className="text-xs text-red-500 font-semibold px-2">
-                {errors.email.message}
-              </p>
-            )}
+            {errors.email && <p className="text-xs text-red-500 font-semibold px-2">{errors.email.message}</p>}
           </div>
         </div>
 
@@ -237,11 +194,7 @@ export default function CustomerEditProfilePage() {
               {...register("defaultLocation")}
               placeholder="e.g. Bole Atlas, Addis Ababa"
             />
-            {errors.defaultLocation && (
-              <p className="text-xs text-red-500 font-semibold px-2">
-                {errors.defaultLocation.message}
-              </p>
-            )}
+            {errors.defaultLocation && <p className="text-xs text-red-500 font-semibold px-2">{errors.defaultLocation.message}</p>}
           </div>
 
           {/* Preferred Payment Method */}
@@ -255,11 +208,10 @@ export default function CustomerEditProfilePage() {
                   key={pm.id}
                   type="button"
                   onClick={() => setPreferredPayment(pm.id)}
-                  className={`py-3 rounded-[16px] text-[13px] font-bold transition-all active:scale-[0.98] border ${
-                    preferredPayment === pm.id
+                  className={`py-3 rounded-[16px] text-[13px] font-bold transition-all active:scale-[0.98] border ${preferredPayment === pm.id
                       ? "bg-[#FFF1E8] border-[#F26A1C] text-[#F26A1C]"
                       : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-500"
-                  }`}
+                    }`}
                 >
                   {pm.label}
                 </button>
@@ -278,14 +230,8 @@ export default function CustomerEditProfilePage() {
               <Info size={12} className="text-gray-400" />
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <ReadOnlyField
-                label="Total Orders"
-                value={String(cp.totalOrders)}
-              />
-              <ReadOnlyField
-                label="Rating"
-                value={Number(cp.rating).toFixed(1) + " ★"}
-              />
+              <ReadOnlyField label="Total Orders" value={String(cp.totalOrders)} />
+              <ReadOnlyField label="Rating" value={cp.rating + " ★"} />
               <ReadOnlyField
                 label="Saved Restaurants"
                 value={String(cp.bookmarkRestaurants?.length ?? 0)}
@@ -301,18 +247,7 @@ export default function CustomerEditProfilePage() {
           </div>
         )}
 
-        {error && (
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-[16px] px-4 py-3">
-            <p className="text-xs text-red-600 dark:text-red-400 font-semibold text-center">
-              {error}
-            </p>
-          </div>
-        )}
-
-        <ActionButton
-          type="submit"
-          disabled={!isValid || isSubmitting || isLoading}
-        >
+        <ActionButton type="submit" disabled={!isValid || isSubmitting || isLoading}>
           {isLoading || isSubmitting ? "Saving…" : "Save Changes"}
         </ActionButton>
       </div>

@@ -1,56 +1,77 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Eye, EyeOff, User, Store } from "lucide-react";
 import { useAuthStore } from "@/store/auth/authStore";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
-const signinSchema = z.object({
-  email: z
+// const signinSchema = z.object({
+//   identifier: z.string().trim().min(3, "Please enter your Email or Phone Number"),
+//   password: z.string().min(1, "Password Is Required!"),
+// });
+
+const studentSchema = z.object({
+  identifier: z
     .string()
     .trim()
-    .email("Please Enter A Valid Email Address!")
+    .toLowerCase()
     .regex(/^[a-zA-Z0-9._%+-]+@astu\.edu\.et$/, "Please use your university provided email (@astu.edu.et)"),
   password: z.string().min(1, "Password Is Required!"),
 });
 
-type SigninFormData = z.infer<typeof signinSchema>;
+const vendorSchema = z.object({
+  identifier: z
+    .string()
+    .trim()
+    .regex(/^(09|07)\d{8}$/, "Must be a valid Ethiopian phone number (e.g., 0911...)"),
+  password: z.string().min(1, "Password Is Required!"),
+});
+
+type SigninFormData = z.infer<typeof studentSchema | typeof vendorSchema>;
 
 export default function SigninForm() {
-  const { signin, isLoading, clearError } = useAuthStore();
+  const { signin, isLoading, clearError, error: storeError } = useAuthStore();
+  const navigate = useNavigate();
 
   const [showPassword, setShowPassword] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
+  // NEW: State to manage the active login mode
+  const [loginMode, setLoginMode] = useState<"student" | "vendor">("student");
+
   const {
     register,
+    reset,
     handleSubmit,
     formState: { errors, isValid, isSubmitting },
-  } = useForm<SigninFormData>({
-    resolver: zodResolver(signinSchema),
+  } = useForm({
+    resolver: zodResolver(loginMode === "student" ? studentSchema : vendorSchema),
     mode: "onChange",
   });
+
+  useEffect(() => {
+    reset({ identifier: "", password: "" });
+    setApiError(null);
+    clearError();
+  }, [loginMode, clearError]);
+
 
   const onSubmit = async (data: SigninFormData) => {
     setApiError(null);
     clearError();
 
     try {
-      await signin(data);
+      await signin({ ...data, intendedMode: loginMode }, navigate);
+      console.log("signin form");
     } catch (err: any) {
-      const errorMsg = err.message || "";
-      if (errorMsg.toLowerCase().includes("password")) {
-        setApiError("Incorrect Password!");
-      } else {
-        setApiError("An error occurred during sign in. Please try again.");
-        console.error("Sign in error:", err);
-      }
+      const errorMsg = err.response?.data?.message || err.message || "An error occurred during sign in.";
+      setApiError(errorMsg);
     }
   };
 
   return (
-    <div className="min-h-screen bg-white font-sans flex flex-col items-center pt-16">
+    <div className="min-h-screen bg-white dark:bg-gray-900 font-sans flex flex-col items-center pt-16">
       {/* Dynamic Keyframes for the moving effect */}
       <style>{`
         @keyframes ride {
@@ -73,10 +94,10 @@ export default function SigninForm() {
         {/* LOGO SECTION */}
         <div className="relative flex items-center justify-center w-full mb-16 mt-4 pr-6">
           <div className="flex flex-col items-start mr-2">
-            <span className="text-[44px] font-black text-black leading-[0.8] tracking-tight drop-shadow-md">
+            <span className="text-[44px] font-black text-black dark:text-white leading-[0.8] tracking-tight drop-shadow-md">
               ASTU
             </span>
-            <span className="text-[52px] font-black text-[#F26A1C] leading-[0.8] tracking-tight drop-shadow-md">
+            <span className="text-[52px] font-black text-[#F26A1C] dark:text-[#F26A1C] leading-[0.8] tracking-tight drop-shadow-md">
               EATS
             </span>
           </div>
@@ -146,31 +167,59 @@ export default function SigninForm() {
           </div>
         </div>
 
+ <div className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-100 p-1 rounded-[14px] flex mb-8">
+          <button
+            type="button"
+            onClick={() => setLoginMode("student")}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-[14px] font-bold rounded-[10px] transition-all ${
+              loginMode === "student"
+                ? "bg-white dark:bg-gray-800 text-[#F26A1C] dark:text-[#ff650b] shadow-sm ring-1 ring-gray-200/50"
+                : "text-gray-400 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            }`}
+          >
+            <User size={16} strokeWidth={loginMode === "student" ? 2.5 : 2} />
+            Student
+          </button>
+          <button
+            type="button"
+            onClick={() => setLoginMode("vendor")}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-[14px] font-bold rounded-[10px] transition-all ${
+              loginMode === "vendor"
+                ? "bg-white dark:bg-gray-800 text-[#F26A1C] dark:text-[#ff650b] shadow-sm ring-1 ring-gray-200/50"
+                : "text-gray-400 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            }`}
+          >
+            <Store size={16} strokeWidth={loginMode === "vendor" ? 2.5 : 2} />
+            Vendor
+          </button>
+        </div>
+
         {/* AUTH FORM */}
         <form onSubmit={handleSubmit(onSubmit)} className="w-full space-y-5">
           {/* Email Address */}
           <div className="space-y-2">
-            <label className="text-[17px] font-bold text-gray-900 ml-1">
-              Email Address
+            <label className="text-[17px] font-bold text-gray-900 dark:text-gray-300 ml-1">
+              {loginMode === "student" ? "ASTU Email" : "Phone Number"}
+
             </label>
             <input
-              type="email"
-              {...register("email")}
-              placeholder="name.surname@astu.edu.et"
-              className={`w-full h-14 bg-white border ${
-                errors.email ? "border-red-500" : "border-gray-200"
-              } rounded-[10px] px-5 text-[15px] font-medium text-gray-900 placeholder:text-gray-300 focus:border-[#F26A1C] focus:outline-none transition-all`}
+              type={loginMode === "student" ? "email" : "tel"}
+              {...register("identifier")}
+              placeholder={loginMode === "student" ? "name.surname@astu.edu.et" : "0911223344"}
+              className={`w-full h-14 bg-white dark:bg-gray-800 border ${
+                errors.identifier ? "border-red-500" : "border-gray-200 dark:border-gray-600"
+              } rounded-[10px] px-5 text-[15px] font-medium text-gray-900 dark:text-gray-300 placeholder:text-gray-300 dark:placeholder:text-gray-500 focus:border-[#F26A1C] focus:outline-none transition-all`}
             />
-            {errors.email && (
+            {errors.identifier && (
               <p className="text-xs text-red-500 font-semibold ml-1">
-                {errors.email.message}
+                {errors.identifier.message}
               </p>
             )}
           </div>
 
           {/* Password */}
           <div className="space-y-2">
-            <label className="text-[17px] font-bold text-gray-900 ml-1">
+            <label className="text-[17px] font-bold text-gray-900 dark:text-gray-300 ml-1">
               Password
             </label>
             <div className="relative">
@@ -178,9 +227,9 @@ export default function SigninForm() {
                 type={showPassword ? "text" : "password"}
                 {...register("password")}
                 placeholder="***********"
-                className={`w-full h-14 bg-white border ${
-                  errors.password ? "border-red-500" : "border-gray-200"
-                } rounded-[10px] px-5 text-[15px] font-medium text-gray-900 placeholder:text-gray-300 focus:border-[#F26A1C] focus:outline-none transition-all`}
+                className={`w-full h-14 bg-white dark:bg-gray-800 border ${
+                  errors.password ? "border-red-500" : "border-gray-200 dark:border-gray-600"
+                } rounded-[10px] px-5 text-[15px] font-medium text-gray-900 dark:text-gray-300 placeholder:text-gray-300 dark:placeholder:text-gray-500 focus:border-[#F26A1C] focus:outline-none transition-all`}
               />
               <button
                 type="button"
@@ -195,9 +244,9 @@ export default function SigninForm() {
                 {errors.password.message}
               </p>
             )}
-            {apiError && (
+            {apiError || storeError && (
               <p className="text-xs text-red-500 font-semibold ml-1">
-                {apiError}
+                {apiError || storeError}
               </p>
             )}
             <div className="flex justify-end mt-2">

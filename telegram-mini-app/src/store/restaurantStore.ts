@@ -67,6 +67,7 @@ interface RestaurantState {
   fetchRestaurants: (filters?: { searchQuery?: string; location?: string; sortBy?: string }) => Promise<void>;
   fetchPopularFoods: (filters?: { searchQuery?: string; location?: string; priceRange?: string }) => Promise<void>;
   fetchRestaurantDetails: (id: string) => Promise<void>;
+  toggleRestaurantStatus: (id: string, status: boolean) => Promise<void>;
   clearCurrentRestaurant: () => void;
   clearError: () => void;
 }
@@ -121,7 +122,7 @@ const mapBackendMenuItem = (item: any, restaurantName: string, location: string)
 
 
 
-const resId = "699a2770-c44b-4521-aa91-1916269a10d9";
+const resId = "3d5c9101-df75-46ac-8700-ce4062be6990";
 
 export const useRestaurantStore = create<RestaurantState>((set) => ({
   restaurants: [],
@@ -204,6 +205,17 @@ export const useRestaurantStore = create<RestaurantState>((set) => ({
       set({ currentRestaurant: mappedRest, isLoading: false });
     } catch (error: any) {
       set({ error: "Failed to load restaurant details", isLoading: false, currentRestaurant: null });
+    }
+  },
+
+  toggleRestaurantStatus: async (id: string, status: boolean) => {
+    
+    set({ isLoading: true, error: null });
+    try {
+      await apiClient.patch(`/restaurants/${id}/status`, { isOpen: status });
+      set({ isLoading: false });
+    } catch (error: any) {
+      set({ error: "Failed to update restaurant status", isLoading: false });
     }
   },
 

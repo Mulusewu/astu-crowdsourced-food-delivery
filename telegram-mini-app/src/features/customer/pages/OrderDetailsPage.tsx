@@ -59,7 +59,7 @@ export default function OrderDetailsPage() {
 
     // ── Derived state ──────────────────────────────────────────────────────────
     const isCancellable = order
-        ? ["CREATED", "AWAITING_ACCEPT", "ASSIGNED", "AWAITING_PAYMENT"].includes(order.status)
+        ? ["CREATED", "AWAITING_ACCEPT","AWAITING_VENDOR", "ASSIGNED", "AWAITING_PAYMENT"].includes(order.status)
         : false;
     
     // Notice: isCompletable is REMOVED. Customer cannot click complete.

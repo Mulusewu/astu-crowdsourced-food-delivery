@@ -38,14 +38,14 @@ function BottomNav() {
           center: { id: "active", icon: Package, path: ROUTES.DELIVERY.ACTIVE.LIST, label: "Deliveries" }
         };
       case "VENDOR_STAFF":
-        return {
+        return { 
           items: [
-            { id: "home", icon: Home, path: "/vendor/dashboard", label: "Home" },
-            { id: "menu", icon: LayoutList, path: "/vendor/menu", label: "Menu" },
-            { id: "history", icon: ClipboardList, path: "/vendor/history", label: "History" },
-            { id: "profile", icon: User, path: "/profile", label: "Profile" },
+            { id: "home", icon: Home, path: ROUTES.VENDOR.DASHBOARD, label: "Home" },
+            { id: "menu", icon: LayoutList, path: ROUTES.VENDOR.MENU.LIST, label: "Menu" },
+            { id: "history", icon: ClipboardList, path: ROUTES.VENDOR.ORDERS.HISTORY, label: "History" },
+            { id: "profile", icon: User, path: ROUTES.VENDOR.PROFILE, label: "Profile" },
           ],
-          center: { id: "orders", icon: Bell, path: "/vendor/orders/active", label: "Orders" }
+          center: { id: "orders", icon: Bell, path: ROUTES.VENDOR.ORDERS.LIST, label: "Orders" }
         };
       case "CUSTOMER":
       default:

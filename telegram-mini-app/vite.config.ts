@@ -35,8 +35,10 @@ export default defineConfig({
 
   // Optional: Faster dev server feedback
   server: {
-    // hmr: true,
-    host: '0.0.0.0',
-    allowedHosts: true
+    hmr: true,
+    // host: "0.0.0.0", // Allow access from Telegram WebView
   },
 });
+
+
+// 10.49.76.126

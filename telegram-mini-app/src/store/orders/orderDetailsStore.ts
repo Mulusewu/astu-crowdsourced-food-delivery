@@ -84,13 +84,28 @@ export const useOrderDetailsStore = create<OrderDetailsState>((set, get) => ({
       // 1. Call the backend Atomic Lock with orderid as body
       await apiClient.post(`/dispatch/${order.id}/accept`, {orderId : order.id});
       
-      // 2. Refresh the global Order Store to fetch the new Active Delivery
-      await useOrderStore.getState().fetchActiveOrders();
+      // // 2. Refresh the global Order Store to fetch the new Active Delivery
+      // await useOrderStore.getState().fetchActiveOrders();
+
+      useOrderStore.setState((s) => ({
+        activeOrders: [{
+          id: order.id,
+          shortId: order.shortId,
+          status: 'ASSIGNED',
+          totalAmount: order.totalAmount,
+          customer: { user: { phoneNumber: "Hidden until Picked Up" } },
+          items: order.items,
+          createdAt: new Date().toISOString()
+        }]
+      }));
 
       set({ isAccepting: false });
       
       // 3. Navigate to the waiting room
       navigate(ROUTES.DELIVERY.ACTIVE.DETAILS.replace(':orderId', order.id));
+
+      useOrderStore.getState().fetchActiveOrders().catch(console.error);
+
       
     } catch (e: any) {
       set({ error: e.response?.data?.message || "Failed to accept. Order may have been taken.", isAccepting: false });
