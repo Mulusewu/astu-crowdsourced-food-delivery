@@ -130,7 +130,6 @@ export default function CustomerProfilePage() {
               <Star size={14} className="text-[#F26A1C]" />
             </div>
             <p className="text-[18px] font-black text-gray-900 dark:text-white">
-              
               {profile.rating}
             </p>
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mt-0.5">
@@ -153,10 +152,7 @@ export default function CustomerProfilePage() {
 
       {/* ─── Contact info card ─── */}
       <div className="mx-5 mt-5 bg-white dark:bg-gray-900 rounded-[24px] shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:border dark:border-gray-800 p-2">
-        <div
-          className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800 cursor-pointer active:bg-gray-50 dark:active:bg-gray-800/50 transition-colors rounded-t-[20px]"
-
-        >
+        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800 cursor-pointer active:bg-gray-50 dark:active:bg-gray-800/50 transition-colors rounded-t-[20px]">
           <div className="flex items-center gap-3">
             <Mail size={20} className="text-gray-500" strokeWidth={1.5} />
             <div>
@@ -170,9 +166,13 @@ export default function CustomerProfilePage() {
           </div>
           <div className="flex items-center gap-2">
             {/* {user?.isEmailVerified && ( */}
-            {user?.status === "ACTIVE" && (
+            {user?.isEmailVerified === true ? (
               <span className="rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-bold text-green-600">
                 Verified
+              </span>
+            ) : (
+              <span className="rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-bold text-red-600">
+                Not Verified
               </span>
             )}
             {/* <ChevronRight size={18} className="text-gray-400" /> */}
@@ -181,7 +181,7 @@ export default function CustomerProfilePage() {
 
         <div
           className="flex items-center justify-between p-4 cursor-pointer active:bg-gray-50 dark:active:bg-gray-800/50 transition-colors rounded-b-[20px]"
-        // onClick={() => navigate(ROUTES.CUSTOMER.EDIT_PROFILE)}
+          // onClick={() => navigate(ROUTES.CUSTOMER.EDIT_PROFILE)}
         >
           <div className="flex items-center gap-3">
             <Phone size={20} className="text-gray-500" strokeWidth={1.5} />
@@ -195,10 +195,14 @@ export default function CustomerProfilePage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {user?.status === "ACTIVE" && (
-            // {user?.isPhoneVerified && (
+            {user?.status === "ACTIVE" && user?.isPhoneVerified === true ? (
+              // {user?.isPhoneVerified && (
               <span className="rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-bold text-green-600">
                 Verified
+              </span>
+            ) : (
+              <span className="rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-bold text-red-600">
+                Not Verified
               </span>
             )}
             {/* <ChevronRight size={18} className="text-gray-400" /> */}
@@ -214,10 +218,11 @@ export default function CustomerProfilePage() {
           return (
             <div
               key={item.label}
-              className={`flex items-center justify-between p-4 cursor-pointer active:bg-gray-50 dark:active:bg-gray-800/50 transition-colors ${isLast
-                ? "rounded-b-[20px]"
-                : "border-b border-gray-100 dark:border-gray-800"
-                } ${index === 0 ? "rounded-t-[20px]" : ""}`}
+              className={`flex items-center justify-between p-4 cursor-pointer active:bg-gray-50 dark:active:bg-gray-800/50 transition-colors ${
+                isLast
+                  ? "rounded-b-[20px]"
+                  : "border-b border-gray-100 dark:border-gray-800"
+              } ${index === 0 ? "rounded-t-[20px]" : ""}`}
               onClick={item.onClick}
             >
               <div className="flex items-center gap-3">

@@ -16,10 +16,13 @@ export interface KitchenOrder {
 
 interface VendorOrderState {
   kitchenQueue: KitchenOrder[];
+  orderHistory: KitchenOrder[];
   isLoading: boolean;
+  isHistoryLoading: boolean;
   socket: Socket | null;
 
   fetchKitchenQueue: () => Promise<void>;
+  fetchOrderHistory: () => Promise<void>;
   updateOrderStatus: (orderId: string, status: string, estimatedPrepTimeMins?: number) => Promise<void>;
   
   acceptOrder: (orderId: string, estimatedPrepTimeMins?: number) => Promise<void>;
@@ -31,7 +34,9 @@ interface VendorOrderState {
 
 export const useVendorOrderStore = create<VendorOrderState>((set, get) => ({
   kitchenQueue: [],
+  orderHistory: [],
   isLoading: false,
+  isHistoryLoading: false,
   socket: null,
 
   fetchKitchenQueue: async () => {
@@ -57,6 +62,45 @@ export const useVendorOrderStore = create<VendorOrderState>((set, get) => ({
       set({ kitchenQueue: queue, isLoading: false });
     } catch (error) {
       set({ isLoading: false });
+    }
+  },
+
+  fetchOrderHistory: async () => {
+    set({ isHistoryLoading: true });
+    try {
+      const { user } = useAuthStore.getState();
+      const restaurantId = user?.vendorProfile?.restaurantId;
+      if (!restaurantId) return set({ isHistoryLoading: false });
+
+      // Usually there is a history endpoint, but if not we can use the generic one or assume an endpoint:
+      // We will hit /orders?restaurantId=X&status=COMPLETED,CANCELLED 
+      // or if backend has a dedicated one, but let's try the generic /orders with vendor filter
+      const res = await apiClient.get(`/orders`, {
+        params: {
+          restaurantId,
+          status: ["CANCELLED", "COMPLETED"]
+        }
+      });
+      console.log(res);
+      
+      
+      const orders = Array.isArray(res.data.data?.orders) ? res.data.data.orders : res.data.data || res.data.orders;
+      
+      const history = (orders || []).map((o: any) => ({
+        id: o.id,
+        shortId: o.shortId,
+        status: o.status,
+        items: o.items?.map((i: any) => ({ name: i.product?.name || 'Item', quantity: i.quantity, imageUrl: i.product?.imageUrl })) || [],
+        delivererName: o.deliverer?.user?.fullName || "No Deliverer",
+        customerName: o.customer?.user?.fullName || "Customer",
+        createdAt: o.createdAt,
+        estimatedReadyAt: o.estimatedReadyAt
+      }));
+
+      set({ orderHistory: history, isHistoryLoading: false });
+    } catch (error) {
+      console.error("Failed to fetch order history", error);
+      set({ isHistoryLoading: false });
     }
   },
 

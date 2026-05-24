@@ -2,6 +2,14 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Star, Clock, Package, Mail, Check, X, AlertCircle, Loader2 } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetFooter
+} from "@/components/ui/sheet";
 
 import { useAuthStore } from "@/store/auth/authStore";
 import { useVendorDashboardStore } from "@/store/vendor/vendorDashboardStore";
@@ -10,7 +18,6 @@ import { useRestaurantStore } from "@/store/restaurantStore";
 import { toast } from "sonner";
 import BottomNav from "@/components/common/BottomNav";
 import { ROUTES } from "@/routes/routePaths";
-
 
 function firstName(fullName: string) {
   return fullName.split(/\s+/)[0] ?? fullName;
@@ -33,6 +40,7 @@ export default function VendorDashboard() {
   const { currentRestaurant, fetchRestaurantDetails, toggleRestaurantStatus } = useRestaurantStore();
 
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const [previewOrder, setPreviewOrder] = useState<KitchenOrder | null>(null);
 
   
   useEffect(() => {
@@ -161,18 +169,22 @@ export default function VendorDashboard() {
   const isOpen = currentRestaurant?.isOpen ?? false;
 
    const PremiumOrderCard = ({ 
-    order, badgeText, badgeColor, primaryActionText, onPrimaryAction, onSecondaryAction, isProcessing, disabledText
+    order, badgeText, badgeColor, primaryActionText, onPrimaryAction, onSecondaryAction, isProcessing, disabledText, onClick
   }: { 
     order: KitchenOrder, badgeText: string, badgeColor: string, 
     primaryActionText: string, onPrimaryAction: () => void, 
-    onSecondaryAction?: () => void, isProcessing: boolean, disabledText?: string 
+    onSecondaryAction?: () => void, isProcessing: boolean, disabledText?: string,
+    onClick?: () => void
   }) => {
     const timeElapsedMins = Math.round((new Date().getTime() - new Date(order.createdAt).getTime()) / 60000);
     const firstImage = order.items?.[0]?.imageUrl || "https://images.unsplash.com/photo-1544025162-831e5088eb7e?w=200";
     const totalItems = order.items.reduce((acc, i) => acc + i.quantity, 0);
 
     return (
-      <div className="relative flex flex-col items-center bg-white rounded-[32px] pt-14 pb-5 px-3 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 group hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-500">
+      <div 
+        onClick={onClick}
+        className={`relative flex flex-col items-center bg-white rounded-[32px] pt-14 pb-5 px-3 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 group transition-all duration-500 ${onClick ? "cursor-pointer hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)]" : ""}`}
+      >
         <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-28 h-28 rounded-full border-[6px] border-white shadow-xl overflow-hidden z-10 transition-transform group-hover:scale-110 duration-500">
           <img src={firstImage} alt={`Order ${order.shortId}`} className="w-full h-full object-cover" />
         </div>
@@ -199,7 +211,7 @@ export default function VendorDashboard() {
         <div className="mt-5 w-full flex gap-2">
           {onSecondaryAction && (
             <button 
-              onClick={onSecondaryAction}
+              onClick={(e) => { e.stopPropagation(); onSecondaryAction(); }}
               disabled={isProcessing}
               className="flex items-center justify-center w-12 bg-white text-red-500 border border-red-100 rounded-2xl active:scale-95 transition-all disabled:opacity-50"
             >
@@ -209,7 +221,7 @@ export default function VendorDashboard() {
           
           {/* REFINED: Dynamic button that acts as a disabled status badge if no action is permitted */}
           <button 
-            onClick={onPrimaryAction}
+            onClick={(e) => { e.stopPropagation(); onPrimaryAction(); }}
             disabled={isProcessing || !!disabledText}
             className={`flex-1 text-xs font-black py-3 rounded-2xl shadow-[0_10px_20px_rgba(242,106,28,0.2)] active:scale-95 transition-all flex items-center justify-center uppercase tracking-widest disabled:shadow-none ${
               disabledText ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-primary text-white hover:bg-primary/90"
@@ -302,6 +314,7 @@ export default function VendorDashboard() {
                 onPrimaryAction={() => handleAccept(order.id)}
                 onSecondaryAction={() => handleReject(order.id)}
                 isProcessing={processingId === order.id}
+                onClick={() => setPreviewOrder(order)}
               />
             ))}
           </div>
@@ -389,6 +402,73 @@ export default function VendorDashboard() {
       </div>
 
       <BottomNav />
+
+      {/* Order Details Preview Sheet */}
+      <Sheet open={!!previewOrder} onOpenChange={(open) => !open && setPreviewOrder(null)} modal={false}>
+        <SheetContent side="bottom" className="rounded-t-[32px] pb-8 px-6 pt-6 bg-gray-50 flex flex-col gap-4 max-h-[85vh] sm:max-w-lg sm:mx-auto sm:border-x sm:border-gray-200">
+          {previewOrder && (
+            <>
+              <SheetHeader className="text-left pb-2 border-b border-gray-200">
+                <SheetTitle className="text-2xl font-black text-gray-900 flex items-center justify-between">
+                  <span>Order #{previewOrder.shortId}</span>
+                  <span className="text-[10px] font-bold text-orange-600 bg-orange-100 px-3 py-1 rounded-full uppercase tracking-wide">
+                    {previewOrder.status.replace(/_/g, ' ')}
+                  </span>
+                </SheetTitle>
+                <SheetDescription className="text-sm font-medium text-gray-500">
+                  Customer: {previewOrder.customerName}
+                </SheetDescription>
+              </SheetHeader>
+
+              <div className="flex-1 overflow-y-auto flex flex-col gap-3 py-2 -mx-2 px-2">
+                <h3 className="font-bold text-gray-800 text-sm">Order Items</h3>
+                {previewOrder.items.map((item, idx) => (
+                  <div key={idx} className="bg-white rounded-2xl p-3 shadow-[0_2px_10px_rgb(0,0,0,0.02)] border border-gray-100 flex items-center gap-4">
+                    <div className="w-14 h-14 shrink-0 relative">
+                      <img 
+                        src={item.imageUrl || "https://images.unsplash.com/photo-1544025162-831e5088eb7e?w=200"} 
+                        alt={item.name} 
+                        className="w-full h-full object-cover rounded-xl shadow-sm border border-gray-50"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-bold text-gray-900 leading-tight text-sm">{item.name}</h4>
+                      <div className="mt-1 flex items-center gap-2">
+                        <span className="text-xs font-black text-[#F26A1C] bg-orange-50 px-2 py-0.5 rounded-md">x{item.quantity}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {previewOrder.status === "AWAITING_VENDOR" && (
+                <SheetFooter className="flex gap-4 mt-2">
+                  <button 
+                    onClick={() => {
+                      handleAccept(previewOrder.id);
+                      setPreviewOrder(null);
+                    }}
+                    disabled={processingId === previewOrder.id}
+                    className="flex-1 bg-[#F26A1C] text-white font-bold py-3.5 rounded-2xl shadow-[0_10px_20px_rgba(242,106,28,0.2)] hover:bg-[#d95a14] active:scale-95 transition-all flex justify-center items-center"
+                  >
+                    {processingId === previewOrder.id ? <Loader2 className="w-5 h-5 animate-spin" /> : "Accept Order"}
+                  </button>
+                  <button 
+                    onClick={() => {
+                      handleReject(previewOrder.id);
+                      setPreviewOrder(null);
+                    }}
+                    disabled={processingId === previewOrder.id}
+                    className="flex-1 bg-white text-red-500 font-bold py-3.5 rounded-2xl border-2 border-red-100 hover:bg-red-50 active:scale-95 transition-all flex justify-center items-center gap-2"
+                  >
+                    {processingId === previewOrder.id ? <Loader2 className="w-5 h-5 animate-spin" /> : <><X size={18} /> Reject</>}
+                  </button>
+                </SheetFooter>
+              )}
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

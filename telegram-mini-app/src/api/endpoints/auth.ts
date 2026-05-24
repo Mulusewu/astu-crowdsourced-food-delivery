@@ -8,6 +8,8 @@ export const authApi = {
       password: data.password
     };
     const response = await apiClient.post("/auth/login", payload);
+    console.log('User payloadd', payload);
+    
     return response.data;
   },
 

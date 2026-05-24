@@ -113,9 +113,9 @@ const VendorOrderStatusPage = lazy(
 // const VendorCancelledOrdersPage = lazy(
 //   () => import("@/features/vendor3/pages/CancelledOrdersPage"),
 // );
-// const VendorOrderHistoryPage = lazy(
-//   () => import("@/features/vendor3/pages/OrderHistoryPage"),
-// );
+const VendorOrderHistoryPage = lazy(
+  () => import("@/features/vendor3/pages/OrderHistoryPage"),
+);
 
 // Order Actions
 // const VendorAcceptOrderPage = lazy(
@@ -210,7 +210,7 @@ export const vendorRoutes: RouteGroup[] = [
     path: ROUTES.VENDOR.DASHBOARD,
     element: <VendorDashboard />,
     roles: [UserRoles.VENDOR_STAFF],
-  }, 
+  },
 
   {
     path: ROUTES.VENDOR.SIGNUP,
@@ -387,11 +387,11 @@ export const vendorRoutes: RouteGroup[] = [
   //     element: <VendorCancelledOrdersPage />,
   //     roles: [UserRole.VENDOR_STAFF],
   //   },
-  //   {
-  //     path: ROUTES.VENDOR.ORDERS.HISTORY,
-  //     element: <VendorOrderHistoryPage />,
-  //     roles: [UserRole.VENDOR_STAFF],
-  //   },
+  {
+    path: ROUTES.VENDOR.ORDERS.HISTORY,
+    element: <VendorOrderHistoryPage />,
+    roles: [UserRoles.VENDOR_STAFF],
+  },
 
   // ==================== ORDER ACTIONS ====================
   //   {
@@ -483,22 +483,22 @@ export const vendorRoutes: RouteGroup[] = [
 
   // ==================== SETTINGS ====================
   {
-    path: ROUTES.VENDOR.SETTINGS.PROFILE,
+    path: ROUTES.VENDOR.PROFILE.GENERAL,
     element: <VendorProfilePage />,
     roles: [UserRoles.VENDOR_STAFF],
   },
   {
-    path: ROUTES.VENDOR.SETTINGS.EDIT_PROFILE,
+    path: ROUTES.VENDOR.PROFILE.EDIT_PROFILE,
     element: <VendorEditProfilePage />,
     roles: [UserRoles.VENDOR_STAFF],
   },
   {
-    path: ROUTES.VENDOR.SETTINGS.CHANGE_PASSWORD,
+    path: ROUTES.VENDOR.PROFILE.CHANGE_PASSWORD,
     element: <VendorChangePasswordPage />,
     roles: [UserRoles.VENDOR_STAFF],
   },
   {
-    path: ROUTES.VENDOR.SETTINGS.REPORT_ISSUE,
+    path: ROUTES.VENDOR.PROFILE.REPORT_ISSUE,
     element: <VendorReportIssuePage />,
     roles: [UserRoles.VENDOR_STAFF],
   },

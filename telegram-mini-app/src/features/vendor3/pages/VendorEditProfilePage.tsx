@@ -1,20 +1,21 @@
 import { useState, useRef } from "react";
-import { ArrowLeft, Camera } from "lucide-react";
+import { ArrowLeft, Camera, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useVendorStore } from "@/store/vendorStore";
 import { useAuthStore } from "@/store/auth/authStore";
 
 export default function VendorEditProfilePage() {
   const navigate = useNavigate();
-  const { user, updateAvatar } = useAuthStore();
-  const { vendor, updateVendor } = useVendorStore();
+  const { user, updateProfile } = useAuthStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
-    businessName: vendor?.businessName || "Kaldi's Coffee",
-    phone: vendor?.phone || "+251911789012",
+    businessName: user?.fullName || "Kaldi's Coffee",
+    phone: user?.phoneNumber || "+251911789012",
     address: "Bole Gate", // Using a dummy default based on the design
   });
+
+  const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -24,22 +25,36 @@ export default function VendorEditProfilePage() {
         return;
       }
       const reader = new FileReader();
-      reader.onloadend = () => {
+      reader.onloadend = async () => {
         const base64String = reader.result as string;
-        updateAvatar(base64String);
-        updateVendor({ avatar: base64String });
+        setIsUploadingImage(true);
+        try {
+          await updateProfile({ avatarUrl: base64String });
+        } catch (err) {
+          console.error("Failed to update avatar", err);
+          alert("Failed to update profile picture.");
+        } finally {
+          setIsUploadingImage(false);
+        }
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleSave = () => {
-    updateVendor({
-      businessName: formData.businessName,
-      phone: formData.phone,
-    });
-    // Assuming address goes somewhere too eventually
-    navigate(-1);
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      await updateProfile({
+        fullName: formData.businessName,
+        phoneNumber: formData.phone,
+      });
+      navigate(-1);
+    } catch (err) {
+      console.error("Failed to update profile", err);
+      alert("Failed to save changes.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -70,26 +85,33 @@ export default function VendorEditProfilePage() {
       <div className="px-4 py-2">
         {/* Avatar Section */}
         <div className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 flex flex-col items-center justify-center mb-5">
-          <div className="w-24 h-24 rounded-full overflow-hidden bg-orange-100 mb-4 border-2 border-white shadow-sm flex items-center justify-center">
-            {user?.avatar || vendor?.avatar ? (
+          <div className="relative w-24 h-24 rounded-full overflow-hidden bg-orange-100 mb-4 border-2 border-white shadow-sm flex items-center justify-center group">
+            {user?.avatarUrl ? (
               <img
-                src={user.avatar || vendor?.avatar}
-                alt={vendor?.businessName}
-                className="w-full h-full object-cover"
+                src={user.avatarUrl}
+                alt={user.fullName}
+                className={`w-full h-full object-cover transition-opacity ${isUploadingImage ? "opacity-50" : "opacity-100"}`}
               />
             ) : (
               <img
                 src="https://api.dicebear.com/7.x/notionists/svg?seed=chef&backgroundColor=f26a1c"
                 alt="Avatar"
-                className="w-full h-full p-2"
+                className={`w-full h-full p-2 transition-opacity ${isUploadingImage ? "opacity-50" : "opacity-100"}`}
               />
+            )}
+
+            {isUploadingImage && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                <Loader2 className="w-6 h-6 text-white animate-spin" />
+              </div>
             )}
           </div>
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="text-[#F26A1C] font-bold text-sm hover:text-orange-600 transition-colors"
+            disabled={isUploadingImage}
+            className="text-[#F26A1C] font-bold text-sm hover:text-orange-600 transition-colors disabled:opacity-50"
           >
-            Change Photo
+            {isUploadingImage ? "Uploading..." : "Change Photo"}
           </button>
         </div>
 
@@ -115,6 +137,7 @@ export default function VendorEditProfilePage() {
               </label>
               <input
                 type="tel"
+                disabled={true}
                 value={formData.phone}
                 onChange={(e) =>
                   setFormData({ ...formData, phone: e.target.value })
@@ -142,13 +165,22 @@ export default function VendorEditProfilePage() {
         <div className="space-y-3 pb-8">
           <button
             onClick={handleSave}
-            className="w-full bg-[#F26A1C] text-white py-4 rounded-2xl font-bold text-[15px] shadow-sm hover:bg-orange-600 transition-colors active:scale-[0.98]"
+            disabled={isSaving}
+            className="flex items-center justify-center w-full bg-[#F26A1C] text-white py-4 rounded-2xl font-bold text-[15px] shadow-sm hover:bg-orange-600 transition-colors active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100"
           >
-            Save Changes
+            {isSaving ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                Saving...
+              </>
+            ) : (
+              "Save Changes"
+            )}
           </button>
           <button
             onClick={() => navigate(-1)}
-            className="w-full bg-gray-100 text-[#0B1E40] py-4 rounded-2xl font-bold text-[15px] hover:bg-gray-200 transition-colors active:scale-[0.98]"
+            disabled={isSaving}
+            className="w-full bg-gray-100 text-[#0B1E40] py-4 rounded-2xl font-bold text-[15px] hover:bg-gray-200 transition-colors active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100"
           >
             Cancel
           </button>

@@ -41,61 +41,34 @@ export interface CustomerUser {
 }
 
 interface CustomerState {
-  // User data
-  // user: CustomerUser | null;
   isLoading: boolean;
   error: string | null;
-  
-  // User preferences
-  // addresses: Address[];
-  // paymentMethods: PaymentMethod[];
 
-  favorites: string[]; // restaurant IDs
-  favoriteFoods: string[]; // food product IDs
+  // Address book (persisted locally)
+  addresses: any[];
+
+  favorites: string[];
+  favoriteFoods: string[];
   recentSearches: string[];
 
-
-   fetchBookmarks: () => Promise<void>;
+  fetchBookmarks: () => Promise<void>;
   toggleFavorite: (restaurantId: string) => Promise<void>;
   toggleFavoriteFood: (foodId: string) => Promise<void>;
   applyForDeliverer: (data: { idCardUrl: string, payoutProvider: string, payoutAccount: string }) => Promise<void>;
-  
-// Recent searches
+
+  // Recent searches
   addRecentSearch: (searchTerm: string) => void;
   clearRecentSearches: () => void;
 
+  // Address Actions
+  addAddress: (address: any) => void;
+  updateAddress: (addressId: string, updates: any) => void;
+  deleteAddress: (addressId: string) => void;
+  setDefaultAddress: (addressId: string) => Promise<void>;
+  getDefaultAddress: () => any;
+
   clearError: () => void;
   resetCustomerState: () => void;
-
-  
-  // // Actions
-  // fetchUserData: (userId?: string) => Promise<void>;
-  // setUser: (user: CustomerUser) => void;
-  // updateUser: (updates: Partial<CustomerUser>) => Promise<void>;
-  
- 
-  
-  // // Payment management
-  // addPaymentMethod: (method: PaymentMethod) => void;
-  // removePaymentMethod: (methodId: string) => void;
-  // setDefaultPaymentMethod: (methodId: string) => void;
-  
-  // // Favorites
-  // toggleFavorite: (restaurantId: string) => void;
-  // toggleFavoriteFood: (foodId: string) => void;
-  // isFavorite: (restaurantId: string) => boolean;
-  // isFavoriteFood: (foodId: string) => boolean;
-  // getFavorites: () => string[];
-  // getFavoriteFoods: () => string[];
-  
-  
-  
-  // // Preferences
-  // updatePreferences: (preferences: Partial<CustomerPreferences>) => void;
-  
-  // // Helpers
-  // clearError: () => void;
-  // logout: () => void;
 }
 
 
@@ -106,12 +79,9 @@ interface CustomerState {
 export const useCustomerStore = create<CustomerState>()(
   persist(
     (set, get) => ({
-      // Initial state
-      // user: null,
       isLoading: false,
       error: null,
-      // addresses: [],
-      // paymentMethods: [],
+      addresses: [],
       favorites: [],
       favoriteFoods: [],
       recentSearches: [],
@@ -198,6 +168,55 @@ export const useCustomerStore = create<CustomerState>()(
       // ==========================================
       // LOCAL UI ACTIONS
       // ==========================================
+
+      // Address Management
+      addAddress: (address) => {
+        set((state) => ({
+          addresses: [...(state.addresses || []), address],
+        }));
+      },
+
+      updateAddress: (addressId, updates) => {
+        set((state) => ({
+          addresses: (state.addresses || []).map((addr) =>
+            addr.id === addressId ? { ...addr, ...updates } : addr
+          ),
+        }));
+      },
+
+      deleteAddress: (addressId) => {
+        set((state) => ({
+          addresses: (state.addresses || []).filter((addr) => addr.id !== addressId),
+        }));
+      },
+
+      setDefaultAddress: async (addressId) => {
+        const addresses = get().addresses || [];
+        const selectedAddress = addresses.find((addr) => addr.id === addressId);
+
+        if (selectedAddress) {
+          try {
+            // Sync with backend using the flat body structure from /users/me PATCH
+            await apiClient.patch('/users/me', {
+              defaultLocation: selectedAddress.street
+            });
+          } catch (error) {
+            console.error("Failed to sync default location with backend:", error);
+          }
+        }
+
+        set((state) => ({
+          addresses: (state.addresses || []).map((addr) => ({
+            ...addr,
+            isDefault: addr.id === addressId,
+          })),
+        }));
+      },
+
+      getDefaultAddress: () => {
+        return (get().addresses || []).find((addr) => addr.isDefault);
+      },
+
       addRecentSearch: (searchTerm) => {
         if (!searchTerm.trim()) return;
         set((state) => {
@@ -205,18 +224,25 @@ export const useCustomerStore = create<CustomerState>()(
           return { recentSearches: [searchTerm, ...filtered].slice(0, 10) };
         });
       },
-      
+
       clearRecentSearches: () => set({ recentSearches: [] }),
-      
+
       clearError: () => set({ error: null }),
-      
-      resetCustomerState: () => set({ favorites: [], favoriteFoods: [], recentSearches: [], error: null })
+
+      resetCustomerState: () => set({ addresses: [], favorites: [], favoriteFoods: [], recentSearches: [], error: null })
     }),
     {
       name: "customer-storage",
+      version: 2,
+      migrate: () => ({ addresses: [], favorites: [], favoriteFoods: [], recentSearches: [], isLoading: false, error: null }),
+      merge: (persisted: any, current) => ({
+        ...current,
+        ...persisted,
+        addresses: Array.isArray(persisted?.addresses) ? persisted.addresses : [],
+      }),
       partialize: (state) => ({
+        addresses: state.addresses,
         recentSearches: state.recentSearches,
-        // We persist bookmarks so the UI is fast on reload, but fetchBookmarks overrides it in background
         favorites: state.favorites,
         favoriteFoods: state.favoriteFoods,
       }),
