@@ -71,7 +71,7 @@ export default function SigninForm() {
   };
 
   return (
-    <div className="min-h-screen bg-white font-sans flex flex-col items-center pt-16">
+    <div className="min-h-screen bg-white dark:bg-gray-900 font-sans flex flex-col items-center pt-16">
       {/* Dynamic Keyframes for the moving effect */}
       <style>{`
         @keyframes ride {
@@ -90,14 +90,14 @@ export default function SigninForm() {
         }
       `}</style>
 
-      <div className="w-full max-w-[340px] px-4 flex flex-col items-center">
+      <div className="w-full max-w-85 px-4 flex flex-col items-center">
         {/* LOGO SECTION */}
         <div className="relative flex items-center justify-center w-full mb-16 mt-4 pr-6">
           <div className="flex flex-col items-start mr-2">
-            <span className="text-[44px] font-black text-black leading-[0.8] tracking-tight drop-shadow-md">
+            <span className="text-[44px] font-black text-black dark:text-white leading-[0.8] tracking-tight drop-shadow-md">
               ASTU
             </span>
-            <span className="text-[52px] font-black text-[#F26A1C] leading-[0.8] tracking-tight drop-shadow-md">
+            <span className="text-[52px] font-black text-[#F26A1C] dark:text-[#F26A1C] leading-[0.8] tracking-tight drop-shadow-md">
               EATS
             </span>
           </div>
@@ -167,14 +167,14 @@ export default function SigninForm() {
           </div>
         </div>
 
- <div className="w-full bg-gray-50 border border-gray-100 p-1 rounded-[14px] flex mb-8">
+ <div className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-100 p-1 rounded-[14px] flex mb-8">
           <button
             type="button"
             onClick={() => setLoginMode("student")}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-[14px] font-bold rounded-[10px] transition-all ${
               loginMode === "student"
-                ? "bg-white text-[#F26A1C] shadow-sm ring-1 ring-gray-200/50"
-                : "text-gray-400 hover:text-gray-600"
+                ? "bg-white dark:bg-gray-800 text-[#F26A1C] dark:text-[#ff650b] shadow-sm ring-1 ring-gray-200/50"
+                : "text-gray-400 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
             }`}
           >
             <User size={16} strokeWidth={loginMode === "student" ? 2.5 : 2} />
@@ -185,8 +185,8 @@ export default function SigninForm() {
             onClick={() => setLoginMode("vendor")}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-[14px] font-bold rounded-[10px] transition-all ${
               loginMode === "vendor"
-                ? "bg-white text-[#F26A1C] shadow-sm ring-1 ring-gray-200/50"
-                : "text-gray-400 hover:text-gray-600"
+                ? "bg-white dark:bg-gray-800 text-[#F26A1C] dark:text-[#ff650b] shadow-sm ring-1 ring-gray-200/50"
+                : "text-gray-400 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
             }`}
           >
             <Store size={16} strokeWidth={loginMode === "vendor" ? 2.5 : 2} />
@@ -198,7 +198,7 @@ export default function SigninForm() {
         <form onSubmit={handleSubmit(onSubmit)} className="w-full space-y-5">
           {/* Email Address */}
           <div className="space-y-2">
-            <label className="text-[17px] font-bold text-gray-900 ml-1">
+            <label className="text-[17px] font-bold text-gray-900 dark:text-gray-300 ml-1">
               {loginMode === "student" ? "ASTU Email" : "Phone Number"}
 
             </label>
@@ -206,9 +206,9 @@ export default function SigninForm() {
               type={loginMode === "student" ? "email" : "tel"}
               {...register("identifier")}
               placeholder={loginMode === "student" ? "name.surname@astu.edu.et" : "0911223344"}
-              className={`w-full h-14 bg-white border ${
-                errors.identifier ? "border-red-500" : "border-gray-200"
-              } rounded-[10px] px-5 text-[15px] font-medium text-gray-900 placeholder:text-gray-300 focus:border-[#F26A1C] focus:outline-none transition-all`}
+              className={`w-full h-14 bg-white dark:bg-gray-800 border ${
+                errors.identifier ? "border-red-500" : "border-gray-200 dark:border-gray-600"
+              } rounded-[10px] px-5 text-[15px] font-medium text-gray-900 dark:text-gray-300 placeholder:text-gray-300 dark:placeholder:text-gray-500 focus:border-[#F26A1C] focus:outline-none transition-all`}
             />
             {errors.identifier && (
               <p className="text-xs text-red-500 font-semibold ml-1">
@@ -219,7 +219,7 @@ export default function SigninForm() {
 
           {/* Password */}
           <div className="space-y-2">
-            <label className="text-[17px] font-bold text-gray-900 ml-1">
+            <label className="text-[17px] font-bold text-gray-900 dark:text-gray-300 ml-1">
               Password
             </label>
             <div className="relative">
@@ -227,9 +227,9 @@ export default function SigninForm() {
                 type={showPassword ? "text" : "password"}
                 {...register("password")}
                 placeholder="***********"
-                className={`w-full h-14 bg-white border ${
-                  errors.password ? "border-red-500" : "border-gray-200"
-                } rounded-[10px] px-5 text-[15px] font-medium text-gray-900 placeholder:text-gray-300 focus:border-[#F26A1C] focus:outline-none transition-all`}
+                className={`w-full h-14 bg-white dark:bg-gray-800 border ${
+                  errors.password ? "border-red-500" : "border-gray-200 dark:border-gray-600"
+                } rounded-[10px] px-5 text-[15px] font-medium text-gray-900 dark:text-gray-300 placeholder:text-gray-300 dark:placeholder:text-gray-500 focus:border-[#F26A1C] focus:outline-none transition-all`}
               />
               <button
                 type="button"

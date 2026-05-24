@@ -14,18 +14,25 @@ export default function PaymentPage() {
   const handlePayWithChapa = async () => {
     setIsLoading(true);
     try {
-      const res = await apiClient.post("/payments/initialize", { orderId });
-      
-      if (import.meta.env.DEV) {
-        toast.success("Initialized! You can now use the Simulator button.");
-        setIsLoading(false);
-        return; // Don't redirect in dev mode if you want to use the simulator
-      }
-      
+      const return_url = `${window.location.origin}/customer/orders/${orderId}`;
+      const res = await apiClient.post("/payments/initialize", {
+        orderId,
+        return_url,
+      });
+
+      // if (import.meta.env.DEV) {
+      //   toast.success("Initialized! You can now use the Simulator button.");
+      //   setIsLoading(false);
+      //   return; // Don't redirect in dev mode if you want to use the simulator
+      // }
+
       const checkoutUrl = res.data.data.checkoutUrl;
+      // window.open(checkoutUrl, "_blank");
       window.location.href = checkoutUrl;
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to initialize payment.");
+      toast.error(
+        error.response?.data?.message || "Failed to initialize payment.",
+      );
       setIsLoading(false);
     }
   };
@@ -36,15 +43,19 @@ export default function PaymentPage() {
     try {
       // Hit the new backend DEV endpoint
       await apiClient.post("/payments/dev/simulate-webhook", { orderId });
-      
+
       toast.success("Payment simulated! Money added to Escrow.");
-      
+
       setTimeout(() => {
-        navigate(buildRoute(ROUTES.CUSTOMER.ORDERS.TRACK, { orderId: orderId || "" }));
+        navigate(
+          buildRoute(ROUTES.CUSTOMER.ORDERS.TRACK, { orderId: orderId || "" }),
+        );
       }, 1500);
-      
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Simulation failed. Did you click 'Pay with Chapa' first?");
+      toast.error(
+        error.response?.data?.message ||
+          "Simulation failed. Did you click 'Pay with Chapa' first?",
+      );
       setIsSimulating(false);
     }
   };
@@ -54,11 +65,15 @@ export default function PaymentPage() {
       <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-6">
         <CreditCard size={32} />
       </div>
-      <h1 className="text-2xl font-black text-gray-900 dark:text-white mb-2">Secure Checkout</h1>
-      <p className="text-gray-500 text-sm mb-10">You are about to transfer funds to ASTU Eats Escrow.</p>
-      
-      <button 
-        onClick={handlePayWithChapa} 
+      <h1 className="text-2xl font-black text-gray-900 dark:text-white mb-2">
+        Secure Checkout
+      </h1>
+      <p className="text-gray-500 text-sm mb-10">
+        You are about to transfer funds to ASTU Eats Escrow.
+      </p>
+
+      <button
+        onClick={handlePayWithChapa}
         disabled={isLoading}
         className="w-full max-w-sm bg-[#F26A1C] text-white font-bold h-14 rounded-full shadow-lg flex items-center justify-center gap-2 mb-4"
       >
@@ -68,16 +83,20 @@ export default function PaymentPage() {
 
       {/* Developer Tool Only */}
       {import.meta.env.DEV && (
-        <button 
+        <button
           onClick={handleSimulateWebhook}
           disabled={isSimulating}
           className="w-full max-w-sm bg-gray-100 text-gray-600 font-bold h-14 rounded-full flex items-center justify-center"
         >
-          {isSimulating ? <Loader2 className="animate-spin" /> : "Developer: Simulate Webhook"}
+          {isSimulating ? (
+            <Loader2 className="animate-spin" />
+          ) : (
+            "Developer: Simulate Webhook"
+          )}
         </button>
       )}
 
-      <button 
+      <button
         onClick={() => navigate(-1)}
         className="mt-8 text-gray-400 font-bold flex items-center justify-center gap-2"
       >
