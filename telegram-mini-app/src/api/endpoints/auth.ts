@@ -14,7 +14,7 @@ export const authApi = {
   register: async (data: any) => {
     // Contract mapping: Backend requires telegramId, mapped to 0 if unused on web
     const payload = {
-      telegramId: 0, 
+      telegramId: 23325523, 
       astuEmail: data.astuEmail, // Maps to backend schema
       fullName: data.fullName,
       phoneNumber: data.phoneNumber || "0900000000", // Required by backend

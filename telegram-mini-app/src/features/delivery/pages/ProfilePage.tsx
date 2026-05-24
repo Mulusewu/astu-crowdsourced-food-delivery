@@ -17,10 +17,11 @@ import { ROUTES } from "@/routes/routePaths";
 import { useDeliveryDashboardStore } from "@/store/deliveryDashboardStore";
 import { useState } from "react";
 import { Edit2, Check, X } from "lucide-react";
+import RoleSwitcher from "@/components/common/RoleSwitcher";
 
 export default function ProfileMain() {
   const navigate = useNavigate();
-  const { user, logout, updateAvatar, updateName, switchRole } = useAuthStore();
+  const { user, logout, updateAvatar, updateName, toggleActiveMode } = useAuthStore();
   const { deliveryPerson, fetchDashboardData } = useDeliveryDashboardStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -223,16 +224,18 @@ export default function ProfileMain() {
 
       <div className="mt-8 px-5 flex flex-col gap-3">
         <div className="flex justify-center mb-2">
-          <button
+
+          {/* <button
             onClick={() => {
-              switchRole("customer");
-              navigate(ROUTES.CUSTOMER.HOME);
+              toggleActiveMode("DELIVERER", ROUTES.CUSTOMER.HOME)
             }}
             className="flex items-center gap-2 px-6 py-3 border-2 border-brand-primary/10 rounded-full text-[12px] font-bold text-brand-primary hover:bg-brand-primary/5 active:scale-95 transition-all w-fit shadow-sm shadow-brand-primary/5"
           >
             <ArrowLeftRight size={14} strokeWidth={2.5} />
             Switch to Customer Mode
-          </button>
+          </button> */}
+
+          <RoleSwitcher/>
         </div>
 
         <button

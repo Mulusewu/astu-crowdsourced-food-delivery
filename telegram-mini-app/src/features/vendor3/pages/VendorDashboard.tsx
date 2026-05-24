@@ -59,7 +59,6 @@ export default function VendorDashboard() {
     if (!currentRestaurant) return;
     try {
       await toggleRestaurantStatus(currentRestaurant.id, !currentRestaurant.isOpen);
-      if (!currentRestaurant.isOpen) disconnectVendorSocket();
       toast.success(`Restaurant is now ${!currentRestaurant.isOpen ? 'OPEN' : 'CLOSED'}`);
     } catch (error) {
       toast.error("Failed to update store status.");
@@ -159,6 +158,7 @@ export default function VendorDashboard() {
   const readyToCook = kitchenQueue.filter(o => o.status === "PAYMENT_RECEIVED");
   const currentlyCooking = kitchenQueue.filter(o => o.status === "VENDOR_BEING_PREPARED");
   
+  const isOpen = currentRestaurant?.isOpen ?? false;
 
    const PremiumOrderCard = ({ 
     order, badgeText, badgeColor, primaryActionText, onPrimaryAction, onSecondaryAction, isProcessing, disabledText
@@ -253,14 +253,14 @@ export default function VendorDashboard() {
           <div className="flex flex-col">
             <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Store Status</span>
             <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${currentRestaurant.isOpen ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
-              <span className={`text-lg font-black ${currentRestaurant.isOpen ? 'text-green-600' : 'text-gray-500'}`}>
-                {currentRestaurant.isOpen ? 'OPEN' : 'CLOSED'}
+              <div className={`w-2 h-2 rounded-full ${isOpen ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
+              <span className={`text-lg font-black ${isOpen ? 'text-green-600' : 'text-gray-500'}`}>
+                {isOpen ? 'OPEN' : 'CLOSED'}
               </span>
             </div>
           </div>
-          <button onClick={handleToggleStatus} className={`relative w-14 h-7 rounded-full transition-colors duration-300 ${currentRestaurant.isOpen ? 'bg-primary' : 'bg-gray-300'}`}>
-            <div className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-transform duration-300 shadow-sm ${currentRestaurant.isOpen ? 'translate-x-8' : 'translate-x-1'}`}></div>
+          <button onClick={handleToggleStatus} className={`relative w-14 h-7 rounded-full transition-colors duration-300 ${isOpen ? 'bg-primary' : 'bg-gray-300'}`}>
+            <div className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-transform duration-300 shadow-sm ${isOpen ? 'translate-x-8' : 'translate-x-1'}`}></div>
           </button>
         </div>
 
