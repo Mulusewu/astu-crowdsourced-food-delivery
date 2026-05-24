@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 import { apiClient } from "@/api/client/axiosInstance";
 import { ROUTES } from "@/routes/routePaths";
 import { useAuthStore } from "@/store/auth/authStore";
+import { useOrderStore } from "@/store/orders/orderStore"; 
 import type { DelivererProfile } from "@/types/user.types";
 
 export interface Restaurant {
@@ -41,9 +42,17 @@ interface DeliveryDashboardState {
   isLoading: boolean;
   error: string | null;
 
+  gpsIntervalId: number | null;
+  isSpoofing: boolean;
+  spoofedCoords: { lat: number, lng: number } | null;
+
   fetchDashboardData: () => Promise<void>;
   toggleActiveStatus: (navigate?: (path: string) => void) => Promise<void>;
   toggleBookmark: (restaurantId: string) => Promise<void>;
+
+  startLiveTracking: () => void;
+  stopLiveTracking: () => void;
+  setSpoofedLocation: (isActive: boolean, coords?: { lat: number, lng: number }) => void;
   
   clearError: () => void;
 }
@@ -56,6 +65,9 @@ export const useDeliveryDashboardStore = create<DeliveryDashboardState>()(
       dashboardOrders: [],
       isLoading: true,
       error: null,
+      gpsIntervalId: null,
+      isSpoofing: false,
+      spoofedCoords: null,
 
       fetchDashboardData: async () => {
         set({ isLoading: true, error: null });
@@ -131,7 +143,60 @@ export const useDeliveryDashboardStore = create<DeliveryDashboardState>()(
         }
       },
 
-      toggleActiveStatus: async (navigate) => {
+       startLiveTracking: () => {
+        if (get().gpsIntervalId) return; // Prevent duplicates
+
+        console.log("📍 [TELEMETRY] Starting 15s GPS ping loop...");
+
+        const intervalId = window.setInterval(() => {
+          const state = get();
+          const { socket } = useOrderStore.getState();
+          
+          if (!socket || !socket.connected) return;
+
+          // If the Presentation Spoofer is active, send the fake coordinates!
+          if (state.isSpoofing && state.spoofedCoords) {
+            socket.emit('UPDATE_LOCATION', state.spoofedCoords);
+            return;
+          }
+
+          // Otherwise, ask the browser for real hardware GPS
+          if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+              (position) => {
+                socket.emit('UPDATE_LOCATION', { 
+                  lat: position.coords.latitude, 
+                  lng: position.coords.longitude 
+                });
+              },
+              (error) => console.warn("📍 [GPS ERROR]:", error.message),
+              { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
+          }
+        }, 15000) as unknown as number; // Ping every 15 seconds
+
+        set({ gpsIntervalId: intervalId });
+      },
+
+      stopLiveTracking: () => {
+        const { gpsIntervalId } = get();
+        if (gpsIntervalId) {
+          window.clearInterval(gpsIntervalId);
+          set({ gpsIntervalId: null });
+          console.log("📍 [TELEMETRY] Tracking stopped.");
+        }
+      },
+
+      setSpoofedLocation: (isActive, coords) => {
+        set({ isSpoofing: isActive, spoofedCoords: coords || null });
+        // Immediately fire a ping so the DB updates instantly before a demo
+        if (isActive && coords) {
+          const { socket } = useOrderStore.getState();
+          if (socket?.connected) socket.emit('UPDATE_LOCATION', coords);
+        }
+      },
+
+      toggleActiveStatus: async () => {
         const { delivererProfile } = get();
         if (!delivererProfile) return;
 
@@ -146,9 +211,15 @@ export const useDeliveryDashboardStore = create<DeliveryDashboardState>()(
           // Backend API Call (Strict DB field: isAvailable)
           await apiClient.patch('/users/me/availability', { isAvailable: willBeOnline });
           
-          if (!willBeOnline && navigate) {
-            navigate(ROUTES.DELIVERY.OFFLINE);
+           if (willBeOnline) {
+            get().startLiveTracking();
+          } else {
+            get().stopLiveTracking();
           }
+
+          // if (!willBeOnline && navigate) {
+          //   navigate(ROUTES.DELIVERY.OFFLINE);
+          // }
         } catch (error: any) {
           // Rollback on failure (e.g., Payout account not set up)
           set({
@@ -186,7 +257,8 @@ export const useDeliveryDashboardStore = create<DeliveryDashboardState>()(
     {
       name: "delivery-dashboard-storage",
       partialize: (s) => ({
-        // We do not persist orders or restaurants to ensure fresh real-time data on reload
+        isSpoofing: s.isSpoofing,
+        spoofedCoords: s.spoofedCoords
       }),
     },
   ),

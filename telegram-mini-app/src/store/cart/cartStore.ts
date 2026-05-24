@@ -204,8 +204,7 @@ export const useCartStore = create<CartState>()(
               expectedUnitPrice: i.expectedUnitPrice
             }))
           };
-          console.log("Payloaddddddddddddddd",payload);
-          
+
           const res = await apiClient.post('/orders/checkout', payload);
           get().clearCart();
           return res.data.data.id; // Return the created Order ID for routing

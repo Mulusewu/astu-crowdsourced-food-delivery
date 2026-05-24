@@ -90,7 +90,7 @@ export default function SigninForm() {
         }
       `}</style>
 
-      <div className="w-full max-w-[340px] px-4 flex flex-col items-center">
+      <div className="w-full max-w-85 px-4 flex flex-col items-center">
         {/* LOGO SECTION */}
         <div className="relative flex items-center justify-center w-full mb-16 mt-4 pr-6">
           <div className="flex flex-col items-start mr-2">
