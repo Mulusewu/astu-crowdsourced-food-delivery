@@ -16,10 +16,14 @@ export const authApi = {
   register: async (data: any) => {
     // Contract mapping: Backend requires telegramId, mapped to 0 if unused on web
     const payload = {
-      telegramId: 0, 
+      telegramId: String(
+        Math.floor(100000000 + Math.random() * 900000000)
+      ),
       astuEmail: data.astuEmail, // Maps to backend schema
       fullName: data.fullName,
-      phoneNumber: data.phoneNumber || "0900000000", // Required by backend
+      phoneNumber: `09${Math.floor(
+        10000000 + Math.random() * 90000000
+      )}`, // Required by backend
       password: data.password
     };
     // Backend route is /register, not /signup

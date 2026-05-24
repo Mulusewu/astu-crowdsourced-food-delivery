@@ -37,6 +37,7 @@ export interface Restaurant {
   minimumOrder: number; // Mapping from minOrderValue
   freeDeliveryThreshold: number;
   isOpen: boolean;
+  manualIsOpen?: boolean;
   location: string;
   contact: {
     phone: string;
@@ -89,6 +90,7 @@ const mapBackendRestaurant = (rest: any): Restaurant => ({
   minimumOrder: Number(rest.minOrderValue) || 0,
   freeDeliveryThreshold: 0,
   isOpen: rest.effectiveIsOpen ?? (rest.isOpen !== false), // Uses backend computed schedule
+  manualIsOpen: rest.isOpen !== false,
   location: rest.location || "ASTU Campus",
   contact: { phone: rest.phone || "", email: "", website: "" },
   hours: { open: rest.openingTime || "00:00", close: rest.closingTime || "23:59" },
@@ -181,7 +183,6 @@ export const useRestaurantStore = create<RestaurantState>((set) => ({
     try {
       const response = await apiClient.get(`/restaurants/${id}`);
       const rawRest = response.data.data;
-      
       const mappedRest = mapBackendRestaurant(rawRest);
 
       // Flatten nested categories into the menu array the UI expects
@@ -213,7 +214,16 @@ export const useRestaurantStore = create<RestaurantState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       await apiClient.patch(`/restaurants/${id}/status`, { isOpen: status });
-      set({ isLoading: false });
+      set((state) => ({
+        currentRestaurant: state.currentRestaurant && state.currentRestaurant.id === id
+          ? { 
+              ...state.currentRestaurant, 
+              manualIsOpen: status, 
+              isOpen: status // Update locally to reflect change instantly
+            }
+          : state.currentRestaurant,
+        isLoading: false
+      }));
     } catch (error: any) {
       set({ error: "Failed to update restaurant status", isLoading: false });
     }
