@@ -4,6 +4,7 @@ import { useVendorMenuStore, type MenuItem } from "@/store/vendor/vendorMenuStor
 import { useAuthStore } from "@/store/auth/authStore";
 import { ArrowLeft, Plus, Pencil, EyeOff, Eye, Loader2 } from "lucide-react";
 import { ROUTES, buildRoute } from "@/routes/routePaths";
+import BottomNav from "@/components/common/BottomNav";
 
 export default function MenuPage() {
   const navigate = useNavigate();
@@ -140,6 +141,7 @@ export default function MenuPage() {
           </div>
         )}
       </div>
+      <BottomNav />
     </div>
   );
 }

@@ -231,8 +231,8 @@ export default function ActiveDeliveryDetailsPage() {
             </div>
             <div className="flex-1 pt-1">
               <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1 font-outfit">Destination</h4>
-              {/* BACKEND ALIGNMENT: defaultDormBlock */}
-              <p className="text-[15px] font-bold text-gray-900 leading-tight">{orderToDisplay.customer?.defaultDormBlock || "ASTU Campus"}</p>
+              {/* BACKEND ALIGNMENT: defaultLocation */}
+              <p className="text-[15px] font-bold text-gray-900 leading-tight">{orderToDisplay.customer?.customerProfile?.defaultLocation || "ASTU Campus"}</p>
             </div>
           </div>
 

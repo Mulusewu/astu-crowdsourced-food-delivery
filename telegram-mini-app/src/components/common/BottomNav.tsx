@@ -1,13 +1,13 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { 
-  Home, 
-  Bookmark, 
-  Package, 
-  FileText, 
-  User, 
-  LayoutList, 
-  ClipboardList, 
-  Bell 
+import {
+  Home,
+  Bookmark,
+  Package,
+  FileText,
+  User,
+  LayoutList,
+  ClipboardList,
+  Bell,
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth/authStore";
 import { useCartStore } from "@/store/cart/cartStore";
@@ -30,33 +30,109 @@ function BottomNav() {
       case "DELIVERER":
         return {
           items: [
-            { id: "home", icon: Home, path: ROUTES.DELIVERY.DASHBOARD, label: "Home" },
-            { id: "saved", icon: Bookmark, path: ROUTES.DELIVERY.SAVED, label: "Saved" },
-            { id: "history", icon: ClipboardList, path: ROUTES.DELIVERY.HISTORY.LIST, label: "History" },
-            { id: "profile", icon: User, path: ROUTES.DELIVERY.PROFILE, label: "Profile" },
+            {
+              id: "home",
+              icon: Home,
+              path: ROUTES.DELIVERY.DASHBOARD,
+              label: "Home",
+            },
+            {
+              id: "saved",
+              icon: Bookmark,
+              path: ROUTES.DELIVERY.SAVED,
+              label: "Saved",
+            },
+            {
+              id: "history",
+              icon: ClipboardList,
+              path: ROUTES.DELIVERY.HISTORY.LIST,
+              label: "History",
+            },
+            {
+              id: "profile",
+              icon: User,
+              path: ROUTES.DELIVERY.PROFILE,
+              label: "Profile",
+            },
           ],
-          center: { id: "active", icon: Package, path: ROUTES.DELIVERY.ACTIVE.LIST, label: "Deliveries" }
+          center: {
+            id: "active",
+            icon: Package,
+            path: ROUTES.DELIVERY.ACTIVE.LIST,
+            label: "Deliveries",
+          },
         };
       case "VENDOR_STAFF":
-        return { 
+        return {
           items: [
-            { id: "home", icon: Home, path: ROUTES.VENDOR.DASHBOARD, label: "Home" },
-            { id: "menu", icon: LayoutList, path: ROUTES.VENDOR.MENU.LIST, label: "Menu" },
-            { id: "history", icon: ClipboardList, path: ROUTES.VENDOR.ORDERS.HISTORY, label: "History" },
-            { id: "profile", icon: User, path: ROUTES.VENDOR.PROFILE, label: "Profile" },
+            {
+              id: "home",
+              icon: Home,
+              path: ROUTES.VENDOR.DASHBOARD,
+              label: "Home",
+            },
+            {
+              id: "menu",
+              icon: LayoutList,
+              path: ROUTES.VENDOR.MENU.LIST,
+              label: "Menu",
+            },
+            {
+              id: "history",
+              icon: ClipboardList,
+              path: ROUTES.VENDOR.ORDERS.HISTORY,
+              label: "History",
+            },
+            {
+              id: "profile",
+              icon: User,
+              path: ROUTES.VENDOR.PROFILE.GENERAL,
+              label: "Profile",
+            },
           ],
-          center: { id: "orders", icon: Bell, path: ROUTES.VENDOR.ORDERS.LIST, label: "Orders" }
+          center: {
+            id: "orders",
+            icon: Bell,
+            path: ROUTES.VENDOR.ORDERS.LIST,
+            label: "Orders",
+          },
         };
       case "CUSTOMER":
       default:
         return {
           items: [
-            { id: "home", icon: Home, path: ROUTES.CUSTOMER.HOME, label: "Home" },
-            { id: "favs", icon: Bookmark, path: ROUTES.CUSTOMER.FAVORITES, label: "Favs" },
-            { id: "orders", icon: FileText, path: ROUTES.CUSTOMER.ORDERS.LIST, label: "Orders" },
-            { id: "profile", icon: User, path: ROUTES.CUSTOMER.PROFILE, label: "Profile" },
+            {
+              id: "home",
+              icon: Home,
+              path: ROUTES.CUSTOMER.HOME,
+              label: "Home",
+            },
+            {
+              id: "favs",
+              icon: Bookmark,
+              path: ROUTES.CUSTOMER.FAVORITES,
+              label: "Favs",
+            },
+            {
+              id: "orders",
+              icon: FileText,
+              path: ROUTES.CUSTOMER.ORDERS.LIST,
+              label: "Orders",
+            },
+            {
+              id: "profile",
+              icon: User,
+              path: ROUTES.CUSTOMER.PROFILE,
+              label: "Profile",
+            },
           ],
-          center: { id: "cart", icon: Package, path: ROUTES.CUSTOMER.CART, label: "Cart", count: cartCount }
+          center: {
+            id: "cart",
+            icon: Package,
+            path: ROUTES.CUSTOMER.CART,
+            label: "Cart",
+            count: cartCount,
+          },
         };
     }
   };
@@ -71,23 +147,26 @@ function BottomNav() {
     ROUTES.DELIVERY.HISTORY.LIST,
     ROUTES.DELIVERY.ACTIVE.LIST,
     ROUTES.DELIVERY.PROFILE,
-    
+
     // Vendor Routes
     ROUTES.VENDOR.DASHBOARD,
     ROUTES.VENDOR.MENU.LIST,
     ROUTES.VENDOR.ORDERS.LIST,
     ROUTES.VENDOR.ORDERS.HISTORY,
+    ROUTES.VENDOR.PROFILE.GENERAL,
 
     // Customer Routes
     ROUTES.CUSTOMER.HOME,
     ROUTES.CUSTOMER.FAVORITES,
     ROUTES.CUSTOMER.ORDERS.LIST,
     ROUTES.CUSTOMER.PROFILE,
-    ROUTES.CUSTOMER.CART
+    ROUTES.CUSTOMER.CART,
   ];
 
   // Check if current path matches any of the primary routes (exact or base path)
-  const shouldShow = primaryRoutes.some(route => path === route || path === `${route}/`);
+  const shouldShow = primaryRoutes.some(
+    (route) => path === route || path === `${route}/`,
+  );
 
   if (!shouldShow) {
     return null;
@@ -120,7 +199,7 @@ function BottomNav() {
             active={isActive(config.items[1].path)}
             onClick={() => navigate(config.items[1].path)}
           />
-          
+
           {/* Spacer for the center button */}
           <div className="w-10" />
 
@@ -143,14 +222,16 @@ function BottomNav() {
             onClick={() => navigate(config.center.path)}
             className="relative flex h-[66px] w-[66px] items-center justify-center rounded-full bg-white shadow-xl transition-transform active:scale-90"
           >
-            <div className={cn(
-              "flex h-[54px] w-[54px] items-center justify-center rounded-full border-[2.5px] border-[#F26A1C] bg-white transition-all",
-              isActive(config.center.path) && "bg-orange-50"
-            )}>
-              <config.center.icon 
-                size={30} 
+            <div
+              className={cn(
+                "flex h-[54px] w-[54px] items-center justify-center rounded-full border-[2.5px] border-[#F26A1C] bg-white transition-all",
+                isActive(config.center.path) && "bg-orange-50",
+              )}
+            >
+              <config.center.icon
+                size={30}
                 className="text-[#F26A1C]"
-                strokeWidth={2.5} 
+                strokeWidth={2.5}
                 fill={isActive(config.center.path) ? "currentColor" : "none"}
               />
             </div>
@@ -175,7 +256,9 @@ function NavIconButton({
       onClick={onClick}
       className={cn(
         "relative flex h-[52px] w-[52px] items-center justify-center transition-all duration-300 active:scale-95",
-        active ? "bg-white rounded-full shadow-md scale-105" : "bg-transparent scale-100"
+        active
+          ? "bg-white rounded-full shadow-md scale-105"
+          : "bg-transparent scale-100",
       )}
     >
       <Icon
@@ -183,7 +266,9 @@ function NavIconButton({
         strokeWidth={2.5}
         className={cn(
           "transition-all duration-300",
-          active ? "text-[#F26A1C] fill-[#F26A1C]" : "text-white fill-none opacity-80"
+          active
+            ? "text-[#F26A1C] fill-[#F26A1C]"
+            : "text-white fill-none opacity-80",
         )}
       />
     </button>
