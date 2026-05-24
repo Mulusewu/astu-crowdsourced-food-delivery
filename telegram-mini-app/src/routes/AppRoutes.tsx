@@ -17,19 +17,20 @@ import { customerRoutes } from "./routeGroups/customerRoutes";
 import { vendorRoutes } from "./routeGroups/vendorRoutes";
 import { deliveryRoutes } from "./routeGroups/deliveryRoutes";
 import { sharedRoutes } from "./routeGroups/sharedRoutes";
+import VendorPendingPage from "@/features/vendor3/pages/VendorPendingPage";
 
 function FallbackRoute() {
   const { user } = useAuthStore();
 
   if (user) {
+    if (user.role === "VENDOR_STAFF") {
+      return <Navigate to={ROUTES.VENDOR.DASHBOARD} replace />;
+    }
     if (user.activeMode === "DELIVERER") {
       return <Navigate to={ROUTES.DELIVERY.DASHBOARD} replace />;
     }
     if (user.activeMode === "CUSTOMER") {
       return <Navigate to={ROUTES.CUSTOMER.HOME} replace />;
-    }
-    if (user.role === "VENDOR_STAFF") {
-      return <Navigate to={ROUTES.VENDOR.DASHBOARD} replace />;
     }
     return <Navigate to={ROUTES.CUSTOMER.HOME} replace />;
   }
@@ -52,6 +53,17 @@ export default function AppRoutes() {
 
         {/* ====================== AUTHENTICATED ZONE ====================== */}
 
+         {/* VENDOR ZONE */}
+        <Route element={<ProtectedRoute allowedRoles={["VENDOR_STAFF"]} />}>
+          <Route element={<VendorLayout />}>
+            {vendorRoutes.map((route) => (
+              <Route key={route.path} path={route.path} element={route.element} />
+            ))}
+                  <Route path="/vendor/pending" element={<VendorPendingPage />} />
+
+          </Route>
+        </Route>
+
         {/* CUSTOMER ZONE */}
         <Route element={<ProtectedRoute allowedRoles={["CUSTOMER"]} requiredMode="CUSTOMER" />}>
           <Route element={<CustomerLayout />}>
@@ -70,14 +82,7 @@ export default function AppRoutes() {
           </Route>
         </Route>
 
-        {/* VENDOR ZONE */}
-        <Route element={<ProtectedRoute allowedRoles={["VENDOR_STAFF"]} />}>
-          <Route element={<VendorLayout />}>
-            {vendorRoutes.map((route) => (
-              <Route key={route.path} path={route.path} element={route.element} />
-            ))}
-          </Route>
-        </Route>
+       
 
         {/* ====================== FALLBACK ROUTES ====================== */}
         <Route path="*" element={<FallbackRoute />} />

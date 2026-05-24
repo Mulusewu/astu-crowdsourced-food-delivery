@@ -145,7 +145,7 @@ export default function RestaurantDetailsPage() {
       </div>
     );
   }
-
+console.log("res", restaurant);
   return (
     <div className="bg-[#FDFDFD] dark:bg-gray-950 min-h-screen text-gray-900 dark:text-gray-100 pb-28 flex flex-col font-sans antialiased">
       <header className="sticky top-0 z-30 bg-[#FDFDFD]/90 dark:bg-gray-950/90 backdrop-blur-md flex items-center justify-between px-4 py-4 border-b border-gray-100 dark:border-gray-800">
@@ -166,6 +166,7 @@ export default function RestaurantDetailsPage() {
         <div className="flex justify-between items-start mb-5">
           <div>
             <h2 className="text-[22px] text-gray-900 dark:text-white font-black leading-tight mb-1">{restaurant.name}</h2>
+            {/* <h2 className="text-[22px] text-gray-900 dark:text-white font-black leading-tight mb-1">{restaurant}</h2> */}
             <div className="flex items-center gap-1 text-gray-500">
               <MapPin size={14} className="text-[#F26A1C]" />
               <span className="text-[13px] font-semibold">{restaurant.location}</span>

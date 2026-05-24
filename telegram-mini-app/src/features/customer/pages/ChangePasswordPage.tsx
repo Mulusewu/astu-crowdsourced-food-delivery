@@ -39,8 +39,8 @@ export default function ChangePasswordPage() {
       await updatePassword(data.oldPassword, data.newPassword);
       setSuccess(true);
       setTimeout(() => navigate(-1), 1500);
-    } catch (e: any) {
-      setApiError(e.message ?? "Failed to update password. Please check your current password.");
+    } catch {
+      setApiError("Failed to update password. Please check your current password.");
     }
   };
 

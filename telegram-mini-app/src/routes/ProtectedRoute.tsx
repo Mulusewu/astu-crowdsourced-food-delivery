@@ -46,6 +46,9 @@ export default function ProtectedRoute({ allowedRoles, requiredMode }: Protected
   // we either block them or auto-switch them. Since auto-switching requires a backend call,
   // we just block them and redirect to their current mode's home.
   if (requiredMode && user.activeMode !== requiredMode) {
+    if (user.role === "VENDOR_STAFF") {
+      return <Navigate to={ROUTES.VENDOR.DASHBOARD} replace />;
+    }
     if (user.activeMode === "CUSTOMER") {
       return <Navigate to={ROUTES.CUSTOMER.HOME} replace />;
     }

@@ -25,6 +25,7 @@ import { useTelegram } from "@/contexts/TelegramContext";
 const getStatusIcon = (status: OrderStatus) => {
   switch (status) {
     case "CREATED":
+    case "AWAITING_VENDOR":
     case "AWAITING_ACCEPT": return ClipboardCheck;
     case "ASSIGNED": return Bike;
     case "AWAITING_PAYMENT": return Clock;
@@ -47,6 +48,7 @@ const getStatusIcon = (status: OrderStatus) => {
 
 const STATUS_LABEL_MAP: Partial<Record<OrderStatus, string>> = {
   CREATED: "Created",
+  AWAITING_VENDOR: "Waiting for Restaurant",
   AWAITING_ACCEPT: "Finding Deliverer",
   ASSIGNED: "Deliverer Assigned",
   AWAITING_PAYMENT: "Awaiting Payment",

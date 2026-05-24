@@ -108,6 +108,8 @@ export const getRoleDisplayName = (role: UserRole): string => {
 };
 
 export const getRoleRedirectPath = (role: UserRole, activeMode?: ActiveMode): string => {
+  // if (role === "ADMIN") return "/admin/dashboard";
+  if (role === "VENDOR_STAFF") return "/vendor/dashboard";
   if (activeMode === "DELIVERER") return "/delivery/dashboard";
   if (activeMode === "CUSTOMER") return "/customer/dashboard";
 
@@ -120,10 +122,13 @@ export const getRoleRedirectPath = (role: UserRole, activeMode?: ActiveMode): st
   return paths[role];
 };
 
+// Replace canSwitchRoles function in user.types.ts
 export const canSwitchRoles = (user: User | null): boolean => {
   if (!user) return false;
-  // Deliverers and Admins can switch to Customer mode
-  return user.role === "DELIVERER" || user.role === "ADMIN";
+  // Admins can switch anywhere.
+  // Deliverers can switch to Customer mode.
+  // Customers CAN see the banner (so they can apply), but their logic inside RoleSwitcher will differ.
+  return ["CUSTOMER", "DELIVERER", "ADMIN"].includes(user.role);
 };
 
 export const getRoleIcon = (role: UserRole): string => {

@@ -14,6 +14,10 @@ const CustomerSearchPage = lazy(
 const CustomerNotificationsPage = lazy(
   () => import("@/features/customer/pages/NotificationsPage"),
 );
+
+const CustomerApplyDelivererPage = lazy(
+  () => import("@/features/customer/pages/ApplyDelivererPage"),
+);
 const CustomerSupportPage = lazy(
   () => import("@/features/customer/pages/SupportPage"),
 );
@@ -141,6 +145,11 @@ export const customerRoutes: RouteGroup[] = [
   {
     path: ROUTES.CUSTOMER.SEARCH,
     element: <CustomerSearchPage />,
+    roles: [UserRoles.CUSTOMER],
+  },
+  {
+    path: ROUTES.CUSTOMER.APPLICATION,
+    element: <CustomerApplyDelivererPage />,
     roles: [UserRoles.CUSTOMER],
   },
   // {

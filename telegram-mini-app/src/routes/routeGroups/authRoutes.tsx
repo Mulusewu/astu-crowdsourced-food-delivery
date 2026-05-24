@@ -16,6 +16,8 @@ const VerifyEmailPage = lazy(
   () => import("@/features/auth/pages/VerifyEmailPage"),
 );
 
+const VerifyPhonePage = lazy(() => import("@/features/auth/pages/VerifyPhonePage"));
+
 // Public routes - no protection needed
 export const authRoutes: RouteGroup[] = [
   {
@@ -42,4 +44,9 @@ export const authRoutes: RouteGroup[] = [
     path: ROUTES.VERIFY_EMAIL,
     element: <VerifyEmailPage />,
   },
+
+  {
+    path: ROUTES.VERIFY_PHONE,
+    element: <VerifyPhonePage />, 
+  }
 ];

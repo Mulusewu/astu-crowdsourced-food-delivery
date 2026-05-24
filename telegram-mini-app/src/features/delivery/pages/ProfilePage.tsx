@@ -21,9 +21,9 @@ import { Edit2, Check, X } from "lucide-react";
 export default function ProfileMain() {
   const navigate = useNavigate();
   const { user, logout, updateAvatar, updateName, switchRole } = useAuthStore();
-  const { delivererProfile, fetchDashboardData } = useDeliveryDashboardStore();
+  const { deliveryPerson, fetchDashboardData } = useDeliveryDashboardStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
-
+  
   const [isEditingName, setIsEditingName] = useState(false);
   const [newName, setNewName] = useState(user?.name || "");
 
@@ -91,7 +91,7 @@ export default function ProfileMain() {
             ref={fileInputRef}
             onChange={handleFileChange}
           />
-          <button
+          <button 
             type="button"
             onClick={handleCameraClick}
             className="absolute bottom-1 right-1 w-8 h-8 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center shadow-md border-2 border-white dark:border-gray-900 active:scale-95 hover:scale-110 transition-transform cursor-pointer group"
@@ -110,8 +110,8 @@ export default function ProfileMain() {
               className="bg-white dark:bg-gray-900 border-2 border-brand-primary rounded-xl px-4 py-1 text-lg font-bold text-gray-900 dark:text-white focus:outline-none w-48 shadow-sm"
               autoFocus
               onKeyDown={(e) => {
-                if (e.key === "Enter") handleSaveName();
-                if (e.key === "Escape") handleCancelName();
+                if (e.key === 'Enter') handleSaveName();
+                if (e.key === 'Escape') handleCancelName();
               }}
             />
             <button
@@ -146,29 +146,23 @@ export default function ProfileMain() {
       {/* Stats Section */}
       <div className="mx-5 mt-4 grid grid-cols-3 gap-3">
         <div className="bg-white dark:bg-gray-900 px-2 py-4 rounded-[20px] shadow-[0_4px_15px_rgba(0,0,0,0.02)] flex flex-col items-center border border-gray-100/50 dark:border-gray-800 transition-all hover:scale-[1.02]">
-          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">
-            Deliveries
-          </span>
+          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Deliveries</span>
           <span className="text-lg font-black text-gray-900 dark:text-white">
-            {delivererProfile?.totalDeliveries || 0}
+            {deliveryPerson?.stats?.totalDeliveries || 0}
           </span>
         </div>
         <div className="bg-white dark:bg-gray-900 px-2 py-4 rounded-[20px] shadow-[0_4px_15px_rgba(0,0,0,0.02)] flex flex-col items-center border border-gray-100/50 dark:border-gray-800 transition-all hover:scale-[1.02]">
-          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">
-            Earnings
-          </span>
+          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Earnings</span>
           <span className="text-lg font-black text-brand-primary">
-            {delivererProfile?.totalEarnings?.toLocaleString() || 0}
+            {deliveryPerson?.stats?.totalEarnings?.toLocaleString() || 0}
             <span className="text-[10px] ml-1 font-bold">ETB</span>
           </span>
         </div>
         <div className="bg-white dark:bg-gray-900 px-2 py-4 rounded-[20px] shadow-[0_4px_15px_rgba(0,0,0,0.02)] flex flex-col items-center border border-gray-100/50 dark:border-gray-800 transition-all hover:scale-[1.02]">
-          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">
-            Rating
-          </span>
+          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Rating</span>
           <div className="flex items-center gap-1.5">
             <span className="text-lg font-black text-gray-900 dark:text-white">
-              {delivererProfile?.rating || "0.0"}
+              {deliveryPerson?.stats?.rating || "0.0"}
             </span>
             <Star size={14} className="fill-yellow-400 text-yellow-400" />
           </div>

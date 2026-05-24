@@ -10,7 +10,7 @@ import WaitingForPaymentModal from "./components/delivery-person/WaitingForPayme
 import PaymentSuccessModal from "./components/delivery-person/PaymentSuccessModal";
 import { Toaster } from "@/components/ui/sonner";
 import { useAuthStore } from "@/store/auth/authStore";
-import { apiClient } from "@/api/client/axiosInstance";
+import { useOrderStore } from "@/store/orders/orderStore";
 
 /**
  * AppContent
@@ -18,23 +18,43 @@ import { apiClient } from "@/api/client/axiosInstance";
  * Telegram initialization is now handled within TelegramProvider.
  */
 function AppContent() {
-   const { token, logout, setUser } = useAuthStore();
+   const { token, logout, user, activeMode, refreshProfile } = useAuthStore();
+const { connectDispatchSocket, disconnectDispatchSocket } = useOrderStore();
+
+ useEffect(() => {
+    if (token) {
+      refreshProfile().catch(() => logout());
+    }
+  }, [token]); 
 
     useEffect(() => {
-    const validateSession = async () => {
-      if (token) {
-        try {
-          // Hit the backend to get the actual, untampered user profile
-          const res = await apiClient.get('/users/me');
-          setUser(res.data.data); // Hydrate Zustand with real DB data
-        } catch (error) {
-          console.error("Session invalid or expired", error);
-          logout(); // Force them out if token is dead
-        }
-      }
+    // Only connect if they are explicitly in Deliverer mode
+    if (token && user && activeMode === "DELIVERER") {
+      connectDispatchSocket();
+    } else {
+      // If they switch to CUSTOMER mode, kill the socket to prevent ghost broadcasts
+      disconnectDispatchSocket();
+    }
+     return () => {
+      disconnectDispatchSocket();
     };
-    validateSession();
-  }, []);
+  }, [token, activeMode]); 
+
+  //   useEffect(() => {
+  //   const validateSession = async () => {
+  //     if (token) {
+  //       try {
+  //         // Hit the backend to get the actual, untampered user profile
+  //         const res = await apiClient.get('/users/me');
+  //         setUser(res.data.data); // Hydrate Zustand with real DB data
+  //       } catch (error) {
+  //         console.error("Session invalid or expired", error);
+  //         logout(); // Force them out if token is dead
+  //       }
+  //     }
+  //   };
+  //   validateSession();
+  // }, []);
 
   return (
     <ErrorBoundary>

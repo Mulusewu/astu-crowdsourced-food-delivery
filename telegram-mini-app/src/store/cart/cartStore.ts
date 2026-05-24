@@ -2,6 +2,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { apiClient } from "@/api/client/axiosInstance";
+import { useRestaurantStore } from "../restaurantStore";
+import { useAuthStore } from "../auth/authStore";
 
 
 export interface CartItem {
@@ -54,7 +56,7 @@ interface CartState {
   clearCart: () => void;
 
   // Backend Integration
-  refreshQuote: () => Promise<null>;
+  refreshQuote: () => Promise<unknown>;
   checkout: () => Promise<string | null>; // Returns the orderId on success
   clearError: () => void;
 }
@@ -77,7 +79,6 @@ export const useCartStore = create<CartState>()(
 
       addToCart: (newItem) => {
         const state = get();
-        console.log("!!!!!!!!!!!!!!!!!!!!!!!!!");
         
         // Prevent cross-restaurant ordering
         if (state.restaurantId && state.restaurantId !== newItem.restaurantId) {
@@ -141,12 +142,12 @@ export const useCartStore = create<CartState>()(
             restaurantId,
             deliveryLat,
             deliveryLng,
+            tip,
             items: items.map(i => ({
               menuId: i.menuId,
               quantity: i.quantity,
               expectedUnitPrice: i.expectedUnitPrice
-            })),
-            tip
+            }))
           };
 
           const res = await apiClient.post('/orders/quote', payload);
@@ -161,11 +162,8 @@ export const useCartStore = create<CartState>()(
       },
 
       checkout: async () => {
-        const { items, restaurantId, tip } = get();
-        const deliveryLat=8.562387
-        const deliveryLng=38.753949
+        const { items, restaurantId, deliveryLat, deliveryLng, tip } = get();
         if (items.length === 0 || !restaurantId || !deliveryLat || !deliveryLng) return null;
-        console.log("Heeeeeeeeeeeerrrrrrrrrrrrrrr");
 
         set({ isLoading: true, error: null });
         try {
@@ -180,8 +178,7 @@ export const useCartStore = create<CartState>()(
               expectedUnitPrice: i.expectedUnitPrice
             }))
           };
-          console.log("Payloaddddddddddddddd",payload);
-          
+
           const res = await apiClient.post('/orders/checkout', payload);
           get().clearCart();
           return res.data.data.id; // Return the created Order ID for routing
@@ -194,6 +191,55 @@ export const useCartStore = create<CartState>()(
       setDeliveryLocation: (lat, lng) => {
         set({ deliveryLat: lat, deliveryLng: lng });
         get().refreshQuote();
+      },
+
+      reorderPastOrder: async (restaurantId: string, items: { menuId: string, quantity: number }[]) => {
+        set({ isLoading: true, error: null });
+        try {
+          // 1. Ask the backend for the CURRENT prices of these items
+          // Since we built the `fetchActiveMenuItems` in the backend Quote engine, 
+          // we can just throw this at the quote endpoint.
+          
+          // Note: To quote, we need a generic delivery location if they haven't set one
+          const { user } = useAuthStore.getState();
+          const deliveryLat = 8.563; // Campus Center
+          const deliveryLng = 39.291;
+          
+          // We don't know the expectedUnitPrice yet!
+          // We have to build a new backend route or modify the quote engine to return prices.
+          // FOR NOW: We will rely on the `searchDiscovery` or `fetchRestaurantDetails` to fetch the current prices first.
+          
+          const { fetchRestaurantDetails } = useRestaurantStore.getState();
+          await fetchRestaurantDetails(restaurantId);
+          const currentMenu = useRestaurantStore.getState().currentRestaurant?.menu || [];
+          
+          const updatedItems = [];
+          for (const pastItem of items) {
+             const currentItem = currentMenu.find(m => m.id === pastItem.menuId);
+             if (!currentItem || !currentItem.isAvailable) {
+               throw new Error(`Item is no longer available.`);
+             }
+             updatedItems.push({
+               menuId: currentItem.id,
+               name: currentItem.name,
+               expectedUnitPrice: currentItem.price, // ACTUAL LIVE PRICE
+               quantity: pastItem.quantity,
+               image: currentItem.image,
+               restaurantId
+             });
+          }
+
+          // Override cart
+          set({ items: updatedItems, restaurantId });
+          
+          // Trigger quote
+          await get().refreshQuote();
+          set({ isLoading: false });
+          return true;
+        } catch (error: any) {
+          set({ isLoading: false, error: error.message || "Failed to reorder. Items may be out of stock." });
+          throw error;
+        }
       },
 
       setTip: (tip) => {
