@@ -13,6 +13,8 @@ import {
   ChevronDown,
   Clock3,
   Wallet,
+  Power,
+  Moon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -72,7 +74,7 @@ export default function DeliveryDashboard() {
 
   const handleToggleActive = async () => {
     try {
-      await toggleActiveStatus((path) => navigate(path));
+      await toggleActiveStatus();
       if (!delivererProfile?.isAvailable) {
         toast.success("You are now Online!", { description: "Waiting for orders..." });
         connectDispatchSocket(); // Reconnect to receive order updates immediately
@@ -379,6 +381,24 @@ export default function DeliveryDashboard() {
           </button>
         </section>
 
+ {!online ? (
+  <div className="flex flex-col items-center justify-center py-16 px-6 mt-8 bg-gray-50 rounded-[32px] border border-gray-200 text-center animate-in fade-in duration-500">
+            <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center mb-6 shadow-inner">
+              <Moon size={36} className="text-gray-500" strokeWidth={2} /> 
+            </div>
+            <h2 className="text-xl font-black text-gray-800 mb-2">You are currently offline</h2>
+            <p className="text-sm font-medium text-gray-500 mb-8 max-w-[250px]">
+              Go online to start receiving delivery requests and earn money.
+            </p>
+            <button 
+              onClick={handleToggleActive} 
+              className="bg-[#F26A1C] hover:bg-[#e05d15] text-white px-8 py-3.5 rounded-full font-bold shadow-lg shadow-orange-500/20 active:scale-95 transition-all flex items-center gap-2"
+            >
+              <Power size={18} strokeWidth={3} /> Go Online Now
+            </button>
+          </div>
+        ) : (
+          <div className="animate-in fade-in duration-500">
         <section>
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-base font-semibold text-gray-900 dark:text-white">
@@ -515,6 +535,8 @@ export default function DeliveryDashboard() {
             ))}
           </div>
         </section>
+        </div>
+          )}
       </main>
     </>
   );
