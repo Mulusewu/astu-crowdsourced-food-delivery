@@ -31,6 +31,8 @@ export default function CartPage() {
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const clearCart = useCartStore((state) => state.clearCart);
   const setDeliveryLocation = useCartStore((state) => state.setDeliveryLocation);
+  const cartError = useCartStore((state) => state.error);
+  const clearError = useCartStore((state) => state.clearError);
   const executeCheckout = useCartStore((state) => state.checkout);
 
   const handleBack = useCallback(() => {
@@ -85,12 +87,15 @@ export default function CartPage() {
 
   const handlePlaceOrder = async () => {
     hapticFeedback.impact("medium");
+    clearError();
     const orderId = await executeCheckout();
     if (orderId) {
       toast.success("Order Placed Successfully!");
       navigate(ROUTES.CUSTOMER.ORDERS.DETAILS.replace(":orderId", orderId));
     } else {
-      toast.error("Checkout Failed. Please check if the restaurant is open.");
+      // Use the specific error from the store if available, otherwise fall back to generic message
+      const errorMsg = useCartStore.getState().error;
+      toast.error(errorMsg || "Checkout Failed. Please check if the restaurant is open.");
     }
   };
 

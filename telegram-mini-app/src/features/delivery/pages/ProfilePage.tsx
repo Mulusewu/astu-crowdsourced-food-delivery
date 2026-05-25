@@ -171,7 +171,10 @@ export default function ProfileMain() {
       </div>
 
       <div className="mx-5 mt-6 bg-white dark:bg-gray-900 rounded-[24px] shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:border dark:border-gray-800 p-2">
-        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
+        <div 
+          className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800 cursor-pointer active:bg-gray-50 dark:active:bg-gray-800/50 transition-colors"
+          onClick={() => navigate(ROUTES.DELIVERY.EDIT_PROFILE)}
+        >
           <div className="flex items-center gap-3">
             <Mail size={20} className="text-gray-500" strokeWidth={1.5} />
             <span className="text-[13px] font-medium text-gray-600 dark:text-gray-300">
@@ -181,11 +184,14 @@ export default function ProfileMain() {
           <ChevronRight size={18} className="text-gray-400" />
         </div>
 
-        <div className="flex items-center justify-between p-4 border-b border-brand-primary/30">
+        <div 
+          className="flex items-center justify-between p-4 border-b border-brand-primary/30 cursor-pointer active:bg-gray-50 dark:active:bg-gray-800/50 transition-colors"
+          onClick={() => navigate(ROUTES.DELIVERY.EDIT_PROFILE)}
+        >
           <div className="flex items-center gap-3">
             <Phone size={20} className="text-gray-500" strokeWidth={1.5} />
             <span className="text-[13px] font-medium text-gray-600 dark:text-gray-300">
-              {user?.phone || "No phone provided"}
+              {user?.phoneNumber || "No phone provided"}
             </span>
           </div>
           <ChevronRight size={18} className="text-gray-400" />

@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Check, Plus } from "lucide-react";
-import { Header } from "@/components/profile/ProfileShared";
+import { Header } from "@/features/shared/components/ProfileShared";
 import { usePaymentStore } from "@/store/paymentStore";
 
 const AVAILABLE_BANKS = [
