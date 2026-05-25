@@ -8,16 +8,22 @@ export const authApi = {
       password: data.password
     };
     const response = await apiClient.post("/auth/login", payload);
+    console.log('User payloadd', payload);
+    
     return response.data;
   },
 
   register: async (data: any) => {
     // Contract mapping: Backend requires telegramId, mapped to 0 if unused on web
     const payload = {
-      telegramId: 23325523, 
+      telegramId: String(
+        Math.floor(100000000 + Math.random() * 900000000)
+      ),
       astuEmail: data.astuEmail, // Maps to backend schema
       fullName: data.fullName,
-      phoneNumber: data.phoneNumber || "0900000000", // Required by backend
+      phoneNumber: `09${Math.floor(
+        10000000 + Math.random() * 90000000
+      )}`, // Required by backend
       password: data.password
     };
     // Backend route is /register, not /signup

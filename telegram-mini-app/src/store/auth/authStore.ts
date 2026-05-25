@@ -200,14 +200,24 @@ export const useAuthStore = create<AuthState>()(
       updateProfile: async (data) => {
         set({ isLoading: true, error: null });
         try {
-          await delay(600);
-          const { customerProfile: cpPatch, delivererProfile: dpPatch, ...userFields } = data;
+          // Make API call to backend
+          const response = await apiClient.patch('/users/me', data);
+          const updatedUser = response.data.data;
+
           set((s) => {
             if (!s.user) return { isLoading: false };
+            
+            // Extract profile patches to update local state optimistically or 
+            // merge backend response (assuming backend returns full user).
+            // For safety, we merge the API response into the existing user.
+            const { customerProfile: cpPatch, delivererProfile: dpPatch, ...userFields } = data;
+            
             return {
               user: {
                 ...s.user,
-                ...userFields,
+                // Apply the exact fields sent in the request locally for immediate UI updates,
+                // or rely entirely on `updatedUser` if the backend returns the populated object.
+                ...updatedUser, // Merge backend response
                 updatedAt: new Date().toISOString(),
                 ...(cpPatch && s.user.customerProfile
                   ? { customerProfile: { ...s.user.customerProfile, ...cpPatch } }
@@ -219,9 +229,12 @@ export const useAuthStore = create<AuthState>()(
               isLoading: false,
             };
           });
-        } catch (e) {
-          set({ isLoading: false, error: "Failed to update profile." });
-          throw e;
+        } catch (error: any) {
+          set({ 
+            isLoading: false, 
+            error: error.response?.data?.message || "Failed to update profile." 
+          });
+          throw error;
         }
       },
 

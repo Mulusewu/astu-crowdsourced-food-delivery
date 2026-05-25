@@ -4,6 +4,7 @@ import { persist } from "zustand/middleware";
 import { apiClient } from "@/api/client/axiosInstance";
 import { useRestaurantStore } from "../restaurantStore";
 import { useAuthStore } from "../auth/authStore";
+import { useCustomerStore } from "../customer/customerStore";
 
 
 export interface CartItem {
@@ -125,16 +126,24 @@ export const useCartStore = create<CartState>()(
       },
 
       refreshQuote: async () => {
-        const { items, restaurantId, deliveryLat, deliveryLng, tip } = get();
+        const { items, restaurantId, tip } = get();
+        let { deliveryLat, deliveryLng } = get();
         
         if (items.length === 0) return set({ quote: null });
+        
+        // Try to get coordinates from the customer's default block address if not set
+        if (!deliveryLat || !deliveryLng) {
+          const defaultAddr = useCustomerStore.getState().getDefaultAddress();
+          if (defaultAddr) {
+            deliveryLat = defaultAddr.latitude;
+            deliveryLng = defaultAddr.longitude;
+          }
+        }
+
         // if (!restaurantId || !deliveryLat || !deliveryLng ) {
-        //   // Cannot quote without location (Wait until customer selects dorm)
+        //   // Cannot quote without location
         //   return; 
         // }
-
-        // mock data 
-
 
         set({ isLoading: true, error: null });
         try {
@@ -162,8 +171,25 @@ export const useCartStore = create<CartState>()(
       },
 
       checkout: async () => {
-        const { items, restaurantId, deliveryLat, deliveryLng, tip } = get();
-        if (items.length === 0 || !restaurantId || !deliveryLat || !deliveryLng) return null;
+        const { items, restaurantId, tip } = get();
+        let { deliveryLat, deliveryLng } = get();
+        
+        // Resolve coordinates from default address
+
+        
+        if (!deliveryLat || !deliveryLng) {
+          const defaultAddr = useCustomerStore.getState().getDefaultAddress();
+          if (defaultAddr) {
+            deliveryLat = defaultAddr.latitude;
+            deliveryLng = defaultAddr.longitude;
+          }
+        }
+        console.log(deliveryLat, deliveryLng);
+        
+        if (items.length === 0 || !restaurantId || !deliveryLat || !deliveryLng) {
+          set({ error: "Please select a delivery address to checkout.", isLoading: false });
+          return null;
+        }
 
         set({ isLoading: true, error: null });
         try {

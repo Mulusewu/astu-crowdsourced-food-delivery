@@ -6,8 +6,11 @@ import {
   Plus,
   Trash2,
   Check,
+  Building,
+  Loader2,
 } from "lucide-react";
 import { useCustomerStore } from "@/store/customer/customerStore";
+import { CAMPUS_BLOCKS } from "@/constants/blocks";
 
 export function AddAddressModal({
   onClose,
@@ -18,28 +21,24 @@ export function AddAddressModal({
 }) {
   const [form, setForm] = useState({
     label: "Home",
-    street: "",
-    area: "",
-    city: "Adama",
-    building: "",
-    floor: "",
-    landmark: "",
+    blockId: "",
+    roomNumber: "",
     isDefault: false,
   });
 
   const handleSave = () => {
-    if (!form.street.trim()) return;
+    if (!form.blockId) return;
+    const block = CAMPUS_BLOCKS.find((b) => b.id === form.blockId);
+    if (!block) return;
+
     const newAddress = {
       id: `addr_${Date.now()}`,
       label: form.label,
-      street: form.street,
-      city: form.city,
-      area: form.area,
-      building: form.building,
-      floor: form.floor,
-      landmark: form.landmark,
-      latitude: 8.5401, // Adama default
-      longitude: 39.2676,
+      street: block.name,
+      floor: form.roomNumber,
+      city: "ASTU Campus",
+      latitude: block.lat,
+      longitude: block.lng,
       isDefault: form.isDefault,
     };
     onSave(newAddress);
@@ -85,25 +84,32 @@ export function AddAddressModal({
         </div>
 
         {/* Form Fields */}
-        <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-1 pb-2 [&::-webkit-scrollbar]:hidden">
-          {[
-            { field: "street", placeholder: "Street address *", required: true },
-            { field: "area", placeholder: "Area / Neighborhood" },
-            { field: "building", placeholder: "Building / Block" },
-            { field: "floor", placeholder: "Floor / Room" },
-            { field: "landmark", placeholder: "Nearby landmark" },
-          ].map(({ field, placeholder }) => (
-            <input
-              key={field}
-              type="text"
-              placeholder={placeholder}
-              value={(form as any)[field]}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, [field]: e.target.value }))
-              }
-              className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-[14px] px-4 py-3.5 text-[14px] text-gray-900 dark:text-white placeholder:text-gray-400 outline-none focus:border-[#F26A1C] focus:ring-1 focus:ring-[#F26A1C] transition-all"
-            />
-          ))}
+        <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-1 pb-2 [&::-webkit-scrollbar]:hidden">
+          <div className="relative">
+            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+              <Building size={18} className="text-gray-400" />
+            </div>
+            <select
+              value={form.blockId}
+              onChange={(e) => setForm((f) => ({ ...f, blockId: e.target.value }))}
+              className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-[14px] pl-11 pr-4 py-3.5 text-[14px] text-gray-900 dark:text-white appearance-none outline-none focus:border-[#F26A1C] focus:ring-1 focus:ring-[#F26A1C] transition-all"
+            >
+              <option value="" disabled>Select Campus Block *</option>
+              {CAMPUS_BLOCKS.map((block) => (
+                <option key={block.id} value={block.id}>
+                  {block.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          
+          <input
+            type="text"
+            placeholder="Room / Floor number (Optional)"
+            value={form.roomNumber}
+            onChange={(e) => setForm((f) => ({ ...f, roomNumber: e.target.value }))}
+            className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-[14px] px-4 py-3.5 text-[14px] text-gray-900 dark:text-white placeholder:text-gray-400 outline-none focus:border-[#F26A1C] focus:ring-1 focus:ring-[#F26A1C] transition-all"
+          />
         </div>
 
         {/* Default toggle */}
@@ -128,7 +134,7 @@ export function AddAddressModal({
 
         <button
           onClick={handleSave}
-          disabled={!form.street.trim()}
+          disabled={!form.blockId}
           className="w-full mt-6 bg-[#F26A1C] hover:bg-[#e05d15] text-white rounded-[20px] font-bold text-[15px] py-4 shadow-[0_8px_20px_rgba(242,106,28,0.25)] active:scale-[0.98] transition-all disabled:opacity-50 disabled:shadow-none"
         >
           Save Address
@@ -144,12 +150,20 @@ export function AddressCard({
   onSetDefault,
   onDelete,
 }: {
-  address: any; // Replace 'any' with your Address type
-  onSetDefault: (id: string) => void;
+  address: any;
+  onSetDefault: (id: string) => Promise<void>;
   onDelete: (id: string) => void;
 }) {
-  // Assuming a generic fallback if getLabelIcon isn't passed directly
-  // const LabelIcon = getLabelIcon(address.label);
+  const [isSetting, setIsSetting] = useState(false);
+
+  const handleSetDefault = async () => {
+    setIsSetting(true);
+    try {
+      await onSetDefault(address.id);
+    } finally {
+      setIsSetting(false);
+    }
+  };
 
   return (
     <div
@@ -214,10 +228,14 @@ export function AddressCard({
 
       {!address.isDefault && (
         <button
-          onClick={() => onSetDefault(address.id)}
-          className="w-full py-2.5 text-[13px] font-bold text-[#F26A1C] bg-[#FFF4ED] dark:bg-orange-900/20 rounded-[14px] active:scale-95 transition-transform"
+          onClick={handleSetDefault}
+          disabled={isSetting}
+          className="w-full py-2.5 text-[13px] font-bold text-[#F26A1C] bg-[#FFF4ED] dark:bg-orange-900/20 rounded-[14px] active:scale-95 transition-transform flex items-center justify-center gap-2 disabled:opacity-60"
         >
-          Set as Default
+          {isSetting ? (
+            <Loader2 size={14} className="animate-spin" />
+          ) : null}
+          {isSetting ? "Saving..." : "Set as Default"}
         </button>
       )}
     </div>
@@ -229,6 +247,15 @@ export default function AddressBookPage() {
   const { addresses, addAddress, deleteAddress, setDefaultAddress } =
     useCustomerStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Wraps addAddress + setDefaultAddress so the default flag is properly
+  // synced to the backend when saving a new address marked as default.
+  const handleSaveAddress = async (newAddress: any) => {
+    addAddress(newAddress);
+    if (newAddress.isDefault) {
+      await setDefaultAddress(newAddress.id);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#FDFDFD] dark:bg-gray-950 font-sans flex flex-col pb-32">
@@ -300,7 +327,7 @@ export default function AddressBookPage() {
       {isModalOpen && (
         <AddAddressModal
           onClose={() => setIsModalOpen(false)}
-          onSave={addAddress}
+          onSave={handleSaveAddress}
         />
       )}
     </div>

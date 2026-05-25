@@ -54,7 +54,7 @@ export const useOrderDetailsStore = create<OrderDetailsState>((set, get) => ({
         shortId: raw.shortId,
         status: raw.status,
         restaurantName: raw.restaurant.name,
-        customerAddress: raw.customer?.defaultDormBlock || "ASTU Campus",
+        customerAddress: raw.customer?.customerProfile?.defaultLocation || "ASTU Campus",
         subtotal: Number(raw.foodPrice),
         deliveryFee: Number(raw.deliveryFee),
         totalAmount: Number(raw.totalAmount),
