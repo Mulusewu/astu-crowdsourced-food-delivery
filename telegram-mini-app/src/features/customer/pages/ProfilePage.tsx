@@ -81,7 +81,7 @@ export default function CustomerProfilePage() {
       <div className="flex flex-col items-center mt-6 mb-2 relative">
         <div className="relative">
           <div className="absolute inset-0 bg-[#F26A1C] rounded-full scale-105" />
-          <Avatar className="relative w-28 h-28 border-[4px] border-white dark:border-gray-950 shadow-md">
+          <Avatar className="relative w-28 h-28 border-4 border-white dark:border-gray-950 shadow-md">
             <AvatarImage
               src={user?.avatarUrl || undefined}
               className="object-cover"
@@ -152,7 +152,7 @@ export default function CustomerProfilePage() {
       )}
 
       {/* ─── Contact info card ─── */}
-      <div className="mx-5 mt-5 bg-white dark:bg-gray-900 rounded-[24px] shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:border dark:border-gray-800 p-2">
+      <div className="mx-5 mt-5 bg-white dark:bg-gray-900 rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:border dark:border-gray-800 p-2">
         <div
           className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800 cursor-pointer active:bg-gray-50 dark:active:bg-gray-800/50 transition-colors rounded-t-[20px]"
 
@@ -207,7 +207,7 @@ export default function CustomerProfilePage() {
       </div>
 
       {/* ─── Settings card ─── */}
-      <div className="mx-5 mt-5 bg-white dark:bg-gray-900 rounded-[24px] shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:border dark:border-gray-800 p-2">
+      <div className="mx-5 mt-5 bg-white dark:bg-gray-900 rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:border dark:border-gray-800 p-2">
         {profileActions.map((item, index) => {
           const Icon = item.icon;
           const isLast = index === profileActions.length - 1;

@@ -67,6 +67,7 @@ interface OrderStoreState {
   fetchActiveOrders: () => Promise<void>; // Fetches the single active delivery
   fetchOrderHistory: () => Promise<void>;
   fetchOrderById: (orderId: string) => Promise<void>;
+  fetchOrderReceipt: (orderId: string) => Promise<any | null>;
   
   // UI Filters
   setSelectedCafe: (cafeId: string) => void;
@@ -237,6 +238,15 @@ export const useOrderStore = create<OrderStoreState>()(
           set({ error: e.response?.data?.message || "Failed to load details", isLoading: false });
         }
       },
+       fetchOrderReceipt: async (orderId: string) => {
+    try {
+      const res = await apiClient.get(`/orders/${orderId}`);
+      return res.data.data;
+    } catch (e) {
+      return null;
+    }
+  },
+
 
       // ==========================================
       // LOGISTICS ACTIONS
@@ -255,6 +265,7 @@ export const useOrderStore = create<OrderStoreState>()(
           
           // Refresh state
           await get().fetchActiveOrders();
+          await get().fetchAvailableOrders();
           
           // Remove from available lists
           set(s => {

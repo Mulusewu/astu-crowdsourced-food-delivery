@@ -14,7 +14,7 @@ export default function RoleSwitcher() {
   const hasProfile = !!user?.delivererProfile;
   const isPending = user?.delivererProfile?.verificationStatus === "PENDING";
   const isRejected = user?.delivererProfile?.verificationStatus === "REJECTED";
-  const isApproved = user?.delivererProfile?.verificationStatus === "APPROVED";
+  // const isApproved = user?.delivererProfile?.verificationStatus === "APPROVED";
   const isActive = user?.activeMode === "DELIVERER";
 
   const handleAction = async () => {
@@ -65,7 +65,7 @@ export default function RoleSwitcher() {
 
   return (
     <div className="mx-5 mt-6 mb-2">
-      <div className="bg-white dark:bg-gray-900 rounded-[24px] p-4 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:border dark:border-gray-800 border border-gray-50">
+      <div className="bg-white dark:bg-gray-900 rounded-3xl p-4 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:border dark:border-gray-800 border border-gray-50">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className={`p-2 rounded-xl ${
@@ -79,7 +79,7 @@ export default function RoleSwitcher() {
               <p className="text-[14px] font-bold text-gray-900 dark:text-white leading-tight">
                 {hasProfile ? "Deliverer Partner" : "Deliverer Program"}
               </p>
-              <p className="text-[11px] font-medium text-gray-400 mt-0.5 max-w-[160px] leading-tight">
+              <p className="text-[11px] font-medium text-gray-400 mt-0.5 max-w-40 leading-tight">
                 {getMessage()}
               </p>
             </div>
@@ -87,7 +87,7 @@ export default function RoleSwitcher() {
           <button
             onClick={handleAction}
             disabled={isLoading || isPending}
-            className={`flex items-center justify-center min-w-[100px] h-9 rounded-full text-[11px] font-bold transition-all active:scale-95 disabled:opacity-50 disabled:shadow-none shadow-md ${
+            className={`flex items-center justify-center min-w-25 h-9 rounded-full text-[11px] font-bold transition-all active:scale-95 disabled:opacity-50 disabled:shadow-none shadow-md ${
               isPending ? 'bg-yellow-500 text-white' :
               isRejected ? 'bg-red-500 text-white' :
               isActive ? 'bg-blue-600 text-white shadow-blue-200' : 'bg-[#F26A1C] text-white shadow-orange-200'
