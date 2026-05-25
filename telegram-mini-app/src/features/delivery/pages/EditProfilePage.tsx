@@ -12,39 +12,54 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth/authStore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Header, SoftInput, ActionButton } from "@/features/shared/components/ProfileShared";
+import {
+  Header,
+  SoftInput,
+  ActionButton,
+} from "@/features/shared/components/ProfileShared";
 import { ROUTES } from "@/routes/routePaths";
+import { toast } from "sonner";
 
 const PAYOUT_PROVIDERS = [
   { id: "telebirr", label: "Telebirr" },
   { id: "cbe", label: "CBE Birr" },
-
 ];
 
 function ReadOnlyField({ label, value }: { label: string; value: string }) {
   return (
     <div className="w-full bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-[20px] px-4 py-3.5">
-      <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400 mb-0.5">{label}</p>
-      <p className="text-[13px] font-semibold text-gray-500 dark:text-gray-400">{value}</p>
+      <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400 mb-0.5">
+        {label}
+      </p>
+      <p className="text-[13px] font-semibold text-gray-500 dark:text-gray-400">
+        {value}
+      </p>
     </div>
   );
 }
 
 export default function DeliveryEditProfilePage() {
   const navigate = useNavigate();
-  const { user, updateProfile, isLoading } = useAuthStore();
+  const { user, updateProfile, updatePhone, isLoading, error: storeError } = useAuthStore();
   const dp = user?.delivererProfile;
 
   // User-level fields
   const [fullName, setFullName] = useState(user?.fullName ?? "");
   const [astuEmail, setAstuEmail] = useState(user?.astuEmail ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
-  const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber ?? "");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Phone — handled separately via PATCH /users/me/phone
+  const [newPhone, setNewPhone] = useState("");
+  const [isPhoneLoading, setIsPhoneLoading] = useState(false);
+
   // DelivererProfile fields
-  const [currentLocation, setCurrentLocation] = useState(dp?.currentLocation ?? "");
-  const [payoutProvider, setPayoutProvider] = useState(dp?.payoutProvider ?? "telebirr");
+  const [currentLocation, setCurrentLocation] = useState(
+    dp?.currentLocation ?? "",
+  );
+  const [payoutProvider, setPayoutProvider] = useState(
+    dp?.payoutProvider ?? "telebirr",
+  );
   const [payoutAccount, setPayoutAccount] = useState(dp?.payoutAccount ?? "");
 
   const [success, setSuccess] = useState(false);
@@ -68,7 +83,7 @@ export default function DeliveryEditProfilePage() {
         fullName: fullName.trim(),
         astuEmail: astuEmail.trim(),
         email: email.trim() || null,
-        phoneNumber: phoneNumber.trim() || null,
+        // phoneNumber is NOT sent here — it has its own dedicated endpoint
         delivererProfile: {
           currentLocation: currentLocation.trim() || null,
           payoutProvider: payoutProvider || null,
@@ -77,8 +92,25 @@ export default function DeliveryEditProfilePage() {
       });
       setSuccess(true);
       setTimeout(() => navigate(ROUTES.DELIVERY.PROFILE), 1200);
-    } catch {
-      // error stored in authStore.error
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || storeError || "Failed to save profile.");
+    }
+  };
+
+  const handleUpdatePhone = async () => {
+    if (!newPhone.trim()) {
+      toast.error("Please enter a phone number.");
+      return;
+    }
+    setIsPhoneLoading(true);
+    try {
+      await updatePhone(newPhone.trim());
+      toast.success("Verification SMS sent! Check your phone.");
+      navigate(ROUTES.VERIFY_PHONE.replace(":token", encodeURIComponent(newPhone.trim())));
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Failed to update phone number.");
+    } finally {
+      setIsPhoneLoading(false);
     }
   };
 
@@ -88,34 +120,45 @@ export default function DeliveryEditProfilePage() {
         <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center">
           <CheckCircle size={32} className="text-green-500" />
         </div>
-        <h2 className="text-xl font-black text-gray-900 dark:text-white">Profile Updated!</h2>
-        <p className="text-sm text-gray-500">Redirecting back to your profile…</p>
+        <h2 className="text-xl font-black text-gray-900 dark:text-white">
+          Profile Updated!
+        </h2>
+        <p className="text-sm text-gray-500">
+          Redirecting back to your profile…
+        </p>
       </div>
     );
   }
 
   return (
     <div className="bg-[#FDFDFD] dark:bg-gray-950 font-sans flex flex-col pb-10">
-      <Header title="Edit Profile" showBack onBackClick={() => navigate(ROUTES.DELIVERY.PROFILE)} />
+      <Header
+        title="Edit Profile"
+        showBack
+        onBackClick={() => navigate(ROUTES.DELIVERY.PROFILE)}
+      />
 
       {/* Avatar */}
       <div className="flex flex-col items-center mt-4 mb-6">
         <div className="relative">
           <div className="absolute inset-0 bg-[#F26A1C] rounded-full scale-105" />
           <Avatar className="relative w-24 h-24 border-[3px] border-white dark:border-gray-900 shadow-md">
-            <AvatarImage src={user?.avatarUrl || undefined} className="object-cover" />
+            <AvatarImage
+              src={user?.avatarUrl || undefined}
+              className="object-cover"
+            />
             <AvatarFallback className="bg-[#F26A1C] text-white text-2xl font-bold">
               {user?.fullName?.[0] ?? "D"}
             </AvatarFallback>
           </Avatar>
-          <button 
+          <button
             onClick={() => navigate(ROUTES.DELIVERY.UPLOAD_AVATAR)}
             className="absolute bottom-0 right-0 bg-[#F26A1C] p-2 rounded-full text-white border-2 border-white dark:border-gray-900 shadow-sm active:scale-95 transition-transform"
           >
             <Camera size={14} />
           </button>
         </div>
-        <p 
+        <p
           onClick={() => navigate(ROUTES.DELIVERY.UPLOAD_AVATAR)}
           className="text-[#F26A1C] text-xs font-bold mt-3 cursor-pointer hover:underline"
         >
@@ -135,46 +178,81 @@ export default function DeliveryEditProfilePage() {
             </label>
             <SoftInput
               value={fullName}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFullName(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setFullName(e.target.value)
+              }
               placeholder="Your full name"
             />
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-[11px] font-bold text-gray-500 uppercase px-1 flex items-center gap-1">
               <Mail size={10} /> ASTU Email
-              <span className="text-[9px] font-black text-[#F26A1C] normal-case ml-1">(Mandatory)</span>
+              <span className="text-[9px] font-black text-[#F26A1C] normal-case ml-1">
+                (Mandatory)
+              </span>
             </label>
             <SoftInput
               value={astuEmail}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAstuEmail(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setAstuEmail(e.target.value)
+              }
               type="email"
               placeholder="name.surname@astu.edu.et"
             />
-            {errors.astuEmail && <p className="text-xs text-red-500 font-semibold px-2">{errors.astuEmail}</p>}
+            {errors.astuEmail && (
+              <p className="text-xs text-red-500 font-semibold px-2">
+                {errors.astuEmail}
+              </p>
+            )}
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-[11px] font-bold text-gray-500 uppercase px-1 flex items-center gap-1">
               <Mail size={10} /> Personal Email
-              <span className="text-[9px] font-normal text-gray-400 normal-case ml-1">(Optional)</span>
+              <span className="text-[9px] font-normal text-gray-400 normal-case ml-1">
+                (Optional)
+              </span>
             </label>
             <SoftInput
               value={email}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setEmail(e.target.value)
+              }
               type="email"
               placeholder="your@email.com"
             />
           </div>
+        </div>
+
+        {/* ─── Phone Number (Separate Flow) ─── */}
+        <div className="bg-white dark:bg-gray-900 rounded-[24px] shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:border dark:border-gray-800 p-4 space-y-3">
+          <p className="text-[11px] font-black uppercase tracking-widest text-[#F26A1C]">
+            Phone Number
+          </p>
+          {user?.phoneNumber && (
+            <div className="w-full bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-[20px] px-4 py-3">
+              <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400 mb-0.5">Current</p>
+              <p className="text-[13px] font-semibold text-gray-700 dark:text-gray-300">{user.phoneNumber}</p>
+            </div>
+          )}
           <div className="flex flex-col gap-1">
             <label className="text-[11px] font-bold text-gray-500 uppercase px-1 flex items-center gap-1">
-              <Phone size={10} /> Phone Number
+              <Phone size={10} /> {user?.phoneNumber ? "New Phone Number" : "Add Phone Number"}
             </label>
             <SoftInput
-              value={phoneNumber}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPhoneNumber(e.target.value)}
+              value={newPhone}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewPhone(e.target.value)}
               type="tel"
-              placeholder="+251 9XX XXX XXX"
+              placeholder="e.g. 0934567890"
             />
           </div>
+          <button
+            type="button"
+            onClick={handleUpdatePhone}
+            disabled={isPhoneLoading || !newPhone.trim()}
+            className="w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-[16px] font-bold text-[14px] py-3.5 active:scale-[0.98] transition-all disabled:opacity-40"
+          >
+            {isPhoneLoading ? "Sending OTP…" : "Update Phone & Verify"}
+          </button>
         </div>
 
         {/* ─── Delivery Settings ─── */}
@@ -188,7 +266,9 @@ export default function DeliveryEditProfilePage() {
             </label>
             <SoftInput
               value={currentLocation}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCurrentLocation(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setCurrentLocation(e.target.value)
+              }
               placeholder="e.g. Bole, Addis Ababa"
             />
           </div>
@@ -204,10 +284,11 @@ export default function DeliveryEditProfilePage() {
                   key={p.id}
                   type="button"
                   onClick={() => setPayoutProvider(p.id)}
-                  className={`py-3 rounded-[16px] text-[13px] font-bold transition-all active:scale-[0.98] border ${payoutProvider === p.id
+                  className={`py-3 rounded-[16px] text-[13px] font-bold transition-all active:scale-[0.98] border ${
+                    payoutProvider === p.id
                       ? "bg-[#FFF1E8] border-[#F26A1C] text-[#F26A1C]"
                       : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-500"
-                    }`}
+                  }`}
                 >
                   {p.label}
                 </button>
@@ -221,7 +302,9 @@ export default function DeliveryEditProfilePage() {
             </label>
             <SoftInput
               value={payoutAccount}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPayoutAccount(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setPayoutAccount(e.target.value)
+              }
               placeholder="e.g. +251912345678 or 1000123456"
               type="tel"
             />
@@ -238,8 +321,14 @@ export default function DeliveryEditProfilePage() {
               <Info size={12} className="text-gray-400" />
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <ReadOnlyField label="Total Deliveries" value={String(dp.totalDeliveries)} />
-              <ReadOnlyField label="Rating" value={dp.rating.toFixed(1) + " ★"} />
+              <ReadOnlyField
+                label="Total Deliveries"
+                value={String(dp.totalDeliveries)}
+              />
+              <ReadOnlyField
+                label="Rating"
+                value={`${Number(dp.rating || 0).toFixed(1)} ★`}
+              />
               <ReadOnlyField
                 label="Total Earnings"
                 value={"ETB " + dp.totalEarnings.toLocaleString()}

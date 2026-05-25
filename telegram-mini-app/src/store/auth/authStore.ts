@@ -65,6 +65,7 @@ interface AuthState {
   setToken: (token: string) => void;
   setUser: (user: User) => void;
   updateProfile: (data: UpdateProfileData) => Promise<void>;
+  updatePhone: (newPhone: string) => Promise<void>;
 
   clearError: () => void;
 }
@@ -233,6 +234,20 @@ export const useAuthStore = create<AuthState>()(
           set({ 
             isLoading: false, 
             error: error.response?.data?.message || "Failed to update profile." 
+          });
+          throw error;
+        }
+      },
+
+      updatePhone: async (newPhone: string) => {
+        set({ isLoading: true, error: null });
+        try {
+          await apiClient.patch('/users/me/phone', { newPhone });
+          set({ isLoading: false });
+        } catch (error: any) {
+          set({
+            isLoading: false,
+            error: error.response?.data?.message || "Failed to update phone number."
           });
           throw error;
         }
